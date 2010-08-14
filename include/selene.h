@@ -95,6 +95,10 @@ SELENE_API(selene_error_t*) selene_pull_bytes(selene_t *ctxt,
                                               size_t blen,
                                               size_t *length,
                                               size_t *remaining);
+/* temp api */
+SELENE_API(selene_error_t*) selene_recv_bytes(selene_t *ctxt,
+                                              const char* bytes,
+                                              size_t length);
 
 #ifdef __cplusplus
 }

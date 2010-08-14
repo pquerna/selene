@@ -24,9 +24,10 @@
 #include <unistd.h>
 #include <errno.h>
 #include <arpa/inet.h>
+#include <fcntl.h>
 
 /**
- * 'Simple' TLS Client, connects to a port, pipes stdin from it
+ * 'Simple' TLS Client, connects to a port, pipes stdin to it
  */
 #define SERR(exp) do { \
     selene_error_t *SERR__err = NULL; \
@@ -44,7 +45,26 @@
 typedef struct {
   int sock;
   int write_err;
+  int read_err;
 } client_t;
+
+static void
+setblocking(int fd)
+{
+  int opts;
+  opts = fcntl(fd, F_GETFL);
+  opts = (opts ^ O_NONBLOCK);
+  fcntl(fd, F_SETFL, opts);
+}
+
+static void
+setnonblocking(int fd)
+{
+  int opts;
+  opts = fcntl(fd, F_GETFL);
+  opts = (opts | O_NONBLOCK);
+  fcntl(fd, F_SETFL, opts);
+}
 
 static selene_error_t*
 want_pull(selene_t *s, selene_event_e event, void *baton)
@@ -61,6 +81,7 @@ want_pull(selene_t *s, selene_event_e event, void *baton)
                                  &blen, &remaining));
 
     if (blen > 0) {
+      setblocking(c->sock);
       rv = write(c->sock, buf, blen);
       if (rv < 0) {
         c->write_err = errno;
@@ -72,8 +93,42 @@ want_pull(selene_t *s, selene_event_e event, void *baton)
   return SELENE_SUCCESS;
 }
 
-static int connect_to(selene_t *s, const char *host, int port, FILE *fp)
+static int
+read_from_sock(client_t *c, selene_t *s)
 {
+  int err;
+  ssize_t rv = 0;
+  do {
+    char buf[8096];
+
+    setnonblocking(c->sock);
+
+    rv = read(c->sock, &buf[0], sizeof(buf));
+
+    if (rv == -1) {
+      err = errno;
+      if (err != EAGAIN) {
+        c->read_err = err;
+        break;
+      }
+    }
+
+    if (rv == 0) {
+      break;
+    }
+
+    if (rv > 0) {
+      SERR(selene_recv_bytes(s, buf, rv));
+    }
+  } while(rv > 0);
+
+  return 0;
+}
+
+static int
+connect_to(selene_t *s, const char *host, int port, FILE *fp)
+{
+  fd_set readers;
   int rv = 0;
   struct sockaddr_in addr;
   client_t client;
@@ -106,19 +161,40 @@ static int connect_to(selene_t *s, const char *host, int port, FILE *fp)
 
   while (client.write_err == 0)
   {
-    p = fgets(buf, sizeof(buf), fp);
+    FD_ZERO(&readers);
 
-    if (p == NULL) {
-      break;
+    FD_SET(client.sock, &readers);
+    FD_SET(fileno(stdin), &readers);
+
+    rv = select(FD_SETSIZE, &readers, NULL, NULL, NULL);
+
+    if (rv > 0) {
+      if (FD_ISSET(fileno(stdin), &readers)) {
+        p = fgets(buf, sizeof(buf), fp);
+
+        if (p == NULL) {
+          break;
+        }
+
+        SERR(selene_push_bytes(s, p, strlen(p)));
+      }
+      else if (FD_ISSET(client.sock, &readers)) {
+        read_from_sock(&client, s);
+      }
     }
-
-    SERR(selene_push_bytes(s, p, strlen(p)));
   }
 
   if (client.write_err != 0) {
-    fprintf(stderr, "TCP write(%s:%d) failed: (%d) %s\n",
+    fprintf(stderr, "TCP write to %s:%d failed: (%d) %s\n",
             host, port,
             client.write_err, strerror(client.write_err));
+    exit(EXIT_FAILURE);
+  }
+
+  if (client.read_err != 0) {
+    fprintf(stderr, "TCP read from %s:%d failed: (%d) %s\n",
+            host, port,
+            client.read_err, strerror(client.read_err));
     exit(EXIT_FAILURE);
   }
   return 0;
