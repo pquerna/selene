@@ -18,6 +18,10 @@
 #ifndef _sln_tests_h_
 #define _sln_tests_h_
 
+#ifndef WANT_SLN_ASSERTS
+#define WANT_SLN_ASSERTS
+#endif
+
 #include <stdarg.h>
 #include <stddef.h>
 #include <setjmp.h>
@@ -47,6 +51,13 @@
   do { \
     selene_error_t *selene__xx__err; \
     SLN_ASSERT((selene__xx__err = (expression)) == SELENE_SUCCESS); \
+  } while (0)
+
+#define SLN_FAIL(expression) \
+  do { \
+    selene_error_t *selene__xx__err; \
+    /* TODO: print the error in test case mode */ \
+    SLN_ASSERT((selene__xx__err = (expression)) != SELENE_SUCCESS); \
   } while (0)
 
 #endif

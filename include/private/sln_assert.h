@@ -20,7 +20,9 @@
 
 #if defined(DEBUG) || defined(UNIT_TESTING)
 /* TODO: move to scons */
+#ifndef WANT_SLN_ASSERTS
 #define WANT_SLN_ASSERTS
+#endif
 #endif
 
 #ifdef WANT_SLN_ASSERTS
