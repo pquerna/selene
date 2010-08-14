@@ -34,6 +34,19 @@ sln_initialize(void)
   return SELENE_SUCCESS;
 }
 
+static void
+sln_terminate(void)
+{
+  initialized--;
+  if (initialized) {
+    return;
+  }
+
+  /* TODO: backend shutdown */
+
+  return;
+}
+
 static selene_error_t*
 sln_create(selene_t **p_sel, sln_mode_e mode)
 {
@@ -67,4 +80,7 @@ selene_destroy(selene_t *sel)
   sel->state = SLN_STATE_DEAD;
 
   free(sel);
+
+  sln_terminate();
+
 }
