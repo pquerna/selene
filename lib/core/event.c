@@ -15,27 +15,24 @@
  * limitations under the License.
  */
 
-#ifndef _sln_types_h_
-#define _sln_types_h_
 
-/* TODO: public header? */
-typedef enum {
-  SLN_STATE__UNUSED0 = 0,
-  SLN_STATE_INIT = 1,
-  SLN_STATE_DEAD = 2,
-  SLN_STATE__MAX = 3,
-} sln_state_e;
+#include "selene.h"
+#include "sln_types.h"
+#include "sln_assert.h"
 
-typedef enum {
-  SLN_MODE__UNUSED0 = 0,
-  SLN_MODE_CLIENT = 1,
-  SLN_MODE_SERVER = 2,
-  SLN_MODE__MAX = 3,
-} sln_mode_e;
+selene_error_t*
+sln_subscribe(selene_t *ctxt, selene_event_e event,
+              int priority,
+              selene_event_cb cb, void *baton)
+{
+  return SELENE_SUCCESS;
+}
 
-struct selene_t {
-  sln_mode_e mode;
-  sln_state_e state;
-};
-
-#endif
+selene_error_t*
+selene_subscribe(selene_t *ctxt, selene_event_e event,
+                 selene_event_cb cb, void *baton)
+{
+  SLN_ASSERT_CONTEXT(ctxt);
+  SLN_ASSERT_ENUM(SELENE_EVENT, event);
+  return sln_subscribe(ctxt, event, 0, cb, baton);
+}

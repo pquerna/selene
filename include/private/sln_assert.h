@@ -15,27 +15,40 @@
  * limitations under the License.
  */
 
-#ifndef _sln_types_h_
-#define _sln_types_h_
+#ifndef _sln_assert_h_
+#define _sln_assert_h_
 
-/* TODO: public header? */
-typedef enum {
-  SLN_STATE__UNUSED0 = 0,
-  SLN_STATE_INIT = 1,
-  SLN_STATE_DEAD = 2,
-  SLN_STATE__MAX = 3,
-} sln_state_e;
+#ifdef DEBUG
+/* TODO: move to scons */
+#define WANT_SLN_ASSERTS
+#endif
 
-typedef enum {
-  SLN_MODE__UNUSED0 = 0,
-  SLN_MODE_CLIENT = 1,
-  SLN_MODE_SERVER = 2,
-  SLN_MODE__MAX = 3,
-} sln_mode_e;
+#ifdef WANT_SLN_ASSERTS
 
-struct selene_t {
-  sln_mode_e mode;
-  sln_state_e state;
-};
+  #include <assert.h>
+
+  #define SLN_ASSERT(exp) assert(exp)
+
+  #define SLN_ASSERT_RANGE(start, end, target) assert(target > start); assert(target < end);
+
+  #define SLN_ASSERT_ENUM(type, target) SLN_ASSERT_RANGE(type ## __UNUSED0, type ## __MAX, target)
+
+  #define SLN_ASSERT_CONTEXT(ctxt) do { \
+    SLN_ASSERT(ctxt != NULL); \
+    SLN_ASSERT_ENUM(SLN_MODE, ctxt->mode); \
+    SLN_ASSERT_ENUM(SLN_STATE, ctxt->state); \
+  } while (0);
+
+#else /* !WANT_SLN_ASSERTS */
+
+  #define SLN_ASSERT(exp)
+
+  #define SLN_ASSERT_RANGE(start, end, target)
+
+  #define SLN_ASSERT_ENUM(type, target)
+
+  #define SLN_ASSERT_CONTEXT(ctxt)
+
+#endif
 
 #endif

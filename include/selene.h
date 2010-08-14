@@ -41,9 +41,37 @@ SELENE_API(selene_error_t*) selene_client_create(selene_t **ctxt);
 SELENE_API(selene_error_t*) selene_server_create(selene_t **ctxt);
 
 /**
- * Destroys a SSL/TLS Context of any type.
+ * Starts processing, call after you have Subscribed to events,
+ * and set any options on a created context.
+ */
+SELENE_API(selene_error_t*) selene_start(selene_t *ctxt);
+
+/**
+ * Destroys a SSL/TLS Context of any type.  After this
+ * call, ctxt points to invalid memory and should not be used.
  */
 SELENE_API(void) selene_destroy(selene_t *ctxt);
+
+
+/* Possible Event Types */
+typedef enum {
+  SELENE_EVENT__UNUSED0 = 0,
+  /* Called when Selene's need to read or write data has changed */
+  SELENE_EVENT_IO_WANT_CHANGED = 1,
+  SELENE_EVENT__MAX = 2,
+} selene_event_e;
+
+typedef selene_error_t* (selene_event_cb)(selene_t *ctxt,
+                                          selene_event_e event,
+                                          void *baton);
+
+/**
+ * Subscribe to an Event.
+ */
+SELENE_API(selene_error_t*) selene_subscribe(selene_t *ctxt,
+                                             selene_event_e event,
+                                             selene_event_cb cb,
+                                             void *baton);
 
 #ifdef __cplusplus
 }
