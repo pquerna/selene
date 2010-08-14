@@ -100,4 +100,7 @@ for vari in variants:
     test_targets.append(run)
 
 env.Alias('test', test_targets)
-env.Default(targets)
+if not env.GetOption('clean'):
+  env.Default(targets)
+else:
+  env.Default([targets, 'test'])
