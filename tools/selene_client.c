@@ -102,8 +102,14 @@ static int connect_to(selene_t *s, const char *host, int port, FILE *fp)
     exit(EXIT_FAILURE);
   }
 
-  while ((p = fgets(buf, sizeof(buf), fp)) != NULL && client.write_err == 0)
+  while (client.write_err == 0)
   {
+    p = fgets(buf, sizeof(buf), fp);
+
+    if (p == NULL) {
+      break;
+    }
+
     SERR(selene_push_bytes(s, p, strlen(p)));
   }
 
