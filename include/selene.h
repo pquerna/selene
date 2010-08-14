@@ -27,12 +27,23 @@ extern "C" {
 #include "selene_version.h"
 #include "selene_error.h"
 
-/** Core context of an SSL/TLS Session */
+/** Opaque context of an SSL/TLS Session */
 typedef struct selene_t selene_t;
 
-SELENE_API(selene_error_t*) selene_create(selene_t **ctxt);
-SELENE_API(void) selene_destroy(selene_t *ctxt);
+/**
+ * Creates a Client SSL/TLS Context.
+ */
+SELENE_API(selene_error_t*) selene_client_create(selene_t **ctxt);
 
+/**
+ * Creates a Server SSL/TLS Context.
+ */
+SELENE_API(selene_error_t*) selene_server_create(selene_t **ctxt);
+
+/**
+ * Destroys a SSL/TLS Context of any type.
+ */
+SELENE_API(void) selene_destroy(selene_t *ctxt);
 
 #ifdef __cplusplus
 }

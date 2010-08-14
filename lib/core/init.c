@@ -19,14 +19,46 @@
 #include "selene.h"
 #include "sln_types.h"
 
-selene_error_t*
-selene_create(selene_t **p_sel)
+static int initialized = 0;
+
+static selene_error_t*
+sln_initialize(void)
 {
-  selene_t *sel = calloc(1, sizeof(selene_t));
-  sel->state =  SLN_STATE_INIT;
+  /* TODO: Atomics ? */
+  if (initialized++) {
+    return SELENE_SUCCESS;
+  }
+
+  /* TODO: Backend initilization */
+  
+  return SELENE_SUCCESS;
+}
+
+static selene_error_t*
+sln_create(selene_t **p_sel, sln_mode_e mode)
+{
+  selene_t *sel;
+
+  SELENE_ERR(sln_initialize());
+
+  sel = calloc(1, sizeof(selene_t));
+  sel->mode = mode;
+  sel->state = SLN_STATE_INIT;
   *p_sel = sel;
 
   return SELENE_SUCCESS;
+}
+
+selene_error_t*
+selene_client_create(selene_t **p_sel)
+{
+  return sln_create(p_sel, SLN_MODE_CLIENT);
+}
+
+selene_error_t*
+selene_server_create(selene_t **p_sel)
+{
+  return sln_create(p_sel, SLN_MODE_SERVER);
 }
 
 void 

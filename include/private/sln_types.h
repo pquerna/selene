@@ -20,11 +20,19 @@
 
 /* TODO: public header? */
 typedef enum {
-  SLN_STATE_INIT,
-  SLN_STATE_DEAD
+  SLN_STATE__UNUSED0 = 0,
+  SLN_STATE_INIT = 1,
+  SLN_STATE_DEAD = 2,
 } sln_state_e;
 
+typedef enum {
+  SLN_MODE__UNUSED0 = 0,
+  SLN_MODE_CLIENT = 1,
+  SLN_MODE_SERVER = 2,
+} sln_mode_e;
+
 struct selene_t {
+  sln_mode_e mode;
   sln_state_e state;
 };
 
