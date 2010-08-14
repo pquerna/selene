@@ -23,6 +23,14 @@ core/event.c
 core/init.c
 """)
 
-lib = venv.StaticLibrary('libselene', sources)
+libselene = None
 
-Return('lib')
+lenv = venv.Clone()
+lenv.AppendUnique(CPPPATH=['#/include/private'])
+
+if lenv['SELEN_LIB_TYPE'] == "STATIC":
+  libselene = lenv.StaticLibrary('libselene', sources)
+elif venv['SELEN_LIB_TYPE'] == "SHARED":
+  libselene = lenv.SharedLibrary('libselene', sources)
+
+Return('libselene')

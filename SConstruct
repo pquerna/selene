@@ -50,23 +50,27 @@ options = {
   },
 }
 
-# TODO: autodetect these:
-variants = [{'PLATFORM': 'DARWIN', 'PROFILE': 'DEBUG'}]
+# TODO: autodetect/let users pick these:
+variants = [
+  {'PLATFORM': 'DARWIN', 'PROFILE': 'DEBUG', 'BUILD': 'STATIC'},
+#  {'PLATFORM': 'DARWIN', 'PROFILE': 'DEBUG', 'BUILD': 'SHARED'}
+]
 
 append_types = ['CCFLAGS', 'CFLAGS', 'CPPDEFINES']
 replace_types = ['CC']
 targets = []
 
 # defaults for all platforms
-env.AppendUnique(CPPPATH=['#/include', '#/include/private'])
+env.AppendUnique(CPPPATH=['#/include'])
 
 for vari in variants:
   platform = vari['PLATFORM']
   profile =  vari['PROFILE']
-  build = 'static'
-  variant = '%s-%s-%s' % (platform, profile, build)
+  build = vari['BUILD']
+  variant = '%s-%s-%s' % (platform.lower(), profile.lower(), build.lower())
   vdir = pjoin('build', variant)
   venv = env.Clone()
+  venv['SELEN_LIB_TYPE'] = build
 
   for k in sorted(options.keys()):
     ty = vari.get(k)
@@ -81,6 +85,6 @@ for vari in variants:
           print('Fix the SConsscript, its missing support for %s' % (key))
           Exit(1)
 
-  lib = venv.SConscript('lib/SConscript', variant_dir=vdir, duplicate=0, exports='venv')
+  lib = venv.SConscript('lib/SConscript', variant_dir=pjoin(vdir, 'lib'), duplicate=0, exports='venv')
   targets.append(lib)
 
