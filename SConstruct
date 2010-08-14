@@ -99,6 +99,9 @@ for vari in variants:
     venv.AlwaysBuild(run)
     test_targets.append(run)
 
+  tools = venv.SConscript('tools/SConscript', variant_dir=pjoin(vdir, 'tools'), duplicate=0, exports='venv')
+  targets.append(tools)
+
 env.Alias('test', test_targets)
 if not env.GetOption('clean'):
   env.Default(targets)

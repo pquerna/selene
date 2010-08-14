@@ -57,9 +57,17 @@ SELENE_API(void) selene_destroy(selene_t *ctxt);
 typedef enum {
   SELENE_EVENT__UNUSED0 = 0,
   /* Called when Selene's need to read or write data has changed */
-  SELENE_EVENT_IO_WANT_CHANGED = 1,
-  SELENE_EVENT__MAX = 2,
+  SELENE_EVENT_IOWANT_CHANGED = 1,
+  SELENE_EVENT_PULL_BYTES_AVAILABLE = 2,
+  SELENE_EVENT__MAX = 3,
 } selene_event_e;
+
+typedef enum {
+  SELENE_IOWANT__UNUSED0 = 0,
+  SELENE_IOWANT_READ = (1U<<1),
+  SELENE_IOWANT_WRITE = (1U<<2),
+  SELENE_IOWANT__MAX = (1U<<3),
+} selene_iowant_e;
 
 typedef selene_error_t* (selene_event_cb)(selene_t *ctxt,
                                           selene_event_e event,
@@ -72,6 +80,21 @@ SELENE_API(selene_error_t*) selene_subscribe(selene_t *ctxt,
                                              selene_event_e event,
                                              selene_event_cb cb,
                                              void *baton);
+
+/* maybe not temp api*/
+SELENE_API(selene_error_t*) selene_want_io(selene_t *ctxt, selene_iowant_e *want);
+
+/* temp api */
+SELENE_API(selene_error_t*) selene_push_bytes(selene_t *ctxt,
+                                              const char* bytes,
+                                              size_t length);
+
+/* temp api */
+SELENE_API(selene_error_t*) selene_pull_bytes(selene_t *ctxt,
+                                              char* buffer,
+                                              size_t blen,
+                                              size_t *length,
+                                              size_t *remaining);
 
 #ifdef __cplusplus
 }
