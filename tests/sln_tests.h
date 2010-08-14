@@ -42,5 +42,13 @@
 #define SLN_ASSERT(expression) \
     mock_assert((int)(expression), #expression, __FILE__, __LINE__);
 
+#undef SLN_ERR
+#define SLN_ERR(expression) \
+  do { \
+    selene_error_t *selene__xx__err; \
+    SLN_ASSERT((selene__xx__err = (expression)) == SELENE_SUCCESS); \
+  } while (0)
+
+
 #endif
 

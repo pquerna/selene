@@ -21,7 +21,7 @@
 static void init_client(void **state)
 {
   selene_t *ctxt = NULL;
-  selene_client_create(&ctxt);
+  SLN_ERR(selene_client_create(&ctxt));
   SLN_ASSERT_CONTEXT(ctxt);
   selene_destroy(ctxt);
 }
@@ -29,7 +29,7 @@ static void init_client(void **state)
 static void init_server(void **state)
 {
   selene_t *ctxt = NULL;
-  selene_server_create(&ctxt);
+  SLN_ERR(selene_server_create(&ctxt));
   SLN_ASSERT_CONTEXT(ctxt);
   selene_destroy(ctxt);
 }
