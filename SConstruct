@@ -59,6 +59,7 @@ variants = [
 append_types = ['CCFLAGS', 'CFLAGS', 'CPPDEFINES']
 replace_types = ['CC']
 targets = []
+test_targets = []
 
 # defaults for all platforms
 env.AppendUnique(CPPPATH=['#/include'])
@@ -87,4 +88,16 @@ for vari in variants:
 
   lib = venv.SConscript('lib/SConscript', variant_dir=pjoin(vdir, 'lib'), duplicate=0, exports='venv')
   targets.append(lib)
+  venv['libselene'] = lib[0]
 
+  tests = venv.SConscript('tests/SConscript', variant_dir=pjoin(vdir, 'tests'), duplicate=0, exports='venv')
+  for t in tests[0]:
+    run = venv.Command(str(t) + ".testrun", t,
+      [
+      ""+str(t)
+      ])
+    venv.AlwaysBuild(run)
+    test_targets.append(run)
+
+env.Alias('test', test_targets)
+env.Default(targets)

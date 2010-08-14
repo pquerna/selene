@@ -18,7 +18,7 @@
 #ifndef _sln_assert_h_
 #define _sln_assert_h_
 
-#ifdef DEBUG
+#if defined(DEBUG) || defined(UNIT_TESTING)
 /* TODO: move to scons */
 #define WANT_SLN_ASSERTS
 #endif
@@ -29,7 +29,7 @@
 
   #define SLN_ASSERT(exp) assert(exp)
 
-  #define SLN_ASSERT_RANGE(start, end, target) assert(target > start); assert(target < end);
+  #define SLN_ASSERT_RANGE(start, end, target) SLN_ASSERT(target > start); SLN_ASSERT(target < end);
 
   #define SLN_ASSERT_ENUM(type, target) SLN_ASSERT_RANGE(type ## __UNUSED0, type ## __MAX, target)
 
