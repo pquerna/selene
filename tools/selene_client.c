@@ -43,11 +43,13 @@
 
 typedef struct {
   int sock;
+  int write_err;
 } client_t;
 
 static selene_error_t*
 want_pull(selene_t *s, selene_event_e event, void *baton)
 {
+  int rv = 0;
   char buf[8096];
   size_t blen = 0;
   size_t remaining = 0;
@@ -59,7 +61,11 @@ want_pull(selene_t *s, selene_event_e event, void *baton)
                                  &blen, &remaining));
 
     if (blen > 0) {
-      write(c->sock, buf, blen);
+      rv = write(c->sock, buf, blen);
+      if (rv < 0) {
+        c->write_err = errno;
+        break;
+      }
     }
   } while(remaining > 0);
 
@@ -73,6 +79,8 @@ static int connect_to(selene_t *s, const char *host, int port, FILE *fp)
   client_t client;
   char buf[8096];
   char *p = NULL;
+
+  memset(&client, 0, sizeof(client));
 
   SERR(selene_subscribe(s, SELENE_EVENT_PULL_BYTES_AVAILABLE,
                         want_pull, &client));
@@ -94,11 +102,17 @@ static int connect_to(selene_t *s, const char *host, int port, FILE *fp)
     exit(EXIT_FAILURE);
   }
 
-  while ((p = fgets(buf, sizeof(buf), fp)) != NULL)
+  while ((p = fgets(buf, sizeof(buf), fp)) != NULL && client.write_err == 0)
   {
     SERR(selene_push_bytes(s, p, strlen(p)));
   }
 
+  if (client.write_err != 0) {
+    fprintf(stderr, "TCP write(%s:%d) failed: (%d) %s\n",
+            host, port,
+            client.write_err, strerror(client.write_err));
+    exit(EXIT_FAILURE);
+  }
   return 0;
 }
 
