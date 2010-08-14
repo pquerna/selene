@@ -1,0 +1,24 @@
+
+Selene - A SSL/TLS library
+
+Selene has a few goals that makes it different from a more traditional 
+SSL libraries:
+
+  * Completely Asynchronous: Selene does no IO itself, it only provides
+    notifications to the user that IO should be done.
+
+  * Asynchronous Callbacks: Callback functions provide their own callback
+    to notify Selene when the user has finished an operation.
+
+  * Test Driven: A test framework to test all code paths.
+
+  * Plugable Backends for Cryptography: Currently only focusing
+    on OpenSSL, but others are possible.
+
+  * Liberal License: Under the Apache Software License 2.0
+
+Hacking Notes:
+  * External Functions and types are prefixed with selene_*
+  * Internal Functions and types are prefixed with sln_*
+  * 2 Spaces, httpd-ish style C.
+  * Write test cases for all code paths, including errors.
