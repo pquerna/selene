@@ -20,16 +20,7 @@
 #include "sln_types.h"
 
 SELENE_API(selene_error_t*)
-selene_pull_bytes(selene_t *ctxt,
-                  char* buffer,
-                  size_t blen,
-                  size_t *length,
-                  size_t *remaining)
+selene_recv_bytes(selene_t *ctxt, const char* bytes, size_t length)
 {
-
-  *length = 0;
-  *remaining = 0;
-
   return selene_error_create(SELENE_ENOTIMPL, "Hey, not done this yet");
 }
-

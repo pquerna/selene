@@ -21,8 +21,10 @@ sources = Split("""
 core/error.c
 core/event.c
 core/init.c
-io/pull.c
 io/buffers.c
+io/pull.c
+io/push.c
+io/recv.c
 """)
 
 libselene = None
