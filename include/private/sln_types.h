@@ -58,6 +58,10 @@ struct sln_brigade_t {
 struct selene_t {
   sln_mode_e mode;
   sln_state_e state;
+  sln_brigade_t *bb_in_enc;
+  sln_brigade_t *bb_out_enc;
+  sln_brigade_t *bb_in_cleartext;
+  sln_brigade_t *bb_out_cleartext;
 };
 
 #endif

@@ -18,6 +18,7 @@
 
 #include "selene.h"
 #include "sln_types.h"
+#include "sln_brigades.h"
 
 static int initialized = 0;
 
@@ -50,14 +51,21 @@ sln_terminate(void)
 static selene_error_t*
 sln_create(selene_t **p_sel, sln_mode_e mode)
 {
-  selene_t *sel;
+  selene_t *s;
 
   SELENE_ERR(sln_initialize());
 
-  sel = calloc(1, sizeof(selene_t));
-  sel->mode = mode;
-  sel->state = SLN_STATE_INIT;
-  *p_sel = sel;
+  s = calloc(1, sizeof(selene_t));
+  s->mode = mode;
+  s->state = SLN_STATE_INIT;
+
+  /* TODO: leaks on errors here */
+  SELENE_ERR(sln_brigade_create(&s->bb_in_enc));
+  SELENE_ERR(sln_brigade_create(&s->bb_out_enc));
+  SELENE_ERR(sln_brigade_create(&s->bb_in_cleartext));
+  SELENE_ERR(sln_brigade_create(&s->bb_out_cleartext));
+
+  *p_sel = s;
 
   return SELENE_SUCCESS;
 }
