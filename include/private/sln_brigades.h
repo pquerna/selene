@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef _sln_buffers_h_
-#define _sln_buffers_h_
+#ifndef _sln_brigades_h_
+#define _sln_brigades_h_
 
 #include "selene.h"
 #include "sln_types.h"
@@ -32,6 +32,17 @@ sln_brigade_destroy(sln_brigade_t *bb);
 /* Cleans out all member buckets, but leaves the brigade intact */
 selene_error_t*
 sln_brigade_clear(sln_brigade_t *bb);
+
+/* Length of the entire brigade */
+size_t
+sln_brigade_size(sln_brigade_t *bb);
+
+/**
+ * Flatten from the front of the brigade, into a buffer.
+ * Buckets up to this point are consumed.
+ */
+selene_error_t*
+sln_brigade_flatten(sln_brigade_t *bb, char *c, size_t *len);
 
 #define SLN_BRIGADE_SENTINEL(b) SLN_RING_SENTINEL(&(b)->list, sln_bucket_t, link)
 #define SLN_BRIGADE_EMPTY(b) SLN_RING_EMPTY(&(b)->list, sln_bucket_t, link)

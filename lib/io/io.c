@@ -52,6 +52,28 @@ selene_io_in_enc_bytes(selene_t *s,
   return SELENE_SUCCESS;
 }
 
+selene_error_t* bb_chomp_to_buffer(selene_t *s,
+                                   sln_brigade_t *bb,
+                                   char* buffer,
+                                   size_t blen,
+                                   size_t *length,
+                                   size_t *remaining)
+{
+  *remaining = 0;
+  *length = 0;
+
+  if (!SLN_BRIGADE_EMPTY(bb)) {
+    size_t tlen = blen;
+
+    SELENE_ERR(sln_brigade_flatten(bb, buffer, &tlen));
+
+    *remaining = sln_brigade_size(bb);
+    *length = tlen;
+  }
+
+  return SELENE_SUCCESS;
+}
+
 SELENE_API(selene_error_t*)
 selene_io_out_clear_bytes(selene_t *s,
                           char* buffer,
@@ -59,7 +81,7 @@ selene_io_out_clear_bytes(selene_t *s,
                           size_t *length,
                           size_t *remaining)
 {
-  return SELENE_SUCCESS;
+  return bb_chomp_to_buffer(s, s->bb_out_cleartext, buffer, blen, length, remaining);
 }
 
 
@@ -70,7 +92,7 @@ selene_io_out_enc_bytes(selene_t *s,
                         size_t *length,
                         size_t *remaining)
 {
-  return SELENE_SUCCESS;
+  return bb_chomp_to_buffer(s, s->bb_out_enc, buffer, blen, length, remaining);
 }
 
                 
