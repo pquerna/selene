@@ -19,6 +19,7 @@
 #include "selene.h"
 #include "sln_types.h"
 #include "sln_brigades.h"
+#include "sln_events.h"
 
 static int initialized = 0;
 
@@ -65,6 +66,8 @@ sln_create(selene_t **p_sel, sln_mode_e mode)
   SELENE_ERR(sln_brigade_create(&s->bb_in_cleartext));
   SELENE_ERR(sln_brigade_create(&s->bb_out_cleartext));
 
+  SELENE_ERR(sln_events_create(s));
+
   *p_sel = s;
 
   return SELENE_SUCCESS;
@@ -83,11 +86,18 @@ selene_server_create(selene_t **p_sel)
 }
 
 void 
-selene_destroy(selene_t *sel)
+selene_destroy(selene_t *s)
 {
-  sel->state = SLN_STATE_DEAD;
+  s->state = SLN_STATE_DEAD;
 
-  free(sel);
+  sln_brigade_destroy(s->bb_in_enc);
+  sln_brigade_destroy(s->bb_out_enc);
+  sln_brigade_destroy(s->bb_in_cleartext);
+  sln_brigade_destroy(s->bb_out_cleartext);
+
+  sln_events_destroy(s);
+
+  free(s);
 
   sln_terminate();
 

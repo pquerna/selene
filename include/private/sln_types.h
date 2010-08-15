@@ -55,6 +55,20 @@ struct sln_brigade_t {
   SLN_RING_HEAD(sln_bucket_list, sln_bucket_t) list;
 };
 
+typedef struct sln_eventcb_t sln_eventcb_t;
+typedef struct sln_events_t sln_events_t;
+
+struct sln_eventcb_t {
+  SLN_RING_ENTRY(sln_eventcb_t) link;
+  selene_event_cb *cb;
+  void *baton;
+};
+
+struct sln_events_t {
+  SLN_RING_HEAD(sln_events_list, sln_eventcb_t) list;
+  selene_event_e event;
+};
+
 struct selene_t {
   sln_mode_e mode;
   sln_state_e state;
@@ -62,6 +76,7 @@ struct selene_t {
   sln_brigade_t *bb_out_enc;
   sln_brigade_t *bb_in_cleartext;
   sln_brigade_t *bb_out_cleartext;
+  sln_events_t *events;
 };
 
 #endif

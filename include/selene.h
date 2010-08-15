@@ -84,6 +84,13 @@ SELENE_API(selene_error_t*) selene_subscribe(selene_t *ctxt,
                                              selene_event_cb cb,
                                              void *baton);
 /**
+ * Removes Subscribtion to an Event, searching for both a matching cb and baton.
+ */
+SELENE_API(selene_error_t*) selene_unsubscribe(selene_t *ctxt,
+                                               selene_event_e event,
+                                               selene_event_cb cb,
+                                               void *baton);
+/**
  * Publishes an event. Note that this is used by the internals of 
  * the library to do its own processing, so don't blindly publish
  * events.

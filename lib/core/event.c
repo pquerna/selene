@@ -20,25 +20,122 @@
 #include "sln_types.h"
 #include "sln_assert.h"
 
+#define SLN_GUARD_EVENT_SIZE(action, e) \
+  do { \
+    if (e >= SELENE_EVENT__MAX) { \
+      return selene_error_createf(SELENE_EINVAL, \
+                                "attempt to %s on %d which is greater than all known events", \
+                                action, event); \
+    } \
+    if (e <= SELENE_EVENT__UNUSED0) { \
+      return selene_error_createf(SELENE_EINVAL, \
+                                "attempt to %s on %d which is less than all known events", \
+                                action, event); \
+    } \
+  } while (0)
+
+
+#define SLN_EVENTS_INSERT_TAIL(b, e) \
+  do { \
+    sln_eventcb_t *sln__e = (e); \
+    SLN_RING_INSERT_TAIL(&(b)->list, sln__e, sln_eventcb_t, link); \
+  } while (0)
+
 selene_error_t*
-sln_subscribe(selene_t *ctxt, selene_event_e event,
-              int priority,
-              selene_event_cb cb, void *baton)
+sln_events_create(selene_t *s)
 {
+  int i;
+  s->events = calloc(1, sizeof(sln_events_t) * SELENE_EVENT__MAX);
+  for (i = 0; i < SELENE_EVENT__MAX; i++) {
+    sln_events_t *events = &(s->events[i]);
+    SLN_RING_INIT(&events->list, sln_eventcb_t, link);
+    events->event = i;
+  }
   return SELENE_SUCCESS;
 }
 
+void
+sln_events_destroy(selene_t *s)
+{
+  int i;
+  for (i = 0; i < SELENE_EVENT__MAX; i++) {
+    sln_events_t *events = &(s->events[i]);
+    while (!SLN_RING_EMPTY(&(events)->list, sln_eventcb_t, link)) {
+      sln_eventcb_t *e = SLN_RING_FIRST(&(events)->list);
+      SLN_RING_REMOVE(e, link);
+      free(e);
+    }
+  }
+  free(s->events);
+}
+
 selene_error_t*
-selene_subscribe(selene_t *ctxt, selene_event_e event,
+selene_subscribe(selene_t *s, selene_event_e event,
                  selene_event_cb cb, void *baton)
 {
-  SLN_ASSERT_CONTEXT(ctxt);
+  sln_eventcb_t *b;
+  sln_events_t *events;
+
+  SLN_ASSERT_CONTEXT(s);
   SLN_ASSERT_ENUM(SELENE_EVENT, event);
-  return sln_subscribe(ctxt, event, 0, cb, baton);
+
+  SLN_GUARD_EVENT_SIZE("subscribe", event);
+
+  events = &(s->events[event]);
+
+  b = calloc(1, sizeof(sln_eventcb_t));
+
+  b->cb = cb;
+  b->baton = baton;
+
+  SLN_EVENTS_INSERT_TAIL(events, b);
+
+  return SELENE_SUCCESS;
 }
 
 selene_error_t*
-selene_publish(selene_t *ctxt, selene_event_e event)
+selene_unsubscribe(selene_t *s, selene_event_e event,
+                 selene_event_cb cb, void *baton)
 {
+  sln_eventcb_t *b;
+  sln_events_t *events;
+
+  SLN_ASSERT_CONTEXT(s);
+  SLN_ASSERT_ENUM(SELENE_EVENT, event);
+
+  SLN_GUARD_EVENT_SIZE("unsubscribe", event);
+
+  events = &(s->events[event]);
+  SLN_RING_FOREACH(b, &(events)->list, sln_eventcb_t, link)
+  {
+    if (b->cb == cb && b->baton == baton) {
+      SLN_RING_REMOVE(b, link);
+      free(b);
+      return SELENE_SUCCESS;
+    }
+  }
+
   return SELENE_SUCCESS;
 }
+
+selene_error_t*
+selene_publish(selene_t *s, selene_event_e event)
+{
+  sln_eventcb_t *b;
+  sln_events_t *events;
+
+  SLN_ASSERT_CONTEXT(s);
+  SLN_ASSERT_ENUM(SELENE_EVENT, event);
+
+  SLN_GUARD_EVENT_SIZE("publish", event);
+
+  events = &(s->events[event]);
+  SLN_RING_FOREACH(b, &(events)->list, sln_eventcb_t, link)
+  {
+    b->cb(s, event, b->baton);
+  }
+
+  return SELENE_SUCCESS;
+}
+
+
