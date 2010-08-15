@@ -69,6 +69,34 @@ struct sln_events_t {
   selene_event_e event;
 };
 
+typedef enum {
+  SLN_TLS_VERSION__UNUSED0 = 0,
+  SLN_TLS_VERSION_SSL30 = 1,
+  SLN_TLS_VERSION_TLS10 = 2,
+  SLN_TLS_VERSION_TLS11 = 3,
+  SLN_TLS_VERSION_TLS12 = 4,
+  SLN_TLS_VERSION__MAX = 5,
+} sln_tls_version_e;
+
+typedef enum {
+  SLN_TLS_CTYPE__UNUSED0 = 0,
+  SLN_TLS_CTYPE_CHANGE_CIPHER_SPEC = 1,
+  SLN_TLS_CTYPE_ALERT = 2,
+  SLN_TLS_CTYPE_HANDSHAKE = 3,
+  SLN_TLS_CTYPE_APPLICTION_DATA = 4,
+  SLN_TLS_CTYPE__MAX = 5,
+} sln_tls_ctype_e;
+
+/* Repersents our parsed version of the TLS record,
+ * not really what we send out on the wire */
+typedef struct {
+  sln_tls_ctype_e content_type;
+  sln_tls_version_e version;
+  size_t protocol_size;
+  void *protocol_data;
+} sln_tls_record_t;
+
+
 struct selene_t {
   sln_mode_e mode;
   sln_state_e state;
