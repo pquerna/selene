@@ -8,7 +8,8 @@ This product includes software developed by Justin Erenkrantz and Greg Stein.
 
 This product includes software developed by Garrett Rooney.
 
-* include/private/sln_ring.h is directly based on APR's Ring Macros:
+The Ring, Bucket and Brigade systems are direct ancestors of those
+used by the Apache Portable Runtime:
     This product includes software developed by
     The Apache Software Foundation (http://www.apache.org/).
 

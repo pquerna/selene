@@ -27,6 +27,8 @@
 #ifndef _sln_ring_h_
 #define _sln_ring_h_
 
+#include <stddef.h>
+
 /**
  * @file sln_ring.h
  * @brief Selene Rings, base on APR Rings

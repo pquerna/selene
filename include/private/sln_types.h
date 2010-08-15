@@ -15,9 +15,11 @@
  * limitations under the License.
  */
 
+
 #ifndef _sln_types_h_
 #define _sln_types_h_
 
+#include "selene.h"
 #include "sln_ring.h"
 
 /* TODO: public header? */
@@ -34,6 +36,24 @@ typedef enum {
   SLN_MODE_SERVER = 2,
   SLN_MODE__MAX = 3,
 } sln_mode_e;
+
+typedef struct sln_bucket_t sln_bucket_t;
+typedef struct sln_brigade_t sln_brigade_t;
+
+/* A chunk of memory */
+struct sln_bucket_t {
+  SLN_RING_ENTRY(sln_bucket_t) link;
+  /* When destroying this bucket, can we also destroy memory */
+  int memory_is_mine;
+  size_t size;
+  /* TODO: non-memory buckets */
+  void *data;
+};
+
+/* A list of chunks (aka, a bucket brigade) */
+struct sln_brigade_t {
+  SLN_RING_HEAD(sln_bucket_list, sln_bucket_t) list;
+};
 
 struct selene_t {
   sln_mode_e mode;

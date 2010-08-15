@@ -21,7 +21,8 @@ sources = Split("""
 core/error.c
 core/event.c
 core/init.c
-io/buffers.c
+io/buckets.c
+io/brigades.c
 io/pull.c
 io/push.c
 io/recv.c

@@ -15,5 +15,41 @@
  * limitations under the License.
  */
 
-#include "selene.h"
+#include "sln_brigades.h"
 #include "sln_types.h"
+
+
+selene_error_t*
+sln_brigade_create(sln_brigade_t **out_bb)
+{
+  sln_brigade_t* bb = calloc(1, sizeof(sln_brigade_t));
+
+  SLN_RING_INIT(&bb->list, sln_bucket_t, link);
+
+  *out_bb = bb;
+
+  return SELENE_SUCCESS;
+}
+
+selene_error_t*
+sln_brigade_destroy(sln_brigade_t *bb)
+{
+  SELENE_ERR(sln_brigade_clear(bb));
+
+  free(bb);
+
+  return SELENE_SUCCESS;
+}
+
+selene_error_t*
+sln_brigade_clear(sln_brigade_t *bb)
+{
+  sln_bucket_t *e;
+
+  while (!SLN_BRIGADE_EMPTY(bb)) {
+      e = SLN_BRIGADE_FIRST(bb);
+      sln_bucket_destroy(e);
+  }
+
+  return SELENE_SUCCESS;
+}
