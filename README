@@ -17,6 +17,10 @@ SSL libraries:
 
   * Liberal License: Under the Apache Software License 2.0
 
+Selene is named after the Greek Goddess of the Moon, because I am 
+terrible at naming projects:
+  <http://en.wikipedia.org/wiki/Selene>
+
 Hacking Notes:
   * External Functions and types are prefixed with selene_*
   * Internal Functions and types are prefixed with sln_*
