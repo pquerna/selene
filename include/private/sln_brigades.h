@@ -26,11 +26,11 @@ selene_error_t*
 sln_brigade_create(sln_brigade_t **bb);
 
 /* Destroys the brigade, and all member buckets */
-selene_error_t*
+void
 sln_brigade_destroy(sln_brigade_t *bb);
 
 /* Cleans out all member buckets, but leaves the brigade intact */
-selene_error_t*
+void
 sln_brigade_clear(sln_brigade_t *bb);
 
 /* Length of the entire brigade */

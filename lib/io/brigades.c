@@ -33,17 +33,15 @@ sln_brigade_create(sln_brigade_t **out_bb)
   return SELENE_SUCCESS;
 }
 
-selene_error_t*
+void
 sln_brigade_destroy(sln_brigade_t *bb)
 {
-  SELENE_ERR(sln_brigade_clear(bb));
+  sln_brigade_clear(bb);
 
   free(bb);
-
-  return SELENE_SUCCESS;
 }
 
-selene_error_t*
+void
 sln_brigade_clear(sln_brigade_t *bb)
 {
   sln_bucket_t *e;
@@ -52,8 +50,6 @@ sln_brigade_clear(sln_brigade_t *bb)
       e = SLN_BRIGADE_FIRST(bb);
       sln_bucket_destroy(e);
   }
-
-  return SELENE_SUCCESS;
 }
 
 size_t
