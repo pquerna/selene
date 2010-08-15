@@ -15,29 +15,5 @@
  * limitations under the License.
  */
 
-#ifndef _sln_types_h_
-#define _sln_types_h_
-
-#include "sln_ring.h"
-
-/* TODO: public header? */
-typedef enum {
-  SLN_STATE__UNUSED0 = 0,
-  SLN_STATE_INIT = 1,
-  SLN_STATE_DEAD = 2,
-  SLN_STATE__MAX = 3,
-} sln_state_e;
-
-typedef enum {
-  SLN_MODE__UNUSED0 = 0,
-  SLN_MODE_CLIENT = 1,
-  SLN_MODE_SERVER = 2,
-  SLN_MODE__MAX = 3,
-} sln_mode_e;
-
-struct selene_t {
-  sln_mode_e mode;
-  sln_state_e state;
-};
-
-#endif
+#include "selene.h"
+#include "sln_types.h"

@@ -15,29 +15,21 @@
  * limitations under the License.
  */
 
-#ifndef _sln_types_h_
-#define _sln_types_h_
 
-#include "sln_ring.h"
+#include "selene.h"
+#include "sln_types.h"
 
-/* TODO: public header? */
-typedef enum {
-  SLN_STATE__UNUSED0 = 0,
-  SLN_STATE_INIT = 1,
-  SLN_STATE_DEAD = 2,
-  SLN_STATE__MAX = 3,
-} sln_state_e;
+SELENE_API(selene_error_t*)
+selene_pull_bytes(selene_t *ctxt,
+                  char* buffer,
+                  size_t blen,
+                  size_t *length,
+                  size_t *remaining)
+{
 
-typedef enum {
-  SLN_MODE__UNUSED0 = 0,
-  SLN_MODE_CLIENT = 1,
-  SLN_MODE_SERVER = 2,
-  SLN_MODE__MAX = 3,
-} sln_mode_e;
+  *length = 0;
+  *remaining = 0;
 
-struct selene_t {
-  sln_mode_e mode;
-  sln_state_e state;
-};
+  return SELENE_SUCCESS;
+}
 
-#endif
