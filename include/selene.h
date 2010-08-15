@@ -58,8 +58,11 @@ typedef enum {
   SELENE_EVENT__UNUSED0 = 0,
   /* Called when Selene's need to read or write data has changed */
   SELENE_EVENT_IOWANT_CHANGED = 1,
-  SELENE_EVENT_PULL_BYTES_AVAILABLE = 2,
-  SELENE_EVENT__MAX = 3,
+  SELENE_EVENT_IO_IN_ENC = 2,
+  SELENE_EVENT_IO_OUT_ENC = 3,
+  SELENE_EVENT_IO_IN_CLEAR = 4,
+  SELENE_EVENT_IO_OUT_CLEAR = 5,
+  SELENE_EVENT__MAX = 6,
 } selene_event_e;
 
 typedef enum {
@@ -80,25 +83,46 @@ SELENE_API(selene_error_t*) selene_subscribe(selene_t *ctxt,
                                              selene_event_e event,
                                              selene_event_cb cb,
                                              void *baton);
+/**
+ * Publishes an event. Note that this is used by the internals of 
+ * the library to do its own processing, so don't blindly publish
+ * events.
+ */
+SELENE_API(selene_error_t*) selene_publish(selene_t *ctxt,
+                                           selene_event_e event);
 
 /* maybe not temp api*/
-SELENE_API(selene_error_t*) selene_want_io(selene_t *ctxt, selene_iowant_e *want);
+SELENE_API(selene_error_t*) selene_io_want(selene_t *ctxt, selene_iowant_e *want);
 
-/* temp api */
-SELENE_API(selene_error_t*) selene_push_bytes(selene_t *ctxt,
-                                              const char* bytes,
-                                              size_t length);
+/* Hand cleartext bytes to Selene */
+SELENE_API(selene_error_t*)
+selene_io_in_clear_bytes(selene_t *ctxt,
+                         const char* bytes,
+                         size_t length);
 
-/* temp api */
-SELENE_API(selene_error_t*) selene_pull_bytes(selene_t *ctxt,
-                                              char* buffer,
-                                              size_t blen,
-                                              size_t *length,
-                                              size_t *remaining);
-/* temp api */
-SELENE_API(selene_error_t*) selene_recv_bytes(selene_t *ctxt,
-                                              const char* bytes,
-                                              size_t length);
+/* Hand encrypted input bytes to Selene */
+SELENE_API(selene_error_t*)
+selene_io_in_enc_bytes(selene_t *ctxt,
+                       const char* bytes,
+                       size_t length);
+
+/* Read cleartext bytes out of Selene and parse by your application */
+SELENE_API(selene_error_t*)
+selene_io_out_clear_bytes(selene_t *ctxt,
+                          char* buffer,
+                          size_t blen,
+                          size_t *length,
+                          size_t *remaining);
+
+
+/* Take encrypted bytes out of Selene, and send to the destination */
+SELENE_API(selene_error_t*)
+selene_io_out_enc_bytes(selene_t *ctxt,
+                        char* buffer,
+                        size_t blen,
+                        size_t *length,
+                        size_t *remaining);
+
 
 #ifdef __cplusplus
 }

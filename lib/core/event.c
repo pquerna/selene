@@ -36,3 +36,9 @@ selene_subscribe(selene_t *ctxt, selene_event_e event,
   SLN_ASSERT_ENUM(SELENE_EVENT, event);
   return sln_subscribe(ctxt, event, 0, cb, baton);
 }
+
+selene_error_t*
+selene_publish(selene_t *ctxt, selene_event_e event)
+{
+  return SELENE_SUCCESS;
+}

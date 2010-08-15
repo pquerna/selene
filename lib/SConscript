@@ -23,9 +23,7 @@ core/event.c
 core/init.c
 io/buckets.c
 io/brigades.c
-io/pull.c
-io/push.c
-io/recv.c
+io/io.c
 """)
 
 libselene = None

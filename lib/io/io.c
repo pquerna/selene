@@ -1,0 +1,76 @@
+/*
+ * Licensed to Paul Querna under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * Paul Querna licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include "selene.h"
+#include "sln_types.h"
+#include "sln_brigades.h"
+
+SELENE_API(selene_error_t*)
+selene_io_in_clear_bytes(selene_t *s,
+                         const char* bytes,
+                         size_t length)
+{
+  sln_bucket_t *e = NULL;
+
+  SELENE_ERR(sln_bucket_create_copy_bytes(&e, bytes, length));
+
+  SLN_BRIGADE_INSERT_TAIL(s->bb_in_enc, e);
+
+  SELENE_ERR(selene_publish(s, SELENE_EVENT_IO_IN_CLEAR));
+
+  return SELENE_SUCCESS;
+}
+
+
+SELENE_API(selene_error_t*)
+selene_io_in_enc_bytes(selene_t *s,
+                       const char* bytes,
+                       size_t length)
+{
+  sln_bucket_t *e = NULL;
+
+  SELENE_ERR(sln_bucket_create_copy_bytes(&e, bytes, length));
+
+  SLN_BRIGADE_INSERT_TAIL(s->bb_in_enc, e);
+
+  SELENE_ERR(selene_publish(s, SELENE_EVENT_IO_IN_ENC));
+
+  return SELENE_SUCCESS;
+}
+
+SELENE_API(selene_error_t*)
+selene_io_out_clear_bytes(selene_t *s,
+                          char* buffer,
+                          size_t blen,
+                          size_t *length,
+                          size_t *remaining)
+{
+  return SELENE_SUCCESS;
+}
+
+
+SELENE_API(selene_error_t*)
+selene_io_out_enc_bytes(selene_t *s,
+                        char* buffer,
+                        size_t blen,
+                        size_t *length,
+                        size_t *remaining)
+{
+  return SELENE_SUCCESS;
+}
+
+                

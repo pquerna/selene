@@ -76,7 +76,7 @@ want_pull(selene_t *s, selene_event_e event, void *baton)
   client_t *c = (client_t*) baton;
 
   do {
-    SELENE_ERR(selene_pull_bytes(s,
+    SELENE_ERR(selene_io_out_enc_bytes(s,
                                  &buf[0], sizeof(buf),
                                  &blen, &remaining));
 
@@ -118,7 +118,7 @@ read_from_sock(client_t *c, selene_t *s)
     }
 
     if (rv > 0) {
-      SERR(selene_recv_bytes(s, buf, rv));
+      SERR(selene_io_in_enc_bytes(s, buf, rv));
     }
   } while(rv > 0);
 
@@ -137,7 +137,7 @@ connect_to(selene_t *s, const char *host, int port, FILE *fp)
 
   memset(&client, 0, sizeof(client));
 
-  SERR(selene_subscribe(s, SELENE_EVENT_PULL_BYTES_AVAILABLE,
+  SERR(selene_subscribe(s, SELENE_EVENT_IO_OUT_ENC,
                         want_pull, &client));
 
   client.sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -176,7 +176,7 @@ connect_to(selene_t *s, const char *host, int port, FILE *fp)
           break;
         }
 
-        SERR(selene_push_bytes(s, p, strlen(p)));
+        SERR(selene_io_in_clear_bytes(s, p, strlen(p)));
       }
       else if (FD_ISSET(client.sock, &readers)) {
         read_from_sock(&client, s);
