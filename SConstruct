@@ -18,19 +18,50 @@
 EnsureSConsVersion(1, 1, 0)
 
 import os
+from site_scons import ac
 from os.path import join as pjoin
 
 opts = Variables('build.py')
 
+opts.Add(PathVariable('with_openssl',
+                      'Prefix to OpenSSL installation', None))
+
+opts.Add('enable_openssl_threaded', default=True, help='Enable Threaded OpenSSL backend')
+
 env = Environment(options=opts,
                   ENV = os.environ.copy(),
                   tools=['default'])
+
+conf = Configure(env, custom_tests = {'CheckUname': ac.CheckUname})
+
+(st, platform) = conf.CheckUname("-sm")
+
+conf.env['SELENE_PLATFORM'] = platform[:platform.find(' ')]
+conf.env['SELENE_ARCH'] = platform[platform.find(' '):].replace(" ", "_")
+
+if conf.env['enable_openssl_threaded']:
+  conf.env['WANT_OPENSSL'] = True
+  conf.env.AppendUnique(CPPDEFINES=['WANT_OPENSSL_THREADED'])
+
+if conf.env['WANT_OPENSSL']:
+  if conf.env.get('with_openssl'):
+    conf.env.AppendUnique(LIBPATH=["${with_openssl}/lib"])
+    conf.env.AppendUnique(CPPPATH=["${with_openssl}/include"])
+  conf.env['HAVE_OPENSSL'] = conf.CheckLibWithHeader('libssl', 'openssl/ssl.h', 'C', 'SSL_library_init();', True)
+  if not conf.env['HAVE_OPENSSL']:
+    print 'Unable to use OpenSSL development enviroment: with_openssl=%s' %  conf.env.get('with_openssl')
+    Exit(-1)
+
+env = conf.Finish()
 
 options = {
   'PLATFORM': {
     'DARWIN': {
       'CC': '/usr/bin/clang',
       'CPPDEFINES': ['DARWIN'],
+    },
+    'LINUX': {
+      'CPPDEFINES': ['LINUX'],
     },
   },
   'PROFILE': {
@@ -52,7 +83,7 @@ options = {
 
 # TODO: autodetect/let users pick these:
 variants = [
-  {'PLATFORM': 'DARWIN', 'PROFILE': 'DEBUG', 'BUILD': 'STATIC'},
+  {'PLATFORM': conf.env['SELENE_PLATFORM'], 'PROFILE': 'DEBUG', 'BUILD': 'STATIC'},
 #  {'PLATFORM': 'DARWIN', 'PROFILE': 'DEBUG', 'BUILD': 'SHARED'}
 ]
 
