@@ -51,6 +51,7 @@ selene_error_createf_impl(selene_status_t err,
                           const char *fmt,
                           ...)
 {
+  int rv;
   selene_error_t *e;
   va_list ap;
 
@@ -59,12 +60,15 @@ selene_error_createf_impl(selene_status_t err,
   e->err = err;
 
   va_start(ap, fmt);
-  vasprintf((char **) &e->msg, fmt, ap);
+  rv = vasprintf((char **) &e->msg, fmt, ap);
   va_end(ap);
+
+  if (rv == -1) {
+    e->msg = strdup("vasprintf inside selene_error_createf_impl returned -1, you likely have larger problems here");
+  }
 
   e->line = line;
   e->file = strdup(file);
-
   return e;
 }
 
