@@ -27,6 +27,7 @@ opts.Add(PathVariable('with_openssl',
                       'Prefix to OpenSSL installation', None))
 
 opts.Add('enable_openssl_threaded', default=True, help='Enable Threaded OpenSSL backend')
+opts.Add('enable_native', default=True, help='Enable Native TLS, using OpenSSL for crytpo operations')
 
 env = Environment(options=opts,
                   ENV = os.environ.copy(),
@@ -38,6 +39,10 @@ conf = Configure(env, custom_tests = {'CheckUname': ac.CheckUname})
 
 conf.env['SELENE_PLATFORM'] = platform[:platform.find(' ')].upper()
 conf.env['SELENE_ARCH'] = platform[platform.find(' ')+1:].replace(" ", "_")
+
+if conf.env['enable_native']:
+  conf.env['WANT_OPENSSL'] = True
+  conf.env.AppendUnique(CPPDEFINES=['WANT_NATIVE'])
 
 if conf.env['enable_openssl_threaded']:
   conf.env['WANT_OPENSSL'] = True
