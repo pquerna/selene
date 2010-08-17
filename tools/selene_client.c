@@ -207,6 +207,7 @@ int main(int argc, char* argv[])
   selene_t *s = NULL;
   selene_error_t *err = NULL;
   int rv = 0;
+  int i;
 
   err = selene_client_create(&s);
   if (err != SELENE_SUCCESS) {
@@ -214,7 +215,7 @@ int main(int argc, char* argv[])
     exit(EXIT_FAILURE);
   }
 
-  for (int i = 1; i < argc; i++) {
+  for (i = 1; i < argc; i++) {
     /* TODO: s_client compat */
     if (strcmp("-host", argv[i]) && argc > i + 1) {
       host = argv[i+1];
