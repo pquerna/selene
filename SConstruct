@@ -92,11 +92,15 @@ options = {
   },
 }
 
+if env['SELENE_PLATFORM'] == 'FREEBSD':
+  # can't seem to get this to build :(
+  del options['PROFILE']['GCOV']
+
 variants = []
 for platform in [env['SELENE_PLATFORM']]:
   for profile in options['PROFILE'].keys():
     for build in ['STATIC', 'SHARED']:
-      variants.append({'PLATFORM': platform.upper(), 'PROFILE': profile, 'BUILD': build})
+      variants.append({'PLATFORM': platform, 'PROFILE': profile, 'BUILD': build})
 
 append_types = ['CCFLAGS', 'CFLAGS', 'CPPDEFINES', 'LIBS']
 replace_types = ['CC']
