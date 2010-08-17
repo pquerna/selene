@@ -80,6 +80,7 @@ options = {
       'CC': 'gcc',
       'CCFLAGS': ['-Wall', '-O0', '-ggdb', '-fprofile-arcs', '-ftest-coverage'],
       'CPPDEFINES': ['DEBUG'],
+      'LIBS': 'gcov'
     },
     'RELEASE': {
       'CCFLAGS': ['-Wall', '-O2'],
@@ -88,23 +89,24 @@ options = {
   },
 }
 
-# TODO: autodetect/let users pick these:
-variants = [
-  {'PLATFORM': env['SELENE_PLATFORM'], 'PROFILE': env['profile'].upper(), 'BUILD': 'STATIC'},
-#  {'PLATFORM': 'DARWIN', 'PROFILE': 'DEBUG', 'BUILD': 'SHARED'}
-]
+variants = []
+for platform in [env['SELENE_PLATFORM']]:
+  for profile in options['PROFILE'].keys():
+    for build in ['STATIC', 'SHARED']:
+      variants.append({'PLATFORM': platform.upper(), 'PROFILE': profile, 'BUILD': build})
 
-append_types = ['CCFLAGS', 'CFLAGS', 'CPPDEFINES']
+append_types = ['CCFLAGS', 'CFLAGS', 'CPPDEFINES', 'LIBS']
 replace_types = ['CC']
-targets = []
 test_targets = []
 
 # defaults for all platforms
 # TODO: non-gcc/clang platforms
 env.AppendUnique(CPPPATH=['#/include'],
-                 CCFLAGS=['-pedantic'])
+                 CCFLAGS=['-pedantic', '-std=c99'])
+all_targets = {}
 
 for vari in variants:
+  targets = []
   platform = vari['PLATFORM']
   profile =  vari['PROFILE']
   build = vari['BUILD']
@@ -142,8 +144,10 @@ for vari in variants:
   tools = venv.SConscript('tools/SConscript', variant_dir=pjoin(vdir, 'tools'), duplicate=0, exports='venv')
   targets.append(tools)
 
+  all_targets[variant] = targets
+
 env.Alias('test', test_targets)
 if not env.GetOption('clean'):
-  env.Default(targets)
+  env.Default(all_targets.values())
 else:
-  env.Default([targets, 'test'])
+  env.Default([all_targets.values(), 'test'])
