@@ -26,6 +26,8 @@ opts = Variables('build.py')
 opts.Add(PathVariable('with_openssl',
                       'Prefix to OpenSSL installation', None))
 
+opts.Add(EnumVariable('profile', 'build profile', 'debug', ['debug', 'gcov', 'release'], {}, True))
+
 opts.Add('enable_openssl_threaded', default=True, help='Enable Threaded OpenSSL backend')
 opts.Add('enable_native', default=True, help='Enable Native TLS, using OpenSSL for crytpo operations')
 
@@ -80,7 +82,7 @@ options = {
       'CPPDEFINES': ['DEBUG'],
     },
     'RELEASE': {
-      'CCFLAGS': ['-Wall', '-Os'],
+      'CCFLAGS': ['-Wall', '-O2'],
       'CPPDEFINES': ['NODEBUG'],
     },
   },
@@ -88,7 +90,7 @@ options = {
 
 # TODO: autodetect/let users pick these:
 variants = [
-  {'PLATFORM': conf.env['SELENE_PLATFORM'], 'PROFILE': 'DEBUG', 'BUILD': 'STATIC'},
+  {'PLATFORM': env['SELENE_PLATFORM'], 'PROFILE': env['profile'].upper(), 'BUILD': 'STATIC'},
 #  {'PLATFORM': 'DARWIN', 'PROFILE': 'DEBUG', 'BUILD': 'SHARED'}
 ]
 
