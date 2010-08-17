@@ -15,10 +15,14 @@
  * limitations under the License.
  */
 
+#ifdef LINUX
+#define _GNU_SOURCE
+#endif
+
+#include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 #include "selene_error.h"
 
