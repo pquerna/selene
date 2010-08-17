@@ -68,7 +68,7 @@ options = {
       'CPPDEFINES': ['DARWIN'],
     },
     'LINUX': {
-      'CPPDEFINES': ['LINUX'],
+      'CPPDEFINES': ['LINUX', '_XOPEN_SOURCE'],
     },
   },
   'PROFILE': {
