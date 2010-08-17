@@ -36,8 +36,8 @@ conf = Configure(env, custom_tests = {'CheckUname': ac.CheckUname})
 
 (st, platform) = conf.CheckUname("-sm")
 
-conf.env['SELENE_PLATFORM'] = platform[:platform.find(' ')]
-conf.env['SELENE_ARCH'] = platform[platform.find(' '):].replace(" ", "_")
+conf.env['SELENE_PLATFORM'] = platform[:platform.find(' ')].upper()
+conf.env['SELENE_ARCH'] = platform[platform.find(' ')+1:].replace(" ", "_")
 
 if conf.env['enable_openssl_threaded']:
   conf.env['WANT_OPENSSL'] = True
