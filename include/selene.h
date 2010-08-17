@@ -62,14 +62,14 @@ typedef enum {
   SELENE_EVENT_IO_OUT_ENC = 3,
   SELENE_EVENT_IO_IN_CLEAR = 4,
   SELENE_EVENT_IO_OUT_CLEAR = 5,
-  SELENE_EVENT__MAX = 6,
+  SELENE_EVENT__MAX = 6
 } selene_event_e;
 
 typedef enum {
   SELENE_IOWANT__UNUSED0 = 0,
   SELENE_IOWANT_READ = (1U<<1),
   SELENE_IOWANT_WRITE = (1U<<2),
-  SELENE_IOWANT__MAX = (1U<<3),
+  SELENE_IOWANT__MAX = (1U<<3)
 } selene_iowant_e;
 
 typedef selene_error_t* (selene_event_cb)(selene_t *ctxt,
