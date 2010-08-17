@@ -27,14 +27,14 @@ typedef enum {
   SLN_STATE__UNUSED0 = 0,
   SLN_STATE_INIT = 1,
   SLN_STATE_DEAD = 2,
-  SLN_STATE__MAX = 3,
+  SLN_STATE__MAX = 3
 } sln_state_e;
 
 typedef enum {
   SLN_MODE__UNUSED0 = 0,
   SLN_MODE_CLIENT = 1,
   SLN_MODE_SERVER = 2,
-  SLN_MODE__MAX = 3,
+  SLN_MODE__MAX = 3
 } sln_mode_e;
 
 typedef struct sln_bucket_t sln_bucket_t;
@@ -47,7 +47,7 @@ struct sln_bucket_t {
   int memory_is_mine;
   size_t size;
   /* TODO: non-memory buckets */
-  void *data;
+  char *data;
 };
 
 /* A list of chunks (aka, a bucket brigade) */
@@ -75,7 +75,7 @@ typedef enum {
   SLN_TLS_VERSION_TLS10 = 2,
   SLN_TLS_VERSION_TLS11 = 3,
   SLN_TLS_VERSION_TLS12 = 4,
-  SLN_TLS_VERSION__MAX = 5,
+  SLN_TLS_VERSION__MAX = 5
 } sln_tls_version_e;
 
 typedef enum {
@@ -84,7 +84,7 @@ typedef enum {
   SLN_TLS_CTYPE_ALERT = 2,
   SLN_TLS_CTYPE_HANDSHAKE = 3,
   SLN_TLS_CTYPE_APPLICTION_DATA = 4,
-  SLN_TLS_CTYPE__MAX = 5,
+  SLN_TLS_CTYPE__MAX = 5
 } sln_tls_ctype_e;
 
 /* Repersents our parsed version of the TLS record,

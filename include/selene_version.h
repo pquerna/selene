@@ -27,6 +27,4 @@
  */
 #define SELENE_IS_DEV 1
 
-
-
 #endif
