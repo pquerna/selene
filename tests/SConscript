@@ -27,6 +27,7 @@ lenv.AppendUnique(CPPPATH=['#/extern/cmockery/src/google'])
 lenv.AppendUnique(CPPPATH=['#/include/private'])
 lenv.AppendUnique(CPPDEFINES=['UNIT_TESTING=1'])
 cenv = lenv.Clone()
+cenv['CCFLAGS'] = filter(lambda x: x not in ["-Wall", "-pedantic"], cenv['CCFLAGS'])
 cmock = cenv.StaticLibrary('libcmockery', source=cenv.File('#/extern/cmockery/src/cmockery.c'))
 
 tenv = lenv.Clone()

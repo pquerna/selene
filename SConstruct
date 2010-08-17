@@ -100,7 +100,9 @@ targets = []
 test_targets = []
 
 # defaults for all platforms
-env.AppendUnique(CPPPATH=['#/include'])
+# TODO: non-gcc/clang platforms
+env.AppendUnique(CPPPATH=['#/include'],
+                 CCFLAGS=['-pedantic'])
 
 for vari in variants:
   platform = vari['PLATFORM']
