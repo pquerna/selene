@@ -27,7 +27,7 @@
  * library functions and types.
  */
 
-// For those who are used to __func__ from gcc.
+/* For those who are used to __func__ from gcc. */
 #ifndef __func__
 #define __func__ __FUNCTION__
 #endif
