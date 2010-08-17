@@ -25,6 +25,9 @@
 #include <errno.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/select.h>
 
 /**
  * 'Simple' TLS Client, connects to a port, pipes stdin to it
