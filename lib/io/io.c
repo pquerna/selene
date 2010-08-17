@@ -95,4 +95,3 @@ selene_io_out_enc_bytes(selene_t *s,
   return bb_chomp_to_buffer(s, s->bb_out_enc, buffer, blen, length, remaining);
 }
 
-                
