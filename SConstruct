@@ -70,6 +70,9 @@ options = {
     'LINUX': {
       'CPPDEFINES': ['LINUX', '_XOPEN_SOURCE'],
     },
+    'FREEBSD': {
+      'CPPDEFINES': ['FREEBSD'],
+    },
   },
   'PROFILE': {
     'DEBUG': {
@@ -78,7 +81,7 @@ options = {
     },
     'GCOV': {
       'CC': 'gcc',
-      'CCFLAGS': ['-Wall', '-O0', '-ggdb', '-fprofile-arcs', '-ftest-coverage'],
+      'CCFLAGS': ['-Wall', '-O0', '-ggdb', '-fPIC', '-fprofile-arcs', '-ftest-coverage'],
       'CPPDEFINES': ['DEBUG'],
       'LIBS': 'gcov'
     },
