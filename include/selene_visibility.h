@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/**
+ * @file selene_visibility.h
+ */
+
 #ifndef _selene_visibility_h_
 #define _selene_visibility_h_
 

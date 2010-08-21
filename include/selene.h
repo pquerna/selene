@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/**
+ * @file selene.h
+ */
+
 #ifndef _selene_h_
 #define _selene_h_
 
