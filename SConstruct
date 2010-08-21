@@ -153,6 +153,13 @@ for vari in variants:
 
   all_targets[variant] = targets
 
+denv = env.Clone()
+denv['DOXYGEN'] = 'doxygen'
+doxy = denv.Command(env.Dir('#/api-docs'), all_targets.values(),
+                   ['rm -rf api-docs',
+                    '$DOXYGEN'])
+denv.AlwaysBuild(doxy)
+env.Alias('docs', doxy)
 env.Alias('test', test_targets)
 if not env.GetOption('clean'):
   env.Default(all_targets.values())
