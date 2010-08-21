@@ -29,6 +29,9 @@
 #include <sys/types.h>
 #include <sys/select.h>
 
+#define SELENE_CLIENT_DEFAULT_HOST "localhost"
+#define SELENE_CLIENT_DEFAULT_PORT 4433
+
 /**
  * 'Simple' TLS Client, connects to a port, pipes stdin to it
  */
@@ -203,10 +206,20 @@ connect_to(selene_t *s, const char *host, int port, FILE *fp)
   return 0;
 }
 
+void usage()
+{
+  fprintf(stderr, "usage: selene_client args\n");
+  fprintf(stderr, "\n");
+  fprintf(stderr, " -host host\n");
+  fprintf(stderr, " -port port\n");
+  fprintf(stderr, " -connect host:port\n");
+  exit(EXIT_SUCCESS);
+}
+
 int main(int argc, char* argv[])
 {
-  const char *host = NULL;
-  int port = 0;
+  const char *host = SELENE_CLIENT_DEFAULT_HOST;
+  int port = SELENE_CLIENT_DEFAULT_PORT;
   selene_t *s = NULL;
   selene_error_t *err = NULL;
   int rv = 0;
@@ -220,17 +233,29 @@ int main(int argc, char* argv[])
 
   for (i = 1; i < argc; i++) {
     /* TODO: s_client compat */
-    if (strcmp("-host", argv[i]) && argc > i + 1) {
+    if (!strcmp("-host", argv[i]) && argc > i + 1) {
       host = argv[i+1];
       i++;
     }
-    else if (strcmp("-port", argv[i]) && argc > i + 1) {
+    else if (!strcmp("-port", argv[i]) && argc > i + 1) {
       port = atoi(argv[i+1]);
+      i++;
+    }
+    else if (!strcmp("-connect", argv[i]) && argc > i + 1) {
+      char *p;
+      host = argv[i+1];
+      if ((p = strstr(host,":")) == NULL) {
+        fprintf(stderr, "no port found\n");
+        exit(EXIT_FAILURE);
+      }
+      *(p++) = '\0';
+      port = atoi(p);
       i++;
     }
     else {
       selene_destroy(s);
       fprintf(stderr, "Invalid args\n");
+      usage();
       exit(EXIT_FAILURE);
     }
   }
@@ -241,7 +266,7 @@ int main(int argc, char* argv[])
     exit(EXIT_FAILURE);
   }
 
-  if (port == 0) {
+  if (port <= 0) {
     selene_destroy(s);
     fprintf(stderr, "-port must be set\n");
     exit(EXIT_FAILURE);
