@@ -20,6 +20,7 @@
 #include "sln_types.h"
 #include "sln_brigades.h"
 #include "sln_events.h"
+#include "sln_backends.h"
 
 static int initialized = 0;
 
@@ -67,6 +68,13 @@ sln_create(selene_t **p_sel, sln_mode_e mode)
   SELENE_ERR(sln_brigade_create(&s->bb_out_cleartext));
 
   SELENE_ERR(sln_events_create(s));
+
+  /* TODO: other backends, runtime selection? */
+#if defined(WANT_OPENSSL_THREADED)
+  SELENE_ERR(sln_openssl_threaded_create(s));
+#else
+#error No backends TLS/SSL backends available
+#endif
 
   *p_sel = s;
 
