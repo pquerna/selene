@@ -61,6 +61,11 @@ sln_create(selene_t **p_sel, sln_mode_e mode)
   s->mode = mode;
   s->state = SLN_STATE_INIT;
 
+  s->log_level = SLN_LOG_NOTHING;
+  s->log_msg = NULL;
+  s->log_msg_len = 0;
+  s->log_msg_level = SLN_LOG_NOTHING;
+
   /* TODO: leaks on errors here */
   SELENE_ERR(sln_brigade_create(&s->bb_in_enc));
   SELENE_ERR(sln_brigade_create(&s->bb_out_enc));
