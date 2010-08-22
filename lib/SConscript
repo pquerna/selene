@@ -22,6 +22,7 @@ backends/openssl_threaded.c
 core/error.c
 core/event.c
 core/init.c
+core/log.c
 io/buckets.c
 io/brigades.c
 io/io.c

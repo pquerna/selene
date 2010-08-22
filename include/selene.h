@@ -66,7 +66,8 @@ typedef enum {
   SELENE_EVENT_IO_OUT_ENC = 3,
   SELENE_EVENT_IO_IN_CLEAR = 4,
   SELENE_EVENT_IO_OUT_CLEAR = 5,
-  SELENE_EVENT__MAX = 6
+  SELENE_EVENT_LOG_MSG = 6,
+  SELENE_EVENT__MAX = 7,
 } selene_event_e;
 
 typedef enum {
@@ -134,6 +135,10 @@ selene_io_out_enc_bytes(selene_t *ctxt,
                         size_t *length,
                         size_t *remaining);
 
+
+SELENE_API(void)
+selene_log_msg_get(selene_t *ctxt, const char **log_msg,
+                   size_t *log_msg_len);
 
 #ifdef __cplusplus
 }

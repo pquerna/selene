@@ -20,6 +20,7 @@
 #define _sln_types_h_
 
 #include "selene.h"
+#include "sln_log.h"
 #include "sln_ring.h"
 
 /* TODO: public header? */
@@ -100,6 +101,12 @@ typedef struct {
 struct selene_t {
   sln_mode_e mode;
   sln_state_e state;
+
+  sln_log_level_e log_level;
+  const char *log_msg;
+  size_t log_msg_len;
+  sln_log_level_e log_msg_level;
+
   sln_brigade_t *bb_in_enc;
   sln_brigade_t *bb_out_enc;
   sln_brigade_t *bb_in_cleartext;
