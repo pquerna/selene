@@ -27,6 +27,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 #include <stdlib.h>
+#include <pthread.h>
 #include "selene_visibility.h"
 #include "selene_version.h"
 #include "selene_error.h"

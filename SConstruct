@@ -49,6 +49,7 @@ if conf.env['enable_native']:
 if conf.env['enable_openssl_threaded']:
   conf.env['WANT_OPENSSL'] = True
   conf.env.AppendUnique(CPPDEFINES=['WANT_OPENSSL_THREADED'])
+  conf.CheckLibWithHeader('libpthread', 'pthread.h', 'C', '', True)
 
 if conf.env['WANT_OPENSSL']:
   if conf.env.get('with_openssl'):
