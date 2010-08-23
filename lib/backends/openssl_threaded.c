@@ -47,7 +47,7 @@ sln_openssl_threaded_create(selene_t *s)
   sln_crypto_backend_t *b;
   pthread_attr_t attr;
 
-  b = calloc(1, sizeof(sln_crypto_backend_t));
+  s->backend = b = calloc(1, sizeof(sln_crypto_backend_t));
 
   pthread_attr_init(&attr);
 
@@ -57,8 +57,6 @@ sln_openssl_threaded_create(selene_t *s)
 
   pthread_attr_destroy(&attr);
 
-  s->backend = b;
-      
   return SELENE_SUCCESS;
 }
 
