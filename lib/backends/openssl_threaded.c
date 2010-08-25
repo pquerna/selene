@@ -69,6 +69,9 @@ sln_openssl_threaded_create(selene_t *s)
   sln_backend_t *b;
   pthread_attr_t attr;
 
+  b = (sln_backend_t*) calloc(1, sizeof(*b));
+  s->backend = b;
+
   /* subscribe to events */
   pthread_mutex_init(&b->io_enc_mutex, NULL);
   pthread_cond_init(&b->io_enc_cond, NULL);
