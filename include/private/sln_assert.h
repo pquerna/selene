@@ -39,6 +39,10 @@
     SLN_ASSERT(ctxt != NULL); \
     SLN_ASSERT_ENUM(SLN_MODE, ctxt->mode); \
     SLN_ASSERT_ENUM(SLN_STATE, ctxt->state); \
+    SLN_ASSERT_ENUM(SLN_LOG, ctxt->log_level); \
+    SLN_ASSERT(ctxt->log_msg_len >= 0); \
+    SLN_ASSERT(ctxt->log_msg_len <= 2048); \
+    SLN_ASSERT_ENUM(SLN_LOG, ctxt->log_msg_level); \
   } while (0);
 
 #else /* !WANT_SLN_ASSERTS */

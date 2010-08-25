@@ -22,6 +22,7 @@
 
 typedef enum
 {
+  SLN_LOG__UNUSED0,
   SLN_LOG_NOTHING,
   SLN_LOG_CRITICAL,
   SLN_LOG_ERRORS,
@@ -29,7 +30,8 @@ typedef enum
   SLN_LOG_INFO,
   SLN_LOG_DEBUG,
   SLN_LOG_TRACE,
-  SLN_LOG_EVERYTHING
+  SLN_LOG_EVERYTHING,
+  SLN_LOG__MAX
 } sln_log_level_e;
 
 void sln_log_level_set(selene_t *s, sln_log_level_e level);
