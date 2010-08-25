@@ -59,6 +59,10 @@ if conf.env['WANT_OPENSSL']:
   if not conf.env['HAVE_OPENSSL']:
     print 'Unable to use OpenSSL development enviroment: with_openssl=%s' %  conf.env.get('with_openssl')
     Exit(-1)
+  conf.env['HAVE_CRYPTO'] = conf.CheckLibWithHeader('libcrypto', 'openssl/err.h', 'C', 'ERR_load_crypto_strings();', True)
+  if not conf.env['HAVE_OPENSSL']:
+    print 'Unable to use OpenSSL development enviroment (missing libcrypto?): with_openssl=%s' %  conf.env.get('with_openssl')
+    Exit(-1)
 
 env = conf.Finish()
 
