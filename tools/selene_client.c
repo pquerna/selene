@@ -39,7 +39,7 @@
     selene_error_t *SERR__err = NULL; \
     SERR__err = (exp); \
     if (SERR__err != SELENE_SUCCESS) { \
-      fprintf(stderr, "[%s:%d] Selene Error: (%d) %s\n  Caught at: [%s:%d] %s", \
+      fprintf(stderr, "[%s:%d] Selene Error: (%d) %s\n  Caught at: [%s:%d] %s\n", \
         SERR__err->file, SERR__err->line, SERR__err->err, SERR__err->msg, \
         __FILE__, __LINE__, \
         # exp ); \
