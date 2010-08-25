@@ -21,6 +21,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netdb.h>
 #include <unistd.h>
 #include <errno.h>
 #include <arpa/inet.h>
@@ -136,30 +137,51 @@ connect_to(selene_t *s, const char *host, int port, FILE *fp)
 {
   fd_set readers;
   int rv = 0;
-  struct sockaddr_in addr;
   client_t client;
   char buf[8096];
+  char port_str[16];
   char *p = NULL;
+  struct addrinfo hints, *res, *res0;
 
   memset(&client, 0, sizeof(client));
 
   SERR(selene_subscribe(s, SELENE_EVENT_IO_OUT_ENC,
                         want_pull, &client));
 
-  client.sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-
-  memset(&addr, 0, sizeof(addr));
-  addr.sin_family = AF_INET;
-  addr.sin_addr.s_addr = inet_addr(host);
-  addr.sin_port = htons(port);
-
-  rv = connect(client.sock, (struct sockaddr *) &addr, sizeof(addr));
-
+  snprintf(port_str, sizeof(port_str), "%i", port);
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_family = PF_UNSPEC;
+  hints.ai_socktype = SOCK_STREAM;
+  rv = getaddrinfo(host, port_str, &hints, &res0);
   if (rv != 0) {
-    int err = errno;
-    fprintf(stderr, "TCP connect(%s:%d) failed: (%d) %s\n",
+    fprintf(stderr, "TCP getaddrinfo(%s:%d) failed: (%d) %s\n",
             host, port,
-            err, strerror(err));
+            rv, gai_strerror(rv));
+    exit(EXIT_FAILURE);
+  }
+
+  client.sock = -1;
+  for (res = res0; res; res = res->ai_next) {
+    client.sock = socket(res->ai_family, res->ai_socktype,
+                         res->ai_protocol);
+    if (client.sock < 0) {
+      continue;
+    }
+
+    rv = connect(client.sock, res->ai_addr, res->ai_addrlen);
+    if (rv != 0) {
+      close(client.sock);
+      client.sock = -1;
+      continue;
+    }
+
+    break;
+  }
+
+  freeaddrinfo(res0);
+
+  if (client.sock == -1) {
+    fprintf(stderr, "TCP connect(%s:%d) failed\n", host, port);
     exit(EXIT_FAILURE);
   }
 
