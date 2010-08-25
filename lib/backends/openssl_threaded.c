@@ -22,11 +22,11 @@
 #include "sln_assert.h"
 
 typedef struct {
+  int should_exit;
   pthread_t thread_id;
   pthread_mutex_t io_enc_mutex;
   pthread_cond_t io_enc_cond;
 } sln_ot_baton_t;
-
 
 static void*
 sln_openssl_io_enc_thread(void *thread_baton)
@@ -34,19 +34,25 @@ sln_openssl_io_enc_thread(void *thread_baton)
   selene_t *s = (selene_t*) thread_baton;
   sln_ot_baton_t *baton = s->backend_baton;
   sln_bucket_t *b;
+  SLN_ASSERT_CONTEXT(s);
+
   do {
     /* wait then process incoming data */
     pthread_mutex_lock(&(baton)->io_enc_mutex);
-    pthread_cond_wait(&(baton)->io_enc_cond, &(baton)->io_enc_mutex);
+    if (baton->should_exit == 0) {
+      pthread_cond_wait(&(baton)->io_enc_cond, &(baton)->io_enc_mutex);
+    }
 
-    SLN_RING_FOREACH(b, &(s)->bb_in_enc->list, sln_bucket_t, link)
-    {
-        SLN_RING_REMOVE(b, link);
+    if (baton->should_exit == 0) {
+      SLN_RING_FOREACH(b, &(s)->bb_in_enc->list, sln_bucket_t, link)
+      {
+          SLN_RING_REMOVE(b, link);
+      }
     }
 
     pthread_mutex_unlock(&(baton)->io_enc_mutex);
 
-  } while (1);
+  } while (baton->should_exit == 0);
 
   return NULL;
 }
@@ -54,6 +60,7 @@ sln_openssl_io_enc_thread(void *thread_baton)
 static selene_error_t*
 sln_openssl_event_cb(selene_t *s, selene_event_e event, void *unused_baton)
 {
+  SLN_ASSERT_CONTEXT(s);
   sln_ot_baton_t *baton = s->backend_baton;
 
   switch (event) {
@@ -77,6 +84,8 @@ sln_openssl_threaded_create(selene_t *s)
   sln_ot_baton_t *baton;
   pthread_attr_t attr;
 
+  SLN_ASSERT_CONTEXT(s);
+
   baton = (sln_ot_baton_t*) calloc(1, sizeof(*baton));
   s->backend_baton = baton;
 
@@ -99,6 +108,11 @@ sln_openssl_threaded_destroy(selene_t *s)
 {
   sln_ot_baton_t *baton = s->backend_baton;
   if (baton) {
+    pthread_mutex_lock(&baton->io_enc_mutex);
+    baton->should_exit = 1;
+    pthread_cond_broadcast(&baton->io_enc_cond);
+    pthread_mutex_unlock(&baton->io_enc_mutex);
+    pthread_join(baton->thread_id, NULL);
     pthread_mutex_destroy(&baton->io_enc_mutex);
     pthread_cond_destroy(&baton->io_enc_cond);
     free(baton);
