@@ -20,6 +20,7 @@
 #include "sln_brigades.h"
 #include "sln_events.h"
 #include "sln_backends.h"
+#include "sln_assert.h"
 
 static int initialized = 0;
 
@@ -77,6 +78,8 @@ sln_create(selene_t **p_sel, sln_mode_e mode)
   SELENE_ERR(sln_backend_create(s));
 
   SELENE_ERR(s->backend.create(s));
+
+  SLN_ASSERT_CONTEXT(s);
 
   *p_sel = s;
 
