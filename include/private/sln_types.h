@@ -98,7 +98,7 @@ typedef struct {
 } sln_tls_record_t;
 
 typedef struct {
-  pthread_t thread_id;    
+  pthread_t thread_id;
   pthread_mutex_t io_enc_mutex;
   pthread_cond_t io_enc_cond;
 } sln_backend_t;

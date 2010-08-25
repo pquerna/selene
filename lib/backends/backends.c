@@ -8,7 +8,7 @@ sln_backend_create(selene_t *s)
 #else
   return selene_error_createf(SELENE_EINVAL, "no backend specified");
 #endif
-} 
+}
 
 void
 sln_backend_destroy(selene_t *s)

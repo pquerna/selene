@@ -34,7 +34,7 @@ selene_error_t*
 sln_backend_create(selene_t *s);
 
 void
-sln_backend_destroy(selene_t *s); 
+sln_backend_destroy(selene_t *s);
 
 #endif
 
