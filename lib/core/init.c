@@ -76,7 +76,7 @@ sln_create(selene_t **p_sel, sln_mode_e mode)
 
   /* TODO: other backends, runtime selection? */
 #if defined(WANT_OPENSSL_THREADED)
-  SELENE_ERR(sln_openssl_threaded_create(s));
+  SELENE_ERR(sln_backend_create(s));
 #else
 #error No backends TLS/SSL backends available
 #endif
@@ -109,6 +109,7 @@ selene_destroy(selene_t *s)
   sln_brigade_destroy(s->bb_out_cleartext);
 
   sln_events_destroy(s);
+  sln_backend_destroy(s);
 
   free(s);
 

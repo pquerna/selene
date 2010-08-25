@@ -97,6 +97,11 @@ typedef struct {
   void *protocol_data;
 } sln_tls_record_t;
 
+typedef struct {
+  pthread_t thread_id;    
+  pthread_mutex_t io_enc_mutex;
+  pthread_cond_t io_enc_cond;
+} sln_backend_t;
 
 struct selene_t {
   sln_mode_e mode;
@@ -112,6 +117,8 @@ struct selene_t {
   sln_brigade_t *bb_in_cleartext;
   sln_brigade_t *bb_out_cleartext;
   sln_events_t *events;
+
+  sln_backend_t *backend;
 };
 
 #endif
