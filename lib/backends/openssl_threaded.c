@@ -86,3 +86,12 @@ sln_openssl_threaded_create(selene_t *s)
   return SELENE_SUCCESS;
 }
 
+selene_error_t*
+sln_openssl_threaded_destroy(selene_t *s)
+{
+  if (s) {
+    pthread_mutex_destroy(&s->backend->io_enc_mutex);
+    pthread_cond_destroy(&s->backend->io_enc_cond);
+    free(s);
+  }
+}

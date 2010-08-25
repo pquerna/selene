@@ -14,7 +14,11 @@ void
 sln_backend_destroy(selene_t *s)
 {
   if (s && s->backend) {
-    free(s->backend);
+#if defined(WANT_OPENSSL_THREADED)
+    sln_openssl_threaded_destroy(s);
+#else
+    return selene_error_createf(SELENE_EINVAL, "no backend specified");
+#endif
   }
 }
 
