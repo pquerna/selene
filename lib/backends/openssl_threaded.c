@@ -21,23 +21,30 @@
 #include "sln_types.h"
 #include "sln_assert.h"
 
+typedef struct {
+  pthread_t thread_id;
+  pthread_mutex_t io_enc_mutex;
+  pthread_cond_t io_enc_cond;
+} sln_ot_baton_t;
+
+
 static void*
-sln_openssl_io_enc_thread(void *baton)
+sln_openssl_io_enc_thread(void *thread_baton)
 {
-  selene_t *s = (selene_t*) baton;
-  sln_backend_t *backend = s->backend;
+  selene_t *s = (selene_t*) thread_baton;
+  sln_ot_baton_t *baton = s->backend_baton;
   sln_bucket_t *b;
   do {
     /* wait then process incoming data */
-    pthread_mutex_lock(&(backend)->io_enc_mutex);
-    pthread_cond_wait(&(backend)->io_enc_cond, &(backend)->io_enc_mutex);
+    pthread_mutex_lock(&(baton)->io_enc_mutex);
+    pthread_cond_wait(&(baton)->io_enc_cond, &(baton)->io_enc_mutex);
 
     SLN_RING_FOREACH(b, &(s)->bb_in_enc->list, sln_bucket_t, link)
     {
         SLN_RING_REMOVE(b, link);
     }
 
-    pthread_mutex_unlock(&(backend)->io_enc_mutex);
+    pthread_mutex_unlock(&(baton)->io_enc_mutex);
 
   } while (1);
 
@@ -45,13 +52,15 @@ sln_openssl_io_enc_thread(void *baton)
 }
 
 static selene_error_t*
-sln_openssl_event_cb(selene_t *s, selene_event_e event, void *baton)
+sln_openssl_event_cb(selene_t *s, selene_event_e event, void *unused_baton)
 {
+  sln_ot_baton_t *baton = s->backend_baton;
+
   switch (event) {
   case SELENE_EVENT_IO_IN_ENC:
-      pthread_mutex_lock(&s->backend->io_enc_mutex);
-      pthread_cond_signal(&s->backend->io_enc_cond);
-      pthread_mutex_unlock(&s->backend->io_enc_mutex);
+      pthread_mutex_lock(&baton->io_enc_mutex);
+      pthread_cond_signal(&baton->io_enc_cond);
+      pthread_mutex_unlock(&baton->io_enc_mutex);
       break;
   default:
       return selene_error_createf(SELENE_EINVAL, \
@@ -65,21 +74,21 @@ sln_openssl_event_cb(selene_t *s, selene_event_e event, void *baton)
 selene_error_t*
 sln_openssl_threaded_create(selene_t *s)
 {
-  sln_backend_t *b;
+  sln_ot_baton_t *baton;
   pthread_attr_t attr;
 
-  b = (sln_backend_t*) calloc(1, sizeof(*b));
-  s->backend = b;
+  baton = (sln_ot_baton_t*) calloc(1, sizeof(*baton));
+  s->backend_baton = baton;
 
   /* subscribe to events */
-  pthread_mutex_init(&b->io_enc_mutex, NULL);
-  pthread_cond_init(&b->io_enc_cond, NULL);
+  pthread_mutex_init(&baton->io_enc_mutex, NULL);
+  pthread_cond_init(&baton->io_enc_cond, NULL);
   SELENE_ERR(selene_subscribe(s, SELENE_EVENT_IO_IN_ENC,
-                              sln_openssl_event_cb, s));
+                              sln_openssl_event_cb, NULL));
 
   /* spawn thread */
   pthread_attr_init(&attr);
-  pthread_create(&b->thread_id, &attr, sln_openssl_io_enc_thread, s);
+  pthread_create(&baton->thread_id, &attr, sln_openssl_io_enc_thread, s);
   pthread_attr_destroy(&attr);
 
   return SELENE_SUCCESS;
@@ -88,9 +97,13 @@ sln_openssl_threaded_create(selene_t *s)
 selene_error_t*
 sln_openssl_threaded_destroy(selene_t *s)
 {
-  if (s && s->backend) {
-    pthread_mutex_destroy(&s->backend->io_enc_mutex);
-    pthread_cond_destroy(&s->backend->io_enc_cond);
-    free(s->backend);
+  sln_ot_baton_t *baton = s->backend_baton;
+  if (baton) {
+    pthread_mutex_destroy(&baton->io_enc_mutex);
+    pthread_cond_destroy(&baton->io_enc_cond);
+    free(baton);
+    s->backend_baton = NULL;
   }
+
+  return SELENE_SUCCESS;
 }

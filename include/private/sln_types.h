@@ -97,10 +97,12 @@ typedef struct {
   void *protocol_data;
 } sln_tls_record_t;
 
+typedef selene_error_t* (sln_standard_cb)(selene_t *ctxt);
+
 typedef struct {
-  pthread_t thread_id;
-  pthread_mutex_t io_enc_mutex;
-  pthread_cond_t io_enc_cond;
+  const char *name;
+  sln_standard_cb *create;
+  sln_standard_cb *destroy;
 } sln_backend_t;
 
 struct selene_t {
@@ -118,7 +120,8 @@ struct selene_t {
   sln_brigade_t *bb_out_cleartext;
   sln_events_t *events;
 
-  sln_backend_t *backend;
+  sln_backend_t backend;
+  void *backend_baton;
 };
 
 #endif

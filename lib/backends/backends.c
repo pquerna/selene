@@ -18,24 +18,31 @@
 #include "sln_backends.h"
 
 selene_error_t*
-sln_backend_create(selene_t *s)
+sln_backend_initialize()
 {
 #if defined(WANT_OPENSSL_THREADED)
-  return sln_openssl_threaded_create(s);
-#else
-  return selene_error_createf(SELENE_EINVAL, "no backend specified");
+  /* TODO: OpenSSL init */
 #endif
+  return SELENE_SUCCESS;
 }
 
 void
-sln_backend_destroy(selene_t *s)
+sln_backend_terminate()
 {
-  if (s && s->backend) {
 #if defined(WANT_OPENSSL_THREADED)
-    sln_openssl_threaded_destroy(s);
-#else
-    return selene_error_createf(SELENE_EINVAL, "no backend specified");
+
 #endif
-  }
 }
 
+selene_error_t*
+sln_backend_create(selene_t *s)
+{
+#if defined(WANT_OPENSSL_THREADED)
+  s->backend.name = "openssl_threaded";
+  s->backend.create = sln_openssl_threaded_create;
+  s->backend.destroy = sln_openssl_threaded_destroy;
+#else
+  return selene_error_createf(SELENE_EINVAL, "no backend available");
+#endif
+  return SELENE_SUCCESS;
+}

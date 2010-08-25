@@ -32,7 +32,8 @@ sln_initialize(void)
   }
 
   /* TODO: Backend initilization */
-  
+  SELENE_ERR(sln_backend_initialize());
+
   return SELENE_SUCCESS;
 }
 
@@ -44,7 +45,7 @@ sln_terminate(void)
     return;
   }
 
-  /* TODO: backend shutdown */
+  sln_backend_terminate();
 
   return;
 }
@@ -73,12 +74,9 @@ sln_create(selene_t **p_sel, sln_mode_e mode)
 
   SELENE_ERR(sln_events_create(s));
 
-  /* TODO: other backends, runtime selection? */
-#if defined(WANT_OPENSSL_THREADED)
   SELENE_ERR(sln_backend_create(s));
-#else
-#error No backends TLS/SSL backends available
-#endif
+
+  s->backend.create(s);
 
   *p_sel = s;
 
@@ -108,7 +106,8 @@ selene_destroy(selene_t *s)
   sln_brigade_destroy(s->bb_out_cleartext);
 
   sln_events_destroy(s);
-  sln_backend_destroy(s);
+
+  s->backend.destroy(s);
 
   free(s);
 

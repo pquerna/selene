@@ -22,6 +22,15 @@
 #include "sln_types.h"
 #include "sln_buckets.h"
 
+selene_error_t*
+sln_backend_create(selene_t *s);
+
+selene_error_t* 
+sln_backend_initialize(void);
+
+void
+sln_backend_terminate(void);
+
 #if defined(WANT_OPENSSL_THREADED)
 selene_error_t*
 sln_openssl_threaded_create(selene_t *s);
@@ -29,12 +38,6 @@ sln_openssl_threaded_create(selene_t *s);
 selene_error_t*
 sln_openssl_threaded_destroy(selene_t *s);
 #endif
-
-selene_error_t*
-sln_backend_create(selene_t *s);
-
-void
-sln_backend_destroy(selene_t *s);
-
+  
 #endif
 
