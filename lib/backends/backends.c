@@ -16,12 +16,38 @@
  */
 
 #include "sln_backends.h"
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+
+static selene_error_t*
+sln_openssl_initilize()
+{
+  /* TODO: is this correct? */
+  // CRYPTO_malloc_init();
+  ERR_load_crypto_strings();
+  SSL_load_error_strings();
+  SSL_library_init();
+  OpenSSL_add_all_ciphers();
+  OpenSSL_add_all_digests();
+  OpenSSL_add_all_algorithms();
+
+  /* TOOD: Crytpo Mutex init? */
+
+  return SELENE_SUCCESS;
+}
+
+static void
+sln_openssl_terminate()
+{
+  ERR_free_strings();
+  CRYPTO_cleanup_all_ex_data();
+}
 
 selene_error_t*
 sln_backend_initialize()
 {
 #if defined(WANT_OPENSSL_THREADED)
-  /* TODO: OpenSSL init */
+  return sln_openssl_initilize();
 #endif
   return SELENE_SUCCESS;
 }
@@ -30,7 +56,7 @@ void
 sln_backend_terminate()
 {
 #if defined(WANT_OPENSSL_THREADED)
-
+  sln_openssl_terminate();
 #endif
 }
 
