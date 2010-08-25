@@ -28,8 +28,10 @@ sln_openssl_threaded_create(selene_t *s);
 #endif
 
 selene_error_t*
-sln_crypto_backend_send(selene_t *s, 
-                        sln_backend_msg_t *msg);
+sln_backend_create(selene_t *s);
+
+void
+sln_backend_destroy(selene_t *s); 
 
 #endif
 

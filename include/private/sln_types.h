@@ -97,19 +97,11 @@ typedef struct {
   void *protocol_data;
 } sln_tls_record_t;
 
-typedef struct sln_backend_msg_t sln_backend_msg_t;
-
-struct sln_backend_msg_t {
-  SLN_RING_ENTRY(sln_backend_msg_t) link;
-  void *baton;
-};
-
 typedef struct {
   pthread_t thread_id;    
-  pthread_mutex_t thread_mutex;
-  pthread_cond_t thread_cond;
-  SLN_RING_HEAD(sln_backend_msg_queue, sln_backend_msg_t) queue;
-} sln_crypto_backend_t;
+  pthread_mutex_t io_enc_mutex;
+  pthread_cond_t io_enc_cond;
+} sln_backend_t;
 
 struct selene_t {
   sln_mode_e mode;
@@ -126,7 +118,7 @@ struct selene_t {
   sln_brigade_t *bb_out_cleartext;
   sln_events_t *events;
 
-  sln_crypto_backend_t *backend;
+  sln_backend_t *backend;
 };
 
 #endif
