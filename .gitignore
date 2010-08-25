@@ -4,4 +4,4 @@ build/*
 *.pyc
 .sconf_temp
 config.log
-apr-docs
+api-docs
