@@ -97,7 +97,8 @@ options = {
   },
 }
 
-if env['SELENE_PLATFORM'] == 'FREEBSD':
+# just turn off gcov builds until someone has time to setup zcov correctly
+if env['SELENE_PLATFORM'] == 'FREEBSD' or True:
   # can't seem to get this to build :(
   del options['PROFILE']['GCOV']
 
