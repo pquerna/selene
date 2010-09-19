@@ -161,11 +161,11 @@ selene_conf_cipher_suites(selene_t *ctxt, int suite);
 typedef enum {
   SELENE_PROTOCOL__UNUSED0 = 0,
   SELENE_PROTOCOL_SSL30 = (1U<<1),
-  SELENE_VERSION_TLS10 = (1U<<2),
-  SELENE_VERSION_TLS11 = (1U<<3),
-  SELENE_VERSION_TLS12 = (1U<<4),
+  SELENE_PROTOCOL_TLS10 = (1U<<2),
+  SELENE_PROTOCOL_TLS11 = (1U<<3),
+  SELENE_PROTOCOL_TLS12 = (1U<<4),
   SELENE_PROTOCOL__MAX = (1U<<5),
-} selene_protools_e;
+} selene_protocol_e;
 
 SELENE_API(selene_error_t*)
 selene_conf_protocols(selene_t *ctxt, int protocols);
