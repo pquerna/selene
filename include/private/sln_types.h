@@ -105,9 +105,15 @@ typedef struct {
   sln_standard_cb *destroy;
 } sln_backend_t;
 
-struct selene_t {
+typedef struct {
   sln_mode_e mode;
+  int protocols;
+  int ciphers;
+} sln_conf_t;
+
+struct selene_t {
   sln_state_e state;
+  sln_conf_t conf;
 
   sln_log_level_e log_level;
   const char *log_msg;

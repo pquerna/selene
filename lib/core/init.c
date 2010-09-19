@@ -59,7 +59,7 @@ sln_create(selene_t **p_sel, sln_mode_e mode)
   SELENE_ERR(sln_initialize());
 
   s = calloc(1, sizeof(selene_t));
-  s->mode = mode;
+  s->conf.mode = mode;
   s->state = SLN_STATE_INIT;
 
   s->log_level = SLN_LOG_NOTHING;
