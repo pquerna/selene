@@ -98,6 +98,7 @@ typedef struct {
 } sln_tls_record_t;
 
 typedef selene_error_t* (sln_standard_cb)(selene_t *ctxt);
+typedef selene_error_t* (sln_standard_baton_cb)(selene_t *ctxt, void *baton);
 
 typedef struct {
   const char *name;
