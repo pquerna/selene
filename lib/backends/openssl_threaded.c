@@ -58,6 +58,7 @@ struct sln_mainthread_cb_t {
 
 typedef struct {
   int should_exit;
+  selene_error_t *err;
   pthread_t thread_id;
   pthread_mutex_t mutex;
   pthread_cond_t cond;
@@ -66,6 +67,7 @@ typedef struct {
   SSL *ssl;
   BIO *bio_read;
   BIO *bio_write;
+  int want;
   SLN_RING_HEAD(sln_mainthread_list, sln_mainthread_cb_t) list;
 } sln_ot_baton_t;
 
@@ -114,11 +116,39 @@ static char* sln_ciphers_to_openssl(int selene_ciphers)
 static void*
 sln_openssl_io_thread(void *thread_baton)
 {
+  int err = 0;
+  int rv = 0;
   selene_t *s = (selene_t*) thread_baton;
   sln_ot_baton_t *baton = s->backend_baton;
   sln_bucket_t *b;
   sln_bucket_t *bit;
   SLN_ASSERT_CONTEXT(s);
+
+  if (s->conf.mode == SLN_MODE_CLIENT) {
+    rv = SSL_connect(baton->ssl);
+  }
+  else {
+    /* TOOD: finish server support */
+    rv = SSL_accept(baton->ssl);
+  }
+
+  if (rv == 1) {
+    /* Finished */
+  }
+  else {
+    err = SSL_get_error(baton->ssl, rv);
+    if (err != SSL_ERROR_WANT_WRITE &&
+        err != SSL_ERROR_WANT_READ) {
+      /* TODO: look at ssl error queue */
+      baton->err = selene_error_createf(SELENE_EINVAL, "SSL_connect failed: (%d)", err);
+      baton->should_exit = 1;
+      goto cleanup;
+    }
+    else {
+      baton->want = err;
+      /* TODO: insert want callback */
+    }
+  }
 
   do {
     /* wait then process incoming data */
@@ -138,8 +168,9 @@ sln_openssl_io_thread(void *thread_baton)
 
   } while (baton->should_exit == 0);
 
+cleanup:
   SSL_CTX_free(baton->ctx);
-
+  SSL_free(baton->ssl);
   return NULL;
 }
 
