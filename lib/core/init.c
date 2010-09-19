@@ -121,5 +121,5 @@ selene_destroy(selene_t *s)
 selene_error_t*
 selene_start(selene_t *s)
 {
-  return selene_error_create(SELENE_ENOTIMPL, "start isn't done");
+  return s->backend.start(s);
 }

@@ -170,12 +170,11 @@ typedef enum {
 SELENE_API(selene_error_t*)
 selene_conf_protocols(selene_t *ctxt, int protocols);
 
-SELENE_API(selene_error_t*)
-selene_conf_compression(selene_t *ctxt, int enabled);
-
 /* TODO: this is a OpenSSL specific interface*/
+#if 0
 SELENE_API(selene_error_t*)
 selene_conf_crypto_device(selene_t *ctxt, const char* name);
+#endif
 
 /* Set Server name indication (client only) */
 SELENE_API(selene_error_t*)

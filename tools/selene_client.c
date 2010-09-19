@@ -185,6 +185,7 @@ connect_to(selene_t *s, const char *host, int port, FILE *fp)
     exit(EXIT_FAILURE);
   }
 
+  SERR(selene_conf_use_reasonable_defaults(s));
   SERR(selene_start(s));
 
   while (client.write_err == 0)

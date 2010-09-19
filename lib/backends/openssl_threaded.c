@@ -156,8 +156,6 @@ selene_error_t*
 sln_openssl_threaded_create(selene_t *s)
 {
   sln_ot_baton_t *baton;
-  pthread_attr_t attr;
-
   SLN_ASSERT_CONTEXT(s);
 
   baton = (sln_ot_baton_t*) calloc(1, sizeof(*baton));
@@ -173,6 +171,17 @@ sln_openssl_threaded_create(selene_t *s)
 
   baton->ctx = SSL_CTX_new(baton->meth);
 
+  return SELENE_SUCCESS;
+}
+
+selene_error_t*
+sln_openssl_threaded_start(selene_t *s)
+{
+  sln_ot_baton_t *baton = s->backend_baton;
+  SLN_ASSERT_CONTEXT(s);
+
+  pthread_attr_t attr;
+
   char *str = sln_ciphers_to_openssl(s->conf.ciphers);
 
   if (str == NULL) {
@@ -181,6 +190,7 @@ sln_openssl_threaded_create(selene_t *s)
   }
   else {
     int rv = SSL_CTX_set_cipher_list(baton->ctx, str);
+    free(str);
     if (rv == 0) {
       return selene_error_create(SELENE_EINVAL,
                                  "Unable to set ciphers in openssl threaded");

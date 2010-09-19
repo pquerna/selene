@@ -43,6 +43,9 @@ selene_error_t*
 sln_openssl_threaded_create(selene_t *s);
 
 selene_error_t*
+sln_openssl_threaded_start(selene_t *s);
+
+selene_error_t*
 sln_openssl_threaded_destroy(selene_t *s);
 #endif
   

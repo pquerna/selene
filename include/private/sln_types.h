@@ -102,6 +102,7 @@ typedef selene_error_t* (sln_standard_cb)(selene_t *ctxt);
 typedef struct {
   const char *name;
   sln_standard_cb *create;
+  sln_standard_cb *start;
   sln_standard_cb *destroy;
 } sln_backend_t;
 
