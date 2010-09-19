@@ -111,6 +111,7 @@ typedef struct {
   sln_mode_e mode;
   int protocols;
   int ciphers;
+  const char *sni;
 } sln_conf_t;
 
 struct selene_t {

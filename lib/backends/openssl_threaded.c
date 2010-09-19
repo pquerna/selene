@@ -293,6 +293,12 @@ sln_openssl_threaded_start(selene_t *s)
 
   SSL_set_bio(baton->ssl, baton->bio_read, baton->bio_write);
 
+#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
+  if (s->conf.sni != NULL) {
+    SSL_set_tlsext_host_name(baton->ssl, s->conf.sni);
+  }
+#endif
+
   /* spawn thread */
   pthread_mutex_init(&baton->mutex, NULL);
   pthread_cond_init(&baton->cond, NULL);

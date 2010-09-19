@@ -103,6 +103,10 @@ selene_destroy(selene_t *s)
 {
   s->state = SLN_STATE_DEAD;
 
+  if (s->conf.sni != NULL) {
+    free((void*)s->conf.sni);
+  }
+
   sln_brigade_destroy(s->bb_in_enc);
   sln_brigade_destroy(s->bb_out_enc);
   sln_brigade_destroy(s->bb_in_cleartext);

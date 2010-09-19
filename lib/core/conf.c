@@ -17,6 +17,7 @@
 
 #include "selene.h"
 #include "sln_types.h"
+#include <string.h>
 
 selene_error_t *
 selene_conf_use_reasonable_defaults(selene_t *s)
@@ -46,5 +47,22 @@ selene_conf_protocols(selene_t *s, int protocols)
 {
   /* TODO: assert on inalid protocols */
   s->conf.protocols = protocols;
+  return SELENE_SUCCESS;
+}
+
+selene_error_t *
+selene_conf_name_indication(selene_t *s, const char *hostname)
+{
+  if (s->conf.sni != NULL) {
+    free((void*)s->conf.sni);
+  }
+
+  if (hostname) {
+    s->conf.sni = strdup(hostname);
+  }
+  else {
+    s->conf.sni = NULL;
+  }
+
   return SELENE_SUCCESS;
 }
