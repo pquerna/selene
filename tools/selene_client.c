@@ -249,7 +249,8 @@ int main(int argc, char* argv[])
 
   err = selene_client_create(&s);
   if (err != SELENE_SUCCESS) {
-    fprintf(stderr, "Failed to create client instance\n");
+    fprintf(stderr, "Failed to create client instance: (%d) %s [%s:%d]\n",
+            err->err, err->msg, err->file, err->line);
     exit(EXIT_FAILURE);
   }
 
