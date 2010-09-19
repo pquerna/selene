@@ -48,6 +48,14 @@ sln_openssl_threaded_terminate()
   CRYPTO_cleanup_all_ex_data();
 }
 
+typedef struct sln_mainthread_cb_t sln_mainthread_cb_t;
+
+struct sln_mainthread_cb_t {
+  SLN_RING_ENTRY(sln_mainthread_cb_t) link;
+  sln_standard_baton_cb *cb;
+  void *baton;
+};
+
 typedef struct {
   int should_exit;
   pthread_t thread_id;
@@ -55,6 +63,10 @@ typedef struct {
   pthread_cond_t cond;
   SSL_METHOD *meth;
   SSL_CTX *ctx;
+  SSL *ssl;
+  BIO *bio_read;
+  BIO *bio_write;
+  SLN_RING_HEAD(sln_mainthread_list, sln_mainthread_cb_t) list;
 } sln_ot_baton_t;
 
 /* Converts a selene enum of ciphers to OpenSSL */
@@ -105,6 +117,7 @@ sln_openssl_io_thread(void *thread_baton)
   selene_t *s = (selene_t*) thread_baton;
   sln_ot_baton_t *baton = s->backend_baton;
   sln_bucket_t *b;
+  sln_bucket_t *bit;
   SLN_ASSERT_CONTEXT(s);
 
   do {
@@ -115,9 +128,9 @@ sln_openssl_io_thread(void *thread_baton)
     }
 
     if (baton->should_exit == 0) {
-      SLN_RING_FOREACH(b, &(s)->bb_in_enc->list, sln_bucket_t, link)
+      SLN_RING_FOREACH_SAFE(b, bit, &(s)->bb_in_enc->list, sln_bucket_t, link)
       {
-          SLN_RING_REMOVE(b, link);
+        SLN_RING_REMOVE(b, link);
       }
     }
 
@@ -133,6 +146,10 @@ sln_openssl_io_thread(void *thread_baton)
 static selene_error_t*
 sln_openssl_event_cb(selene_t *s, selene_event_e event, void *unused_baton)
 {
+  selene_error_t* err;
+  sln_mainthread_cb_t *cb;
+  sln_mainthread_cb_t *cbit;
+
   SLN_ASSERT_CONTEXT(s);
   sln_ot_baton_t *baton = s->backend_baton;
 
@@ -141,6 +158,18 @@ sln_openssl_event_cb(selene_t *s, selene_event_e event, void *unused_baton)
   case SELENE_EVENT_IO_IN_CLEAR:
     pthread_mutex_lock(&baton->mutex);
     pthread_cond_signal(&baton->cond);
+    pthread_mutex_unlock(&baton->mutex);
+
+    pthread_cond_wait(&(baton)->cond, &(baton)->mutex);
+    SLN_RING_FOREACH_SAFE(cb, cbit, &(baton)->list, sln_mainthread_cb_t, link)
+    {
+      SLN_RING_REMOVE(cb, link);
+      err = cb->cb(s, cb->baton);
+      if (err) {
+        return err;
+      }
+      free(cb);
+    }
     pthread_mutex_unlock(&baton->mutex);
     break;
   default:
@@ -170,6 +199,8 @@ sln_openssl_threaded_create(selene_t *s)
   }
 
   baton->ctx = SSL_CTX_new(baton->meth);
+
+  SLN_RING_INIT(&baton->list, sln_mainthread_cb_t, link);
 
   return SELENE_SUCCESS;
 }
@@ -221,6 +252,15 @@ sln_openssl_threaded_start(selene_t *s)
 
   SELENE_ERR(selene_subscribe(s, SELENE_EVENT_IO_IN_CLEAR,
                               sln_openssl_event_cb, NULL));
+
+  /* TODO: write custom BIO handlers that use buckets natively,
+   * eliminating extra memcpys; See mod_ssl for an example
+   */
+  baton->ssl = SSL_new(baton->ctx);
+  baton->bio_read = BIO_new(BIO_s_mem());
+  baton->bio_write = BIO_new(BIO_s_mem());
+
+  SSL_set_bio(baton->ssl, baton->bio_read, baton->bio_write);
 
   /* spawn thread */
   pthread_mutex_init(&baton->mutex, NULL);
