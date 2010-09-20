@@ -101,10 +101,10 @@ sln_ot_event_cb(selene_t *s, selene_event_e event, void *unused_baton)
     {
       SLN_RING_REMOVE(cb, link);
       err = cb->cb(s, cb->baton);
+      free(cb);
       if (err) {
         return err;
       }
-      free(cb);
     }
     pthread_mutex_unlock(&baton->mutex);
     break;
