@@ -38,7 +38,9 @@ handle_ssl_rv(sln_ot_baton_t *baton, int rv, const char *func)
 void*
 sln_ot_io_thread(void *thread_baton)
 {
+  char buf[4096];
   int rv = 0;
+  int need_mt_io = 0;
   selene_t *s = (selene_t*) thread_baton;
   sln_ot_baton_t *baton = s->backend_baton;
   sln_bucket_t *b;
@@ -47,6 +49,20 @@ sln_ot_io_thread(void *thread_baton)
   SLN_ASSERT_CONTEXT(s);
 
   do {
+    need_mt_io = 0;
+    /* wait then process incoming data */
+    pthread_mutex_lock(&(baton)->mutex);
+
+    if (baton->should_exit) {
+      break;
+    }
+
+    pthread_cond_wait(&(baton)->cond, &(baton)->mutex);
+
+    if (baton->should_exit) {
+      break;
+    }
+
     if (!SSL_is_init_finished(baton->ssl)) {
       if (s->conf.mode == SLN_MODE_CLIENT) {
         rv = SSL_connect(baton->ssl);
@@ -61,57 +77,68 @@ sln_ot_io_thread(void *thread_baton)
       }
       else {
         handle_ssl_rv(baton, rv, "SSL_accept");
-      }
-    }
-    else {
-      /* wait then process incoming data */
-      pthread_mutex_lock(&(baton)->mutex);
-
-      if (baton->should_exit == 0) {
-        pthread_cond_wait(&(baton)->cond, &(baton)->mutex);
-      }
-
-      if (baton->should_exit == 0) {
-        SLN_RING_FOREACH_SAFE(b, bit, &(baton->bb.in_enc)->list, sln_bucket_t, link)
-        {
-          SLN_RING_REMOVE(b, link);
-          rv = BIO_write(baton->bio_read, b->data, b->size);
-          if (rv > 0) {
-            if (rv != b->size) {
-              /* underflow */
-              sln_bucket_create_copy_bytes(&e, b->data + rv, b->size - rv);
-              SLN_BRIGADE_INSERT_HEAD(baton->bb.in_enc, e);
-            }
-            sln_bucket_destroy(b);
-          }
-          else {
-            SLN_BRIGADE_INSERT_HEAD(baton->bb.in_enc, b);
-            /* TODO: ugh, log this? BIO fail? */
-            break;
-          }
-        }
-
-        SLN_RING_FOREACH_SAFE(b, bit, &(baton->bb.in_cleartext)->list, sln_bucket_t, link)
-        {
-          SLN_RING_REMOVE(b, link);
-          rv = SSL_write(baton->ssl, b->data, b->size);
-          if (rv > 0) {
-            if (rv != b->size) {
-              /* underflow */
-              sln_bucket_create_copy_bytes(&e, b->data + rv, b->size - rv);
-              SLN_BRIGADE_INSERT_HEAD(baton->bb.in_cleartext, e);
-            }
-            sln_bucket_destroy(b);
-          }
-          else {
-            /* beeep beeeeeep beeeeeep back that freight truck up */
-            SLN_BRIGADE_INSERT_HEAD(baton->bb.in_cleartext, b);
-            handle_ssl_rv(baton, rv, "SSL_write");
-          }
+        if (baton->should_exit) {
+          break;
         }
       }
-      pthread_mutex_unlock(&(baton)->mutex);
     }
+
+    do {
+      rv = SSL_read(baton->ssl, &buf[0], sizeof(buf));
+      if (rv > 0) {
+        sln_bucket_create_copy_bytes(&e, &buf[0], rv);
+        SLN_BRIGADE_INSERT_TAIL(baton->bb.out_cleartext, b);
+        need_mt_io = 1;
+      }
+      else {
+        handle_ssl_rv(baton, rv, "SSL_read");
+        break;
+      }
+    } while (1);
+
+    SLN_RING_FOREACH_SAFE(b, bit, &(baton->bb.in_enc)->list, sln_bucket_t, link)
+    {
+      SLN_RING_REMOVE(b, link);
+      rv = BIO_write(baton->bio_read, b->data, b->size);
+      if (rv > 0) {
+        if (rv != b->size) {
+          /* underflow */
+          sln_bucket_create_copy_bytes(&e, b->data + rv, b->size - rv);
+          SLN_BRIGADE_INSERT_HEAD(baton->bb.in_enc, e);
+        }
+        sln_bucket_destroy(b);
+      }
+      else {
+        SLN_BRIGADE_INSERT_HEAD(baton->bb.in_enc, b);
+        /* TODO: ugh, log this? BIO fail? */
+        break;
+      }
+    }
+
+    SLN_RING_FOREACH_SAFE(b, bit, &(baton->bb.in_cleartext)->list, sln_bucket_t, link)
+    {
+      SLN_RING_REMOVE(b, link);
+      rv = SSL_write(baton->ssl, b->data, b->size);
+      if (rv > 0) {
+        if (rv != b->size) {
+          /* underflow */
+          sln_bucket_create_copy_bytes(&e, b->data + rv, b->size - rv);
+          SLN_BRIGADE_INSERT_HEAD(baton->bb.in_cleartext, e);
+        }
+        sln_bucket_destroy(b);
+      }
+      else {
+        /* beeep beeeeeep beeeeeep back that freight truck up */
+        SLN_BRIGADE_INSERT_HEAD(baton->bb.in_cleartext, b);
+        handle_ssl_rv(baton, rv, "SSL_write");
+      }
+    }
+
+    if (need_mt_io) {
+      /* TOOD: queue main thread io callback */
+    }
+    pthread_mutex_unlock(&(baton)->mutex);
+
   } while (baton->should_exit == 0);
 
   /* TODO: this is definately leaking memory, FIXME */
