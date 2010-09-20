@@ -114,6 +114,7 @@ sln_ot_io_thread(void *thread_baton)
     }
   } while (baton->should_exit == 0);
 
+  /* TODO: this is definately leaking memory, FIXME */
   SSL_CTX_free(baton->ctx);
   SSL_free(baton->ssl);
   return NULL;
