@@ -19,6 +19,26 @@
 #include "sln_types.h"
 #include "sln_brigades.h"
 
+selene_error_t*
+sln_iobb_create(sln_iobb_t *iobb)
+{
+  SELENE_ERR(sln_brigade_create(&iobb->in_enc));
+  SELENE_ERR(sln_brigade_create(&iobb->out_enc));
+  SELENE_ERR(sln_brigade_create(&iobb->in_cleartext));
+  SELENE_ERR(sln_brigade_create(&iobb->out_cleartext));
+  return SELENE_SUCCESS;
+}
+
+void
+sln_iobb_destroy(sln_iobb_t *iobb)
+{
+  sln_brigade_destroy(iobb->in_enc);
+  sln_brigade_destroy(iobb->out_enc);
+  sln_brigade_destroy(iobb->in_cleartext);
+  sln_brigade_destroy(iobb->out_cleartext);
+}
+
+
 SELENE_API(selene_error_t*)
 selene_io_in_clear_bytes(selene_t *s,
                          const char* bytes,
@@ -28,7 +48,7 @@ selene_io_in_clear_bytes(selene_t *s,
 
   SELENE_ERR(sln_bucket_create_copy_bytes(&e, bytes, length));
 
-  SLN_BRIGADE_INSERT_TAIL(s->bb_in_enc, e);
+  SLN_BRIGADE_INSERT_TAIL(s->bb.in_enc, e);
 
   SELENE_ERR(selene_publish(s, SELENE_EVENT_IO_IN_CLEAR));
 
@@ -45,7 +65,7 @@ selene_io_in_enc_bytes(selene_t *s,
 
   SELENE_ERR(sln_bucket_create_copy_bytes(&e, bytes, length));
 
-  SLN_BRIGADE_INSERT_TAIL(s->bb_in_enc, e);
+  SLN_BRIGADE_INSERT_TAIL(s->bb.in_enc, e);
 
   SELENE_ERR(selene_publish(s, SELENE_EVENT_IO_IN_ENC));
 
@@ -81,7 +101,7 @@ selene_io_out_clear_bytes(selene_t *s,
                           size_t *length,
                           size_t *remaining)
 {
-  return bb_chomp_to_buffer(s, s->bb_out_cleartext, buffer, blen, length, remaining);
+  return bb_chomp_to_buffer(s, s->bb.out_cleartext, buffer, blen, length, remaining);
 }
 
 
@@ -92,6 +112,6 @@ selene_io_out_enc_bytes(selene_t *s,
                         size_t *length,
                         size_t *remaining)
 {
-  return bb_chomp_to_buffer(s, s->bb_out_enc, buffer, blen, length, remaining);
+  return bb_chomp_to_buffer(s, s->bb.out_enc, buffer, blen, length, remaining);
 }
 

@@ -114,6 +114,13 @@ typedef struct {
   const char *sni;
 } sln_conf_t;
 
+typedef struct {
+  sln_brigade_t *in_enc;
+  sln_brigade_t *out_enc;
+  sln_brigade_t *in_cleartext;
+  sln_brigade_t *out_cleartext;
+} sln_iobb_t;
+
 struct selene_t {
   sln_state_e state;
   sln_conf_t conf;
@@ -123,10 +130,7 @@ struct selene_t {
   size_t log_msg_len;
   sln_log_level_e log_msg_level;
 
-  sln_brigade_t *bb_in_enc;
-  sln_brigade_t *bb_out_enc;
-  sln_brigade_t *bb_in_cleartext;
-  sln_brigade_t *bb_out_cleartext;
+  sln_iobb_t bb;
   sln_events_t *events;
 
   sln_backend_t backend;

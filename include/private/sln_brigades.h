@@ -23,6 +23,12 @@
 #include "sln_buckets.h"
 
 selene_error_t*
+sln_iobb_create(sln_iobb_t *iobb);
+
+void
+sln_iobb_destroy(sln_iobb_t *iobb);
+
+selene_error_t*
 sln_brigade_create(sln_brigade_t **bb);
 
 /* Destroys the brigade, and all member buckets */
@@ -61,6 +67,12 @@ sln_brigade_flatten(sln_brigade_t *bb, char *c, size_t *len);
     sln_bucket_t *sln__b = (e); \
     SLN_RING_INSERT_HEAD(&(b)->list, sln__b, sln_bucket_t, link); \
     SLN_BRIGADE_CHECK_CONSISTENCY((b)); \
+  } while (0)
+
+#define SLN_BRIGADE_CONCAT(a, b) \
+  do { \
+    SLN_RING_CONCAT(&(a)->list, &(b)->list, sln_bucket_t, link); \
+    SLN_BRIGADE_CHECK_CONSISTENCY((a)); \
   } while (0)
 
 #ifdef SLN_BRIGADE_DEBUG

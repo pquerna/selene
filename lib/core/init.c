@@ -68,10 +68,7 @@ sln_create(selene_t **p_sel, sln_mode_e mode)
   s->log_msg_level = SLN_LOG_NOTHING;
 
   /* TODO: leaks on errors here */
-  SELENE_ERR(sln_brigade_create(&s->bb_in_enc));
-  SELENE_ERR(sln_brigade_create(&s->bb_out_enc));
-  SELENE_ERR(sln_brigade_create(&s->bb_in_cleartext));
-  SELENE_ERR(sln_brigade_create(&s->bb_out_cleartext));
+  SELENE_ERR(sln_iobb_create(&s->bb));
 
   SELENE_ERR(sln_events_create(s));
 
@@ -107,10 +104,7 @@ selene_destroy(selene_t *s)
     free((void*)s->conf.sni);
   }
 
-  sln_brigade_destroy(s->bb_in_enc);
-  sln_brigade_destroy(s->bb_out_enc);
-  sln_brigade_destroy(s->bb_in_cleartext);
-  sln_brigade_destroy(s->bb_out_cleartext);
+  sln_iobb_destroy(&s->bb);
 
   sln_events_destroy(s);
 
