@@ -19,7 +19,9 @@ Import('venv')
 
 sources = Split("""
 backends/backends.c
-backends/openssl_threaded.c
+backends/openssl_threaded/init.c
+backends/openssl_threaded/util.c
+backends/openssl_threaded/io.c
 core/conf.c
 core/error.c
 core/event.c

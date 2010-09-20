@@ -23,7 +23,7 @@ selene_error_t*
 sln_backend_initialize()
 {
 #if defined(WANT_OPENSSL_THREADED)
-  SELENE_ERR(sln_openssl_threaded_initilize());
+  SELENE_ERR(sln_ot_initilize());
 #endif
   return SELENE_SUCCESS;
 }
@@ -32,7 +32,7 @@ void
 sln_backend_terminate()
 {
 #if defined(WANT_OPENSSL_THREADED)
-  sln_openssl_threaded_terminate();
+  sln_ot_terminate();
 #endif
 }
 
@@ -41,9 +41,9 @@ sln_backend_create(selene_t *s)
 {
 #if defined(WANT_OPENSSL_THREADED)
   s->backend.name = "openssl_threaded";
-  s->backend.create = sln_openssl_threaded_create;
-  s->backend.start = sln_openssl_threaded_start;
-  s->backend.destroy = sln_openssl_threaded_destroy;
+  s->backend.create = sln_ot_create;
+  s->backend.start = sln_ot_start;
+  s->backend.destroy = sln_ot_destroy;
 #else
   return selene_error_createf(SELENE_EINVAL, "no backend available");
 #endif

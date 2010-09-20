@@ -15,39 +15,46 @@
  * limitations under the License.
  */
 
-#ifndef _sln_backends_h_
-#define _sln_backends_h_
+#ifndef _OPENSSL_THREADED_H_
+#define _OPENSSL_THREADED_H_
 
 #include "selene.h"
-#include "sln_types.h"
+#include "selene_error.h"
 #include "sln_buckets.h"
+#include "sln_types.h"
+#include "sln_assert.h"
 
-selene_error_t*
-sln_backend_create(selene_t *s);
+#include <openssl/ssl.h>
+#include <openssl/err.h>
 
-selene_error_t* 
-sln_backend_initialize(void);
+typedef struct sln_mainthread_cb_t sln_mainthread_cb_t;
 
-void
-sln_backend_terminate(void);
+struct sln_mainthread_cb_t {
+  SLN_RING_ENTRY(sln_mainthread_cb_t) link;
+  sln_standard_baton_cb *cb;
+  void *baton;
+};
 
-#if defined(WANT_OPENSSL_THREADED)
+typedef struct {
+  int should_exit;
+  selene_error_t *err;
+  pthread_t thread_id;
+  pthread_mutex_t mutex;
+  pthread_cond_t cond;
+  SSL_METHOD *meth;
+  SSL_CTX *ctx;
+  SSL *ssl;
+  BIO *bio_read;
+  BIO *bio_write;
+  int want;
+  SLN_RING_HEAD(sln_mainthread_list, sln_mainthread_cb_t) list;
+} sln_ot_baton_t;
 
-selene_error_t*
-sln_ot_initilize();
 
-void
-sln_ot_terminate();
+char* sln_ot_ciphers_to_openssl(int selene_ciphers);
 
-selene_error_t*
-sln_ot_create(selene_t *s);
+void* sln_ot_io_thread(void *thread_baton);
 
-selene_error_t*
-sln_ot_start(selene_t *s);
+selene_error_t* sln_ot_event_cb(selene_t *s, selene_event_e event, void *unused_baton);
 
-selene_error_t*
-sln_ot_destroy(selene_t *s);
 #endif
-  
-#endif
-
