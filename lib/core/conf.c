@@ -53,6 +53,8 @@ selene_conf_protocols(selene_t *s, int protocols)
 selene_error_t *
 selene_conf_name_indication(selene_t *s, const char *hostname)
 {
+  SLN_ERR_CLIENT_ONLY(s);
+
   if (s->conf.sni != NULL) {
     free((void*)s->conf.sni);
   }
