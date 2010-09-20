@@ -133,4 +133,18 @@ struct selene_t {
   void *backend_baton;
 };
 
+#define SLN_ERR_CLIENT_ONLY(s) do { \
+  if (s->conf.mode != SLN_MODE_CLIENT) { \
+    return selene_error_createf(SELENE_EINVAL, \
+    "%s is only available in client mode", __func__); \
+  } \
+} while(0);
+
+#define SLN_ERR_SERVER_ONLY(s) do { \
+  if (s->conf.mode != SLN_MODE_SERVER) { \
+    return selene_error_createf(SELENE_EINVAL, \
+    "%s is only available in client mode", __func__); \
+  } \
+} while(0);
+
 #endif
