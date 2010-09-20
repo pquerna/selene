@@ -48,6 +48,8 @@ typedef struct {
   BIO *bio_write;
   int want;
   SLN_RING_HEAD(sln_mainthread_list, sln_mainthread_cb_t) list;
+  sln_iobb_t bb;
+
 } sln_ot_baton_t;
 
 

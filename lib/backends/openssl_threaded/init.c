@@ -16,6 +16,7 @@
  */
 
 #include "openssl_threaded.h"
+#include "sln_brigades.h"
 
 selene_error_t*
 sln_ot_initilize()
@@ -105,6 +106,8 @@ sln_ot_start(selene_t *s)
                                "TLS 1.0 or SSL 3.0 must be enabled when "
                                "using the OpenSSL Threaded backend.");
   }
+
+  SELENE_ERR(sln_iobb_create(&baton->bb));
 
   /* subscribe to events */
   SELENE_ERR(selene_subscribe(s, SELENE_EVENT_IO_IN_ENC,
