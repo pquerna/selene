@@ -162,7 +162,7 @@ void sln_log_fmt(selene_t *s, sln_log_level_e level, const char* fmt, ...)
   va_end(ap);
 }
 
-void seln_log_criticalf(selene_t *s, const char *fmt, ...)
+void sln_log_criticalf(selene_t *s, const char *fmt, ...)
 {
   va_list ap;
   
