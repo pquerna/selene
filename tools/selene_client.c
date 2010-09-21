@@ -74,6 +74,27 @@ setnonblocking(int fd)
 }
 
 static selene_error_t*
+have_cleartext(selene_t *s, selene_event_e event, void *baton)
+{
+  char buf[8096];
+  size_t blen = 0;
+  size_t remaining = 0;
+
+  do {
+    SELENE_ERR(selene_io_out_clear_bytes(s,
+                                 &buf[0], sizeof(buf),
+                                 &blen, &remaining));
+
+    if (blen > 0) {
+      fwrite(buf, blen, 1, stdout);
+      fflush(stdout);
+    }
+  } while(remaining > 0);
+
+  return SELENE_SUCCESS;
+}
+
+static selene_error_t*
 want_pull(selene_t *s, selene_event_e event, void *baton)
 {
   int rv = 0;
@@ -147,6 +168,9 @@ connect_to(selene_t *s, const char *host, int port, FILE *fp)
 
   SERR(selene_subscribe(s, SELENE_EVENT_IO_OUT_ENC,
                         want_pull, &client));
+
+  SERR(selene_subscribe(s, SELENE_EVENT_IO_OUT_CLEAR,
+                        have_cleartext, &client));
 
   snprintf(port_str, sizeof(port_str), "%i", port);
   memset(&hints, 0, sizeof(hints));

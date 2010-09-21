@@ -35,6 +35,12 @@ struct sln_mainthread_cb_t {
   void *baton;
 };
 
+#define SLN_MT_INSERT_TAIL(b, e) \
+  do { \
+    sln_mainthread_cb_t *sln__cbt = (e); \
+    SLN_RING_INSERT_TAIL(&(b)->list, sln__cbt, sln_mainthread_cb_t, link); \
+  } while (0)
+
 typedef struct {
   int should_exit;
   selene_error_t *err;
@@ -49,7 +55,6 @@ typedef struct {
   int want;
   SLN_RING_HEAD(sln_mainthread_list, sln_mainthread_cb_t) list;
   sln_iobb_t bb;
-
 } sln_ot_baton_t;
 
 

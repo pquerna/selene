@@ -51,6 +51,8 @@ sln_ot_create(selene_t *s)
   baton = (sln_ot_baton_t*) calloc(1, sizeof(*baton));
   s->backend_baton = baton;
 
+  SLN_RING_INIT(&baton->list, sln_mainthread_cb_t, link);
+
   /* Setup all the OpenSSL context stuff*/
   if (s->conf.mode == SLN_MODE_CLIENT) {
     baton->meth = SSLv23_client_method();
