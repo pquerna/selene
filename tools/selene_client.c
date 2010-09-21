@@ -74,6 +74,19 @@ setnonblocking(int fd)
 }
 
 static selene_error_t*
+have_logline(selene_t *s, selene_event_e event, void *baton)
+{
+  const char *p = NULL;
+  size_t len = 0;
+  selene_log_msg_get(s, &p, &len);
+  if (len > 0) {
+    fwrite(p, len, 1, stderr);
+    fflush(stderr);
+  }
+  return SELENE_SUCCESS;
+}
+
+static selene_error_t*
 have_cleartext(selene_t *s, selene_event_e event, void *baton)
 {
   char buf[8096];
@@ -281,6 +294,8 @@ int main(int argc, char* argv[])
             err->err, err->msg, err->file, err->line);
     exit(EXIT_FAILURE);
   }
+
+  selene_subscribe(s, SELENE_EVENT_LOG_MSG, have_logline, NULL);
 
   for (i = 1; i < argc; i++) {
     /* TODO: s_client compat */
