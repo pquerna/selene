@@ -62,7 +62,7 @@ sln_create(selene_t **p_sel, sln_mode_e mode)
   s->conf.mode = mode;
   s->state = SLN_STATE_INIT;
 
-  s->log_level = SLN_LOG_NOTHING;
+  s->log_level = SLN_LOG_EVERYTHING;
   s->log_msg = NULL;
   s->log_msg_len = 0;
   s->log_msg_level = SLN_LOG_NOTHING;
