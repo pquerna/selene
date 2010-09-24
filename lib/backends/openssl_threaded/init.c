@@ -18,6 +18,49 @@
 #include "openssl_threaded.h"
 #include "sln_brigades.h"
 
+#ifdef WANT_PTHREADS
+static pthread_mutex_t lock[CRYPTO_NUM_LOCKS];
+
+static unsigned long
+sln_pthreads_thread_id()
+{
+  return (unsigned long) pthread_self();
+}
+
+static void
+sln_pthreads_locking_callback(int mode, int type, char *file, int line)
+{
+  if (mode & CRYPTO_LOCK) {
+    pthread_mutex_lock(&(lock[type]));
+  }
+  else {
+    pthread_mutex_unlock(&(lock[type]));
+  }
+}
+
+static void
+sln_pthreads_init()
+{
+  int i;
+  memset(&lock, 0, sizeof(lock));
+  for (i=0; i<CRYPTO_NUM_LOCKS; i++) {
+    pthread_mutex_init(&lock[i], NULL);
+  }
+  CRYPTO_set_id_callback((unsigned long (*)())sln_pthreads_thread_id);
+  CRYPTO_set_locking_callback((void (*)())sln_pthreads_locking_callback);
+}
+
+static void
+sln_pthreads_destroy()
+{
+  int i;
+  CRYPTO_set_locking_callback(NULL);
+  for (i=0; i<CRYPTO_NUM_LOCKS; i++) {
+    pthread_mutex_destroy(&lock[i]);
+  }
+}
+#endif
+
 selene_error_t*
 sln_ot_initilize()
 {
@@ -30,7 +73,12 @@ sln_ot_initilize()
   OpenSSL_add_all_digests();
   OpenSSL_add_all_algorithms();
 
-  /* TOOD: Crytpo Mutex init? */
+  /* TODO: Crypto Mutex init? */
+#ifdef WANT_PTHREADS
+  sln_pthreads_init();
+#else
+#error no locking library defined
+#endif
 
   return SELENE_SUCCESS;
 }
@@ -38,6 +86,9 @@ sln_ot_initilize()
 void
 sln_ot_terminate()
 {
+#ifdef WANT_PTHREADS
+  sln_pthreads_destroy();
+#endif
   ERR_free_strings();
   CRYPTO_cleanup_all_ex_data();
 }
