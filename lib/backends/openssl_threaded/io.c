@@ -67,6 +67,8 @@ sln_ot_io_thread(void *thread_baton)
   sln_bucket_t *bit;
   SLN_ASSERT_CONTEXT(s);
 
+  slnDbg(s, "(openssl) thread start");
+
   do {
     need_mt_io = 0;
     /* wait then process incoming data */
@@ -82,17 +84,22 @@ sln_ot_io_thread(void *thread_baton)
       break;
     }
 
+    slnDbg(s, "(openssl) wakeup");
+
     if (!SSL_is_init_finished(baton->ssl)) {
       if (s->conf.mode == SLN_MODE_CLIENT) {
+        slnDbg(s, "(openssl) SSL_connect");
         rv = SSL_connect(baton->ssl);
       }
       else {
         /* TOOD: finish server support */
+        slnDbg(s, "(openssl) SSL_accept");
         rv = SSL_accept(baton->ssl);
       }
 
       if (rv == 1) {
         /* Finished */
+        slnInfo(s, "Handshake complete");
       }
       else {
         handle_ssl_rv(baton, rv, "SSL_accept");
@@ -105,6 +112,7 @@ sln_ot_io_thread(void *thread_baton)
     do {
       rv = BIO_read(baton->bio_write, &buf[0], sizeof(buf));
       if (rv > 0) {
+        slnDbg(s, "(openssl) BIO_read on 'write' BIO");
         sln_bucket_create_copy_bytes(&e, &buf[0], rv);
         SLN_BRIGADE_INSERT_TAIL(baton->bb.out_enc, e);
         need_mt_io = 1;
@@ -116,6 +124,7 @@ sln_ot_io_thread(void *thread_baton)
     } while (1);
 
     do {
+      slnDbg(s, "(openssl) SSL_read");
       rv = SSL_read(baton->ssl, &buf[0], sizeof(buf));
       if (rv > 0) {
         sln_bucket_create_copy_bytes(&e, &buf[0], rv);
@@ -131,6 +140,7 @@ sln_ot_io_thread(void *thread_baton)
     SLN_RING_FOREACH_SAFE(b, bit, &(baton->bb.in_enc)->list, sln_bucket_t, link)
     {
       SLN_RING_REMOVE(b, link);
+      slnDbg(s, "(openssl) BIO_write on 'read' BIO");
       rv = BIO_write(baton->bio_read, b->data, b->size);
       if (rv > 0) {
         if (rv != b->size) {
@@ -150,6 +160,7 @@ sln_ot_io_thread(void *thread_baton)
     SLN_RING_FOREACH_SAFE(b, bit, &(baton->bb.in_cleartext)->list, sln_bucket_t, link)
     {
       SLN_RING_REMOVE(b, link);
+      slnDbg(s, "(openssl) SSL_write");
       rv = SSL_write(baton->ssl, b->data, b->size);
       if (rv > 0) {
         if (rv != b->size) {
