@@ -153,7 +153,7 @@
  * @param elem The name of the element struct
  * @param link The name of the SLN_RING_ENTRY in the element struct
  */
-#define SLN_RING_SENTINEL(hp, elem, link)				\
+#define SLN_RING_SENTINEL(hp, elem, link) \
     (struct elem *)((char *)(&(hp)->next) - offsetof(struct elem, link))
 
 /**
@@ -333,7 +333,7 @@
 #define SLN_RING_CONCAT(h1, h2, elem, link) \
   do { \
     if (!SLN_RING_EMPTY((h2), elem, link)) { \
-      SLN_RING_SPLICE_BEFORE(SLN_RING_SENTINEL((h1), elem, link),	\
+      SLN_RING_SPLICE_BEFORE(SLN_RING_SENTINEL((h1), elem, link), \
         SLN_RING_FIRST((h2)), \
         SLN_RING_LAST((h2)), link); \
       SLN_RING_INIT((h2), elem, link); \
@@ -412,51 +412,51 @@
 #include <stdio.h>
 #include <assert.h>
 
-#define SLN_RING_CHECK_ONE(msg, ptr)					\
-	fprintf(stderr, "*** %s %p\n", msg, ptr)
+#define SLN_RING_CHECK_ONE(msg, ptr) \
+  fprintf(stderr, "*** %s %p\n", msg, ptr)
 
-#define SLN_RING_CHECK(hp, elem, link, msg)				\
-	SLN_RING_CHECK_ELEM(SLN_RING_SENTINEL(hp, elem, link), elem, link, msg)
+#define SLN_RING_CHECK(hp, elem, link, msg)        \
+  SLN_RING_CHECK_ELEM(SLN_RING_SENTINEL(hp, elem, link), elem, link, msg)
 
-#define SLN_RING_CHECK_ELEM(ep, elem, link, msg) do {			\
-	struct elem *start = (ep);					\
-	struct elem *here = start;					\
-	fprintf(stderr, "*** ring check start -- %s\n", msg);		\
-	do {								\
-	    fprintf(stderr, "\telem %p\n", here);			\
-	    fprintf(stderr, "\telem->next %p\n",			\
-		    SLN_RING_NEXT(here, link));				\
-	    fprintf(stderr, "\telem->prev %p\n",			\
-		    SLN_RING_PREV(here, link));				\
-	    fprintf(stderr, "\telem->next->prev %p\n",			\
-		    SLN_RING_PREV(SLN_RING_NEXT(here, link), link));	\
-	    fprintf(stderr, "\telem->prev->next %p\n",			\
-		    SLN_RING_NEXT(SLN_RING_PREV(here, link), link));	\
-	    if (SLN_RING_PREV(SLN_RING_NEXT(here, link), link) != here) { \
-		fprintf(stderr, "\t*** elem->next->prev != elem\n");	\
-		break;							\
-	    }								\
-	    if (SLN_RING_NEXT(SLN_RING_PREV(here, link), link) != here) { \
-		fprintf(stderr, "\t*** elem->prev->next != elem\n");	\
-		break;							\
-	    }								\
-	    here = SLN_RING_NEXT(here, link);				\
-	} while (here != start);					\
-	fprintf(stderr, "*** ring check end\n");			\
+#define SLN_RING_CHECK_ELEM(ep, elem, link, msg) do {      \
+  struct elem *start = (ep);          \
+  struct elem *here = start;          \
+  fprintf(stderr, "*** ring check start -- %s\n", msg);    \
+  do {                \
+      fprintf(stderr, "\telem %p\n", here);      \
+      fprintf(stderr, "\telem->next %p\n",      \
+        SLN_RING_NEXT(here, link));        \
+      fprintf(stderr, "\telem->prev %p\n",      \
+        SLN_RING_PREV(here, link));        \
+      fprintf(stderr, "\telem->next->prev %p\n",      \
+        SLN_RING_PREV(SLN_RING_NEXT(here, link), link));  \
+      fprintf(stderr, "\telem->prev->next %p\n",      \
+        SLN_RING_NEXT(SLN_RING_PREV(here, link), link));  \
+      if (SLN_RING_PREV(SLN_RING_NEXT(here, link), link) != here) { \
+    fprintf(stderr, "\t*** elem->next->prev != elem\n");  \
+    break;              \
+      }                \
+      if (SLN_RING_NEXT(SLN_RING_PREV(here, link), link) != here) { \
+    fprintf(stderr, "\t*** elem->prev->next != elem\n");  \
+    break;              \
+      }                \
+      here = SLN_RING_NEXT(here, link);        \
+  } while (here != start);          \
+  fprintf(stderr, "*** ring check end\n");      \
     } while (0)
 
-#define SLN_RING_CHECK_CONSISTENCY(hp, elem, link)			\
-	SLN_RING_CHECK_ELEM_CONSISTENCY(SLN_RING_SENTINEL(hp, elem, link),\
-					elem, link)
+#define SLN_RING_CHECK_CONSISTENCY(hp, elem, link)      \
+  SLN_RING_CHECK_ELEM_CONSISTENCY(SLN_RING_SENTINEL(hp, elem, link),\
+          elem, link)
 
-#define SLN_RING_CHECK_ELEM_CONSISTENCY(ep, elem, link) do {		\
-	struct elem *start = (ep);					\
-	struct elem *here = start;					\
-	do {								\
-	    assert(SLN_RING_PREV(SLN_RING_NEXT(here, link), link) == here); \
-	    assert(SLN_RING_NEXT(SLN_RING_PREV(here, link), link) == here); \
-	    here = SLN_RING_NEXT(here, link);				\
-	} while (here != start);					\
+#define SLN_RING_CHECK_ELEM_CONSISTENCY(ep, elem, link) do {    \
+  struct elem *start = (ep);          \
+  struct elem *here = start;          \
+  do {                \
+      assert(SLN_RING_PREV(SLN_RING_NEXT(here, link), link) == here); \
+      assert(SLN_RING_NEXT(SLN_RING_PREV(here, link), link) == here); \
+      here = SLN_RING_NEXT(here, link);        \
+  } while (here != start);          \
     } while (0)
 
 #else
