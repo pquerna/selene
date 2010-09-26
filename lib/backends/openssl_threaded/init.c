@@ -191,6 +191,8 @@ sln_ot_start(selene_t *s)
   pthread_create(&baton->thread_id, &attr, sln_ot_io_thread, s);
   pthread_attr_destroy(&attr);
 
+  SELENE_ERR(sln_ot_event_cycle(s));
+
   return SELENE_SUCCESS;
 }
 

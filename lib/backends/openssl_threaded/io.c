@@ -197,11 +197,31 @@ sln_ot_io_thread(void *thread_baton)
 }
 
 selene_error_t*
-sln_ot_event_cb(selene_t *s, selene_event_e event, void *unused_baton)
+sln_ot_event_cycle(selene_t *s)
 {
   selene_error_t* err;
   sln_mainthread_cb_t *cb;
   sln_mainthread_cb_t *cbit;
+  sln_ot_baton_t *baton = s->backend_baton;
+
+  pthread_cond_wait(&(baton)->cond, &(baton)->mutex);
+  SLN_RING_FOREACH_SAFE(cb, cbit, &(baton)->list, sln_mainthread_cb_t, link)
+  {
+    SLN_RING_REMOVE(cb, link);
+    err = cb->cb(s, cb->baton);
+    free(cb);
+    if (err) {
+      return err;
+    }
+  }
+  pthread_mutex_unlock(&baton->mutex);
+
+  return SELENE_SUCCESS;
+}
+
+selene_error_t*
+sln_ot_event_cb(selene_t *s, selene_event_e event, void *unused_baton)
+{
   sln_ot_baton_t *baton = s->backend_baton;
 
   SLN_ASSERT_CONTEXT(s);
@@ -215,17 +235,7 @@ sln_ot_event_cb(selene_t *s, selene_event_e event, void *unused_baton)
     pthread_cond_signal(&baton->cond);
     pthread_mutex_unlock(&baton->mutex);
 
-    pthread_cond_wait(&(baton)->cond, &(baton)->mutex);
-    SLN_RING_FOREACH_SAFE(cb, cbit, &(baton)->list, sln_mainthread_cb_t, link)
-    {
-      SLN_RING_REMOVE(cb, link);
-      err = cb->cb(s, cb->baton);
-      free(cb);
-      if (err) {
-        return err;
-      }
-    }
-    pthread_mutex_unlock(&baton->mutex);
+    SELENE_ERR(sln_ot_event_cycle(s));
     break;
   default:
     return selene_error_createf(SELENE_EINVAL,

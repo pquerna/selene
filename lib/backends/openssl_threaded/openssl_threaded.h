@@ -62,6 +62,7 @@ char* sln_ot_ciphers_to_openssl(int selene_ciphers);
 
 void* sln_ot_io_thread(void *thread_baton);
 
+selene_error_t* sln_ot_event_cycle(selene_t *s);
 selene_error_t* sln_ot_event_cb(selene_t *s, selene_event_e event, void *unused_baton);
 
 #endif
