@@ -102,7 +102,8 @@ sln_ot_create(selene_t *s)
   baton = (sln_ot_baton_t*) calloc(1, sizeof(*baton));
   s->backend_baton = baton;
 
-  SLN_RING_INIT(&baton->list, sln_mainthread_cb_t, link);
+  SLN_RING_INIT(&baton->main, sln_xthread_cb_t, link);
+  SLN_RING_INIT(&baton->worker, sln_xthread_cb_t, link);
 
   /* Setup all the OpenSSL context stuff*/
   if (s->conf.mode == SLN_MODE_CLIENT) {
@@ -113,8 +114,6 @@ sln_ot_create(selene_t *s)
   }
 
   baton->ctx = SSL_CTX_new(baton->meth);
-
-  SLN_RING_INIT(&baton->list, sln_mainthread_cb_t, link);
 
   return SELENE_SUCCESS;
 }
@@ -187,6 +186,7 @@ sln_ot_start(selene_t *s)
   /* spawn thread */
   pthread_mutex_init(&baton->mutex, NULL);
   pthread_cond_init(&baton->cond, NULL);
+
   pthread_attr_init(&attr);
   pthread_create(&baton->thread_id, &attr, sln_ot_io_thread, s);
   pthread_attr_destroy(&attr);
@@ -208,6 +208,11 @@ sln_ot_destroy(selene_t *s)
     pthread_join(baton->thread_id, NULL);
     pthread_mutex_destroy(&baton->mutex);
     pthread_cond_destroy(&baton->cond);
+
+    /* TODO: this is definately leaking memory, FIXME */
+    SSL_CTX_free(baton->ctx);
+    SSL_free(baton->ssl);
+
     free(baton);
     s->backend_baton = NULL;
   }
