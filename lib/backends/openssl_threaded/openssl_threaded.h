@@ -27,18 +27,18 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
-typedef struct sln_mainthread_cb_t sln_mainthread_cb_t;
+typedef struct sln_xthread_cb_t sln_xthread_cb_t;
 
-struct sln_mainthread_cb_t {
-  SLN_RING_ENTRY(sln_mainthread_cb_t) link;
+struct sln_xthread_cb_t {
+  SLN_RING_ENTRY(sln_xthread_cb_t) link;
   sln_standard_baton_cb *cb;
   void *baton;
 };
 
-#define SLN_MT_INSERT_TAIL(b, e) \
+#define SLN_MT_INSERT_TAIL(list, e) \
   do { \
-    sln_mainthread_cb_t *sln__cbt = (e); \
-    SLN_RING_INSERT_TAIL(&(b)->list, sln__cbt, sln_mainthread_cb_t, link); \
+    sln_xthread_cb_t *sln__cbt = (e); \
+    SLN_RING_INSERT_TAIL(&list, sln__cbt, sln_xthread_cb_t, link); \
   } while (0)
 
 typedef struct {
@@ -47,13 +47,15 @@ typedef struct {
   pthread_t thread_id;
   pthread_mutex_t mutex;
   pthread_cond_t cond;
+
   SSL_METHOD *meth;
   SSL_CTX *ctx;
   SSL *ssl;
   BIO *bio_read;
   BIO *bio_write;
   int want;
-  SLN_RING_HEAD(sln_mainthread_list, sln_mainthread_cb_t) list;
+  SLN_RING_HEAD(sln_xthread_main, sln_xthread_cb_t) main;
+  SLN_RING_HEAD(sln_xthread_worker, sln_xthread_cb_t) worker;
   sln_iobb_t bb;
 } sln_ot_baton_t;
 
