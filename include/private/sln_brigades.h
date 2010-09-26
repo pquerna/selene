@@ -75,6 +75,8 @@ sln_brigade_flatten(sln_brigade_t *bb, char *c, size_t *len);
     SLN_BRIGADE_CHECK_CONSISTENCY((a)); \
   } while (0)
 
+#define SLN_BRIGADE_DEBUG
+
 #ifdef SLN_BRIGADE_DEBUG
 #define SLN_BRIGADE_CHECK_CONSISTENCY(b) \
   do { \
