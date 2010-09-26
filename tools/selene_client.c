@@ -233,12 +233,12 @@ connect_to(selene_t *s, const char *host, int port, FILE *fp)
     FD_ZERO(&readers);
 
     FD_SET(client.sock, &readers);
-    FD_SET(fileno(stdin), &readers);
+    FD_SET(fileno(fp), &readers);
 
     rv = select(FD_SETSIZE, &readers, NULL, NULL, NULL);
 
     if (rv > 0) {
-      if (FD_ISSET(fileno(stdin), &readers)) {
+      if (FD_ISSET(fileno(fp), &readers)) {
         p = fgets(buf, sizeof(buf), fp);
 
         if (p == NULL) {
