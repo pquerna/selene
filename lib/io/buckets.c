@@ -27,6 +27,8 @@ static void create_sized(sln_bucket_t **out_b, size_t size)
   b->memory_is_mine = 1;
   b->size = size;
 
+  SLN_RING_ELEM_INIT(b, link);
+
   *out_b = b;
 }
 
