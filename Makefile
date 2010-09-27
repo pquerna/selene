@@ -19,7 +19,7 @@ ifeq ($(uname_S),FreeBSD)
 	CPPDEFINES += FREEBSD
 endif
 
-CFLAGS +=
+CFLAGS += -pedantic
 
 ifdef enable_native
 	WANT_OPENSSL = 1
