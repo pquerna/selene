@@ -19,11 +19,7 @@ ifeq ($(uname_S),FreeBSD)
 	CPPDEFINES += FREEBSD
 endif
 
-
-
-
-
-CFLAGS += -pedantic -std=c99
+CFLAGS +=
 
 ifdef enable_native
 	WANT_OPENSSL = 1
@@ -34,6 +30,7 @@ ifdef enable_openssl_threaded
 	WANT_OPENSSL = 1
 	OPENSSL_CPPFLAGS += -DWANT_OPENSSL_THREADED 
 	OPENSSL_CPPFLAGS += -DWANT_PTHREADS
+	OPENSSL_LINKFLAGS += -lpthread
 endif
 
 ifdef WANT_OPENSSL
@@ -126,7 +123,7 @@ all: $(lib) tests $(selene_client)
 
 .phony: clean
 clean:
-	-rm $(objects) $(builddir)/test $(cmockery_object)
+	-rm -f $(objects) $(builddir)/test $(cmockery_object)
 
 .PHONY: distclean
 distclean:
