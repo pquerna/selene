@@ -38,13 +38,13 @@ env = Environment(options=opts,
 conf = Configure(env, custom_tests = {'CheckUname': ac.CheckUname})
 
 conf.env['CLANG'] = env.WhereIs('clang')
-conf.env['CLANG++'] = env.WhereIs('clang++')
+conf.env['CLANGXX'] = env.WhereIs('clang++')
 
 if conf.env['CLANG']:
   conf.env['CC'] = conf.env['CLANG']
 
-if conf.env['CLANG++']:
-  conf.env['CXX'] = conf.env['CLANG++']
+if conf.env['CLANGXX']:
+  conf.env['CXX'] = conf.env['CLANGXX']
 
 (st, platform) = conf.CheckUname("-sm")
 
