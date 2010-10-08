@@ -27,8 +27,10 @@ handle_ssl_rv(sln_ot_baton_t *baton, int rv, const char *func)
   err = SSL_get_error(baton->ssl, rv);
   if (err != SSL_ERROR_WANT_WRITE &&
       err != SSL_ERROR_WANT_READ) {
+    char buf[512];
     /* TODO: look at ssl error queue */
-    baton->err = selene_error_createf(SELENE_EINVAL, "%s failed: (%d)", func, err);
+    ERR_error_string_n(ERR_get_error(), &buf[0], sizeof(buf));
+    baton->err = selene_error_createf(SELENE_EINVAL, "%s failed: (%d) %s", func, err, buf);
     baton->should_exit = 1;
   }
   else {
@@ -71,17 +73,16 @@ sln_ot_io_thread(void *thread_baton)
 
   slnDbg(s, "(openssl) thread start");
 
+  SSL_do_handshake(baton->ssl);
   do {
     need_mt_io = 0;
     /* wait then process incoming data */
 
-    slnDbg(s, "(openssl) wakeup");
+    slnDbg(s, "(openssl) loop start");
 
     pthread_mutex_lock(&(baton)->mutex);
-
-    baton->want = 0;
-
-    if (!SSL_is_init_finished(baton->ssl)) {
+#if 0
+     if (!SSL_is_init_finished(baton->ssl)) {
       if (s->conf.mode == SLN_MODE_CLIENT) {
         slnDbg(s, "(openssl) SSL_connect");
         rv = SSL_connect(baton->ssl);
@@ -103,28 +104,16 @@ sln_ot_io_thread(void *thread_baton)
         }
       }
     }
+#endif
 
     do {
-      rv = BIO_read(baton->bio_write, &buf[0], sizeof(buf));
-      if (rv > 0) {
-        slnDbg(s, "(openssl) BIO_read on 'write' BIO = %d bytes", rv);
-        assert(sln_bucket_create_copy_bytes(&e, &buf[0], rv) == SELENE_SUCCESS);
-        SLN_BRIGADE_INSERT_TAIL((baton->bb.out_enc), e);
-        need_mt_io = 1;
-      }
-      else {
-        handle_ssl_rv(baton, rv, "BIO_read");
-        break;
-      }
-    } while (1);
-
-    do {
-      slnDbg(s, "(openssl) SSL_read");
+      slnDbg(s, "(openssl) trying to read cleartext");
       rv = SSL_read(baton->ssl, &buf[0], sizeof(buf));
       if (rv > 0) {
         slnDbg(s, "(openssl) SSL_read result = %d bytes", rv);
         sln_bucket_create_copy_bytes(&e, &buf[0], rv);
-        abort();
+        buf[rv] = '\0';
+        slnDbg(s, "data= %s", &buf[0]);
         SLN_BRIGADE_INSERT_TAIL(baton->bb.out_cleartext, e);
         need_mt_io = 1;
       }
@@ -134,30 +123,10 @@ sln_ot_io_thread(void *thread_baton)
       }
     } while (1);
 
-    SLN_RING_FOREACH_SAFE(b, bit, &(baton->bb.in_enc)->list, sln_bucket_t, link)
-    {
-      SLN_RING_REMOVE(b, link);
-      slnDbg(s, "(openssl) BIO_write on 'read' BIO");
-      rv = BIO_write(baton->bio_read, b->data, b->size);
-      if (rv > 0) {
-        if (rv != b->size) {
-          /* underflow */
-          sln_bucket_create_copy_bytes(&e, b->data + rv, b->size - rv);
-          SLN_BRIGADE_INSERT_HEAD(baton->bb.in_enc, e);
-        }
-        sln_bucket_destroy(b);
-      }
-      else {
-        SLN_BRIGADE_INSERT_HEAD(baton->bb.in_enc, b);
-        /* TODO: ugh, log this? BIO fail? */
-        break;
-      }
-    }
-
     SLN_RING_FOREACH_SAFE(b, bit, &(baton->bb.in_cleartext)->list, sln_bucket_t, link)
     {
       SLN_RING_REMOVE(b, link);
-      slnDbg(s, "(openssl) SSL_write of %zd", b->size);
+      slnDbg(s, "(openssl) sending clear %zd bytes", b->size);
       rv = SSL_write(baton->ssl, b->data, b->size);
       if (rv > 0) {
         if (rv != b->size) {
@@ -174,16 +143,52 @@ sln_ot_io_thread(void *thread_baton)
       }
     }
 
+    do {
+      rv = BIO_read(baton->bio_write, &buf[0], sizeof(buf));
+      if (rv > 0) {
+        slnDbg(s, "(openssl) sending enc %d bytes", rv);
+        assert(sln_bucket_create_copy_bytes(&e, &buf[0], rv) == SELENE_SUCCESS);
+        SLN_BRIGADE_INSERT_TAIL((baton->bb.out_enc), e);
+        need_mt_io = 1;
+      }
+      else {
+        handle_ssl_rv(baton, rv, "BIO_read");
+        break;
+      }
+    } while (1);
+
+    SLN_RING_FOREACH_SAFE(b, bit, &(baton->bb.in_enc)->list, sln_bucket_t, link)
+    {
+      SLN_RING_REMOVE(b, link);
+      slnDbg(s, "(openssl) input enc %zd bytes", b->size);
+      rv = BIO_write(baton->bio_read, b->data, b->size);
+      if (rv > 0) {
+        if (rv != b->size) {
+          /* underflow */
+          sln_bucket_create_copy_bytes(&e, b->data + rv, b->size - rv);
+          SLN_BRIGADE_INSERT_HEAD(baton->bb.in_enc, e);
+        }
+        sln_bucket_destroy(b);
+      }
+      else {
+        SLN_BRIGADE_INSERT_HEAD(baton->bb.in_enc, b);
+        /* TODO: ugh, log this? BIO fail? */
+        break;
+      }
+    }
+
     if (need_mt_io) {
       /* TOOD: queue main thread io callback */
       sln_xthread_cb_t *cbt = calloc(1, sizeof(sln_xthread_cb_t));
       cbt->cb = sln_ot_mtio_cb;
       cbt->baton = baton;
-      SLN_MT_INSERT_TAIL(baton->main, cbt);
-      pthread_cond_signal(&(baton)->cond);
+      SLN_XT_INSERT_TAIL(baton->main, cbt);
     }
-    else if (baton->want != 0) {
-      pthread_cond_signal(&(baton)->cond);
+
+    slnDbg(s, "baton->want = %d", baton->want);
+
+    if (baton->want != 0 || !SLN_XT_EMPTY(&baton->main)) {
+
     }
 
     pthread_mutex_unlock(&(baton)->mutex);
@@ -192,10 +197,12 @@ sln_ot_io_thread(void *thread_baton)
       break;
     }
 
-    sleep(5);
-
+    sleep(1);
   } while (baton->should_exit == 0);
 
+  if (baton->err) {
+    slnDbg(s, "OPENSSL EXITING: (%d) %s [%s:%d]", baton->err->err, baton->err->msg, baton->err->file, baton->err->line);
+  }
   return NULL;
 }
 
@@ -209,22 +216,18 @@ sln_ot_event_cycle(selene_t *s)
 
   do {
     pthread_mutex_lock(&baton->mutex);
-    if (SLN_RING_EMPTY(&(baton)->main, sln_xthread_cb_t, link) && baton->want != 0) {
-      slnDbg(s, "(openssl) sln_ot_event_cycle, cond wait");
-      pthread_cond_wait(&(baton)->cond, &(baton)->mutex);
-      slnDbg(s, "(openssl) sln_ot_event_cycle, cond done");
-    }
-    else {
-      SLN_RING_FOREACH_SAFE(cb, cbit, &(baton)->main, sln_xthread_cb_t, link)
-      {
-        SLN_RING_REMOVE(cb, link);
-        err = cb->cb(s, cb->baton);
-        free(cb);
-        if (err) {
-          pthread_mutex_unlock(&baton->mutex);
-          return err;
-        }
+    SLN_RING_FOREACH_SAFE(cb, cbit, &(baton)->main, sln_xthread_cb_t, link)
+    {
+      SLN_RING_REMOVE(cb, link);
+      err = cb->cb(s, cb->baton);
+      free(cb);
+      if (err) {
+        pthread_mutex_unlock(&baton->mutex);
+        return err;
       }
+    }
+
+    if (baton->want != 0) {
       pthread_mutex_unlock(&baton->mutex);
       break;
     }

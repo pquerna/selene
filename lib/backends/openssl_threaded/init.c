@@ -107,7 +107,8 @@ sln_ot_create(selene_t *s)
 
   /* Setup all the OpenSSL context stuff*/
   if (s->conf.mode == SLN_MODE_CLIENT) {
-    baton->meth = SSLv23_client_method();
+//    baton->meth = SSLv23_client_method();
+    baton->meth = TLSv1_client_method();
   }
   else {
     baton->meth = SSLv23_server_method();
@@ -116,6 +117,13 @@ sln_ot_create(selene_t *s)
   baton->ctx = SSL_CTX_new(baton->meth);
 
   return SELENE_SUCCESS;
+}
+
+static int
+validate_server_cert(int cert_valid, X509_STORE_CTX *store_ctx)
+{
+  /* TODO: rewrite */
+  return 1;
 }
 
 selene_error_t*
@@ -141,10 +149,19 @@ sln_ot_start(selene_t *s)
     }
   }
 
+
+  SSL_CTX_set_verify(baton->ctx, SSL_VERIFY_PEER,
+                     validate_server_cert);
+
+  /* Enable bug compat mode... */
+  SSL_CTX_set_options(baton->ctx, SSL_OP_ALL);
+
   /* We never want to let anyone use SSL v2. */
+  slnDbg(s, "openssl: disabled ssl 2.0: %d", s->conf.protocols);
   SSL_CTX_set_options(baton->ctx, SSL_OP_NO_SSLv2);
 
   if (!(s->conf.protocols & SELENE_PROTOCOL_SSL30)) {
+    slnDbg(s, "openssl: enabling ssl 3.0");
     SSL_CTX_set_options(baton->ctx, SSL_OP_NO_SSLv3);
   }
 
@@ -182,6 +199,8 @@ sln_ot_start(selene_t *s)
     SSL_set_tlsext_host_name(baton->ssl, s->conf.sni);
   }
 #endif
+
+  SSL_set_connect_state(baton->ssl);
 
   /* spawn thread */
   pthread_mutex_init(&baton->mutex, NULL);

@@ -35,7 +35,9 @@ struct sln_xthread_cb_t {
   void *baton;
 };
 
-#define SLN_MT_INSERT_TAIL(list, e) \
+#define SLN_XT_EMPTY(b) SLN_RING_EMPTY(b, sln_xthread_cb_t, link)
+
+#define SLN_XT_INSERT_TAIL(list, e) \
   do { \
     sln_xthread_cb_t *sln__cbt = (e); \
     SLN_RING_INSERT_TAIL(&list, sln__cbt, sln_xthread_cb_t, link); \
