@@ -70,7 +70,7 @@ env = conf.Finish()
 options = {
   'PLATFORM': {
     'DARWIN': {
-      'CC': '/usr/bin/clang',
+      'CC': env.WhereIs('clang'),
       'CPPDEFINES': ['DARWIN'],
     },
     'LINUX': {
