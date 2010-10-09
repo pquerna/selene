@@ -16,14 +16,15 @@
  */
 
 #include "sln_backends.h"
-#include <openssl/ssl.h>
-#include <openssl/err.h>
 
 selene_error_t*
 sln_backend_initialize()
 {
 #if defined(WANT_OPENSSL_THREADED)
   SELENE_ERR(sln_ot_initilize());
+#endif
+#if defined(WANT_NATIVE)
+  SELENE_ERR(sln_native_initilize());
 #endif
   return SELENE_SUCCESS;
 }
@@ -34,18 +35,33 @@ sln_backend_terminate()
 #if defined(WANT_OPENSSL_THREADED)
   sln_ot_terminate();
 #endif
+#if defined(WANT_NATIVE)
+  sln_native_terminate();
+#endif
 }
 
 selene_error_t*
-sln_backend_create(selene_t *s)
+sln_backend_create(selene_t *s, sln_backend_e be)
 {
+  switch (be) {
 #if defined(WANT_OPENSSL_THREADED)
-  s->backend.name = "openssl_threaded";
-  s->backend.create = sln_ot_create;
-  s->backend.start = sln_ot_start;
-  s->backend.destroy = sln_ot_destroy;
-#else
-  return selene_error_createf(SELENE_EINVAL, "no backend available");
+    case SLN_BACKEND_OPENSSL_THREADED:
+      s->backend.name = "openssl_threaded";
+      s->backend.create = sln_ot_create;
+      s->backend.start = sln_ot_start;
+      s->backend.destroy = sln_ot_destroy;
+      return SELENE_SUCCESS;
 #endif
-  return SELENE_SUCCESS;
+#if defined(WANT_NATIVE)
+    case SLN_BACKEND_NATIVE:
+      s->backend.name = "native";
+      s->backend.create = sln_native_create;
+      s->backend.start = sln_native_start;
+      s->backend.destroy = sln_native_destroy;
+      return SELENE_SUCCESS;
+#endif
+    default:
+      break;
+  }
+  return selene_error_create(SELENE_EINVAL, "no backend available");
 }

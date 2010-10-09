@@ -38,6 +38,13 @@ typedef enum {
   SLN_MODE__MAX = 3
 } sln_mode_e;
 
+typedef enum {
+  SLN_BACKEND__UNUSED0 = 0,
+  SLN_BACKEND_OPENSSL_THREADED = 1,
+  SLN_BACKEND_NATIVE = 2,
+  SLN_BACKEND__MAX = 3
+} sln_backend_e;
+
 typedef struct sln_bucket_t sln_bucket_t;
 typedef struct sln_brigade_t sln_brigade_t;
 

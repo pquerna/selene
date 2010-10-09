@@ -72,7 +72,14 @@ sln_create(selene_t **p_sel, sln_mode_e mode)
 
   SELENE_ERR(sln_events_create(s));
 
-  SELENE_ERR(sln_backend_create(s));
+  /* TODO: make this runtime configurable, add flags (?) */
+#if defined(WANT_NATIVE)
+  SELENE_ERR(sln_backend_create(s, SLN_BACKEND_NATIVE));
+#elif defined(WANT_OPENSSL_THREADED)
+  SELENE_ERR(sln_backend_create(s, SLN_BACKEND_OPENSSL_THREADED));
+#else
+  return selene_error_createf(SELENE_EINVAL, "no backend available");
+#endif
 
   SELENE_ERR(s->backend.create(s));
 

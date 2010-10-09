@@ -23,7 +23,7 @@
 #include "sln_buckets.h"
 
 selene_error_t*
-sln_backend_create(selene_t *s);
+sln_backend_create(selene_t *s, sln_backend_e be);
 
 selene_error_t* 
 sln_backend_initialize(void);
@@ -47,6 +47,25 @@ sln_ot_start(selene_t *s);
 
 selene_error_t*
 sln_ot_destroy(selene_t *s);
+#endif
+
+
+#if defined(WANT_NATIVE)
+
+selene_error_t*
+sln_native_initilize();
+
+void
+sln_native_terminate();
+
+selene_error_t*
+sln_native_create(selene_t *s);
+
+selene_error_t*
+sln_native_start(selene_t *s);
+
+selene_error_t*
+sln_native_destroy(selene_t *s);
 #endif
   
 #endif
