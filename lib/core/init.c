@@ -91,6 +91,23 @@ sln_create(selene_t **p_sel, sln_mode_e mode)
 }
 
 selene_error_t*
+selene_clone(selene_t *ctxt, selene_t **p_sel)
+{
+  selene_error_t* err;
+  selene_t *s = NULL;
+
+  err = sln_create(&s, ctxt->conf.mode);
+  if (err) {
+    return err;
+  }
+
+  /* TODO: copy event handlers */
+  /* TODO: copy config */
+  /* TODO: copy logging system */
+  return SELENE_SUCCESS;
+}
+
+selene_error_t*
 selene_client_create(selene_t **p_sel)
 {
   return sln_create(p_sel, SLN_MODE_CLIENT);

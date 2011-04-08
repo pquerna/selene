@@ -46,6 +46,15 @@ SELENE_API(selene_error_t*) selene_client_create(selene_t **ctxt);
 SELENE_API(selene_error_t*) selene_server_create(selene_t **ctxt);
 
 /**
+ * Creates a SSL/TLS Context using the configuration and state of an existing ctxt.
+ *
+ * The source context must not of been in a running state.  This should be used
+ * to store common settings like lists of root certificates and common callbacks
+ * for handling validation of certificates.
+ */
+SELENE_API(selene_error_t*) selene_clone(selene_t *ctxt, selene_t **ctxt_out);
+
+/**
  * Starts processing, call after you have Subscribed to events,
  * and set any options on a created context.
  */
@@ -195,6 +204,15 @@ selene_conf_crypto_device(selene_t *ctxt, const char* name);
 SELENE_API(selene_error_t*)
 selene_conf_name_indication(selene_t *ctxt, const char* sni);
 
+/* Set the Certificate for the server to use.  If you
+ * need a chain certificate, just append it to your
+ * certifcate. (server only) */
+SELENE_API(selene_error_t*)
+selene_conf_cert(selene_t *ctxt, const char *certificate);
+
+/* Set the private key (server only) */
+SELENE_API(selene_error_t*)
+selene_conf_key(selene_t *ctxt, const char *key);
 
 #ifdef __cplusplus
 }
