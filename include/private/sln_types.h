@@ -75,6 +75,8 @@ struct sln_eventcb_t {
 struct sln_events_t {
   SLN_RING_HEAD(sln_events_list, sln_eventcb_t) list;
   selene_event_e event;
+  selene_event_cb *handler;
+  void *handler_baton;
 };
 
 typedef enum {

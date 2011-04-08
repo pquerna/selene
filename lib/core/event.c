@@ -69,6 +69,25 @@ sln_events_destroy(selene_t *s)
 }
 
 selene_error_t*
+selene_handler_set(selene_t *s, selene_event_e event,
+                   selene_event_cb cb, void *baton)
+{
+  sln_events_t *events;
+
+  SLN_ASSERT_CONTEXT(s);
+  SLN_ASSERT_ENUM(SELENE_EVENT, event);
+
+  SLN_GUARD_EVENT_SIZE("set", event);
+
+  events = &(s->events[event]);
+
+  events->handler = cb;
+  events->handler_baton = baton;
+
+  return SELENE_SUCCESS;
+}
+
+selene_error_t*
 selene_subscribe(selene_t *s, selene_event_e event,
                  selene_event_cb cb, void *baton)
 {
@@ -129,6 +148,10 @@ selene_publish(selene_t *s, selene_event_e event)
   SLN_GUARD_EVENT_SIZE("publish", event);
 
   events = &(s->events[event]);
+  if (events->handler != NULL) {
+    events->handler(s, event, events->handler_baton);
+  }
+
   SLN_RING_FOREACH(b, &(events)->list, sln_eventcb_t, link)
   {
     b->cb(s, event, b->baton);

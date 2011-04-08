@@ -83,6 +83,21 @@ typedef selene_error_t* (selene_event_cb)(selene_t *ctxt,
                                           void *baton);
 
 /**
+ * Register to be the single Handler for an Event.
+ *
+ * Handlers are used to allow plugable backends for many tasks, but
+ * for which you only want one answer.  Verification of a Certificate
+ * chain is a good example.
+ *
+ * Depending on the Event Type, you may be asked to call other functions
+ * on success or failure -- see the documenation about a specific event
+ * for details.
+ */
+SELENE_API(selene_error_t*) selene_handler_set(selene_t *ctxt,
+                                               selene_event_e event,
+                                               selene_event_cb cb,
+                                               void *baton);
+/**
  * Subscribe to an Event.
  */
 SELENE_API(selene_error_t*) selene_subscribe(selene_t *ctxt,
