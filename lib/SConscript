@@ -19,17 +19,19 @@ Import('venv')
 
 sources = Split("""
 backends/backends.c
-backends/openssl_threaded/init.c
-backends/openssl_threaded/util.c
-backends/openssl_threaded/io.c
 backends/native/init.c
+backends/native/io.c
+backends/native/state_machine.c
+backends/openssl_threaded/init.c
+backends/openssl_threaded/io.c
+backends/openssl_threaded/util.c
 core/conf.c
 core/error.c
 core/event.c
 core/init.c
 core/log.c
-io/buckets.c
 io/brigades.c
+io/buckets.c
 io/io.c
 """)
 

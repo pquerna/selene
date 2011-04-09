@@ -18,51 +18,9 @@
 #include "sln_brigades.h"
 #include "native.h"
 
-
 selene_error_t*
-sln_native_initilize()
+sln_native_io_client_hello(selene_t *s, sln_native_baton_t *baton)
 {
-  return SELENE_SUCCESS;
-}
-
-void
-sln_native_terminate()
-{
-}
-
-selene_error_t*
-sln_native_create(selene_t *s)
-{
-  sln_native_baton_t *baton;
-  SLN_ASSERT_CONTEXT(s);
-
-  baton = (sln_native_baton_t*) calloc(1, sizeof(*baton));
-  s->backend_baton = baton;
-
-  return SELENE_SUCCESS;
-}
-
-selene_error_t*
-sln_native_start(selene_t *s)
-{
-  sln_native_baton_t *baton;
-  SLN_ASSERT_CONTEXT(s);
-
-  baton = s->backend_baton;
-
-  if (s->mode == SLN_MODE_CLIENT) {
-    baton->handshake = SLN_NATIVE_HANDSHAKE_CLIENT_SEND_HELLO;
-  }
-  else {
-    baton->handshake = SLN_NATIVE_HANDSHAKE_SERVER_WAIT_CLIENT_HELLO;
-  }
-
-  return sln_native_handshake_state_machine(s, baton);
-}
-
-selene_error_t*
-sln_native_destroy(selene_t *s)
-{
-
+  /* TODO: write to s->bb.out_enc */
   return SELENE_SUCCESS;
 }

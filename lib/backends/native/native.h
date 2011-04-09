@@ -24,8 +24,54 @@
 #include "sln_types.h"
 #include "sln_assert.h"
 
+/**
+ * RFC 4346 handshake states:
+ *
+ *      Client                                               Server
+ *
+ *      ClientHello                  -------->
+ *                                                      ServerHello
+ *                                                     Certificate*
+ *                                               ServerKeyExchange*
+ *                                              CertificateRequest*
+ *                                   <--------      ServerHelloDone
+ *    Certificate*
+ *      ClientKeyExchange
+ *      CertificateVerify*
+ *      [ChangeCipherSpec]
+ *      Finished                     -------->
+ *                                               [ChangeCipherSpec]
+ *                                   <--------             Finished
+ *      Application Data             <------->     Application Data
+ *
+ *             Fig. 1. Message flow for a full handshake
+ */
+
+typedef enum {
+  SLN_NATIVE_HANDSHAKE__UNUSED0 = 0,
+  SLN_NATIVE_HANDSHAKE_CLIENT_SEND_HELLO = 1,
+  SLN_NATIVE_HANDSHAKE_CLIENT_WAIT_SERVER_HELLO_DONE = 2,
+  SLN_NATIVE_HANDSHAKE_CLIENT_SEND_FINISHED = 3,
+  SLN_NATIVE_HANDSHAKE_CLIENT_WAIT_SERVER_FINISHED = 4,
+  SLN_NATIVE_HANDSHAKE_CLIENT_APPDATA = 5,
+  SLN_NATIVE_HANDSHAKE_SERVER_WAIT_CLIENT_HELLO = 6,
+  SLN_NATIVE_HANDSHAKE_SERVER_SEND_SERVER_HELLO_DONE = 7,
+  SLN_NATIVE_HANDSHAKE_SERVER_WAIT_CLIENT_FINISHED = 8,
+  SLN_NATIVE_HANDSHAKE_SERVER_SNED_FINISHED = 9,
+  SLN_NATIVE_HANDSHAKE_SERVER_APPDATA = 10,
+  SLN_NATIVE_HANDSHAKE__MAX = 11
+} sln_native_handshake_e;
+
 typedef struct {
-  int dummy;
+  sln_native_handshake_e handshake;
 } sln_native_baton_t;
+
+
+selene_error_t*
+sln_native_handshake_state_machine(selene_t *s, sln_native_baton_t *baton);
+
+
+selene_error_t*
+sln_native_io_client_hello(selene_t *s, sln_native_baton_t *baton);
 
 #endif
