@@ -28,7 +28,7 @@ opts.Add(PathVariable('with_openssl',
 
 opts.Add(EnumVariable('profile', 'build profile', 'debug', ['debug', 'gcov', 'release'], {}, True))
 
-opts.Add('enable_openssl_threaded', default=True, help='Enable Threaded OpenSSL backend')
+opts.Add('enable_openssl_threaded', default=False, help='Enable Threaded OpenSSL backend')
 opts.Add('enable_native', default=True, help='Enable Native TLS, using OpenSSL for crytpo operations')
 
 env = Environment(options=opts,
