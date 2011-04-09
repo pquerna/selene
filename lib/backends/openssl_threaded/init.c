@@ -106,7 +106,7 @@ sln_ot_create(selene_t *s)
   SLN_RING_INIT(&baton->worker, sln_xthread_cb_t, link);
 
   /* Setup all the OpenSSL context stuff*/
-  if (s->conf->mode == SLN_MODE_CLIENT) {
+  if (s->mode == SLN_MODE_CLIENT) {
 //    baton->meth = SSLv23_client_method();
     baton->meth = TLSv1_client_method();
   }

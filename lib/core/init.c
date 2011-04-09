@@ -60,8 +60,7 @@ sln_create(selene_conf_t *conf, sln_mode_e mode, selene_t **p_sel)
 
   s = calloc(1, sizeof(selene_t));
   s->conf = conf;
-  /* TODO: refactor mode (?) */
-  s->conf->mode = mode;
+  s->mode = mode;
   s->state = SLN_STATE_INIT;
 
   s->log_level = SLN_LOG_EVERYTHING;

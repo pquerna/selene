@@ -117,7 +117,6 @@ typedef struct {
 } sln_backend_t;
 
 struct selene_conf_t{
-  sln_mode_e mode;
   int protocols;
   int ciphers;
   const char *sni;
@@ -131,6 +130,7 @@ typedef struct {
 } sln_iobb_t;
 
 struct selene_t {
+  sln_mode_e mode;
   sln_state_e state;
   selene_conf_t *conf;
 
