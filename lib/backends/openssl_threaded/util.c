@@ -15,7 +15,10 @@
  * limitations under the License.
  */
 
+
 #include "openssl_threaded.h"
+
+#ifdef WANT_OPENSSL_THREADED
 
 char* 
 sln_ot_ciphers_to_openssl(int selene_ciphers)
@@ -58,3 +61,5 @@ sln_ot_ciphers_to_openssl(int selene_ciphers)
 
   return out;
 }
+
+#endif

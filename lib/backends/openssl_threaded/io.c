@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+#ifdef WANT_OPENSSL_THREADED
+
 #include "openssl_threaded.h"
 #include "sln_brigades.h"
 #include <unistd.h>
@@ -264,3 +266,5 @@ sln_ot_event_cb(selene_t *s, selene_event_e event, void *unused_baton)
 
   return SELENE_SUCCESS;
 }
+
+#endif /* WANT_OPENSSL_THREADED */

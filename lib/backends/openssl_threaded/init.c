@@ -18,6 +18,8 @@
 #include "openssl_threaded.h"
 #include "sln_brigades.h"
 
+#ifdef WANT_OPENSSL_THREADED
+
 #ifdef WANT_PTHREADS
 static pthread_mutex_t lock[CRYPTO_NUM_LOCKS];
 
@@ -238,3 +240,5 @@ sln_ot_destroy(selene_t *s)
 
   return SELENE_SUCCESS;
 }
+
+#endif /* WANT_OPENSSL_THREADED */

@@ -18,6 +18,8 @@
 #ifndef _OPENSSL_THREADED_H_
 #define _OPENSSL_THREADED_H_
 
+#ifdef WANT_OPENSSL_THREADED
+
 #include "selene.h"
 #include "selene_error.h"
 #include "sln_buckets.h"
@@ -68,5 +70,7 @@ void* sln_ot_io_thread(void *thread_baton);
 
 selene_error_t* sln_ot_event_cycle(selene_t *s);
 selene_error_t* sln_ot_event_cb(selene_t *s, selene_event_e event, void *unused_baton);
+
+#endif /* WANT_OPENSSL_THREADED */
 
 #endif
