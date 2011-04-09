@@ -106,7 +106,7 @@ sln_ot_create(selene_t *s)
   SLN_RING_INIT(&baton->worker, sln_xthread_cb_t, link);
 
   /* Setup all the OpenSSL context stuff*/
-  if (s->conf.mode == SLN_MODE_CLIENT) {
+  if (s->conf->mode == SLN_MODE_CLIENT) {
 //    baton->meth = SSLv23_client_method();
     baton->meth = TLSv1_client_method();
   }
@@ -134,7 +134,7 @@ sln_ot_start(selene_t *s)
 
   pthread_attr_t attr;
 
-  char *str = sln_ot_ciphers_to_openssl(s->conf.ciphers);
+  char *str = sln_ot_ciphers_to_openssl(s->conf->ciphers);
 
   if (str == NULL) {
     return selene_error_create(SELENE_EINVAL,
@@ -157,20 +157,20 @@ sln_ot_start(selene_t *s)
   SSL_CTX_set_options(baton->ctx, SSL_OP_ALL);
 
   /* We never want to let anyone use SSL v2. */
-  slnDbg(s, "openssl: disabled ssl 2.0: %d", s->conf.protocols);
+  slnDbg(s, "openssl: disabled ssl 2.0: %d", s->conf->protocols);
   SSL_CTX_set_options(baton->ctx, SSL_OP_NO_SSLv2);
 
-  if (!(s->conf.protocols & SELENE_PROTOCOL_SSL30)) {
+  if (!(s->conf->protocols & SELENE_PROTOCOL_SSL30)) {
     slnDbg(s, "openssl: enabling ssl 3.0");
     SSL_CTX_set_options(baton->ctx, SSL_OP_NO_SSLv3);
   }
 
-  if (!(s->conf.protocols & SELENE_PROTOCOL_TLS10)) {
+  if (!(s->conf->protocols & SELENE_PROTOCOL_TLS10)) {
     SSL_CTX_set_options(baton->ctx, SSL_OP_NO_TLSv1);
   }
 
-  if (!(s->conf.protocols & SELENE_PROTOCOL_TLS10) &&
-      !(s->conf.protocols & SELENE_PROTOCOL_SSL30)) {
+  if (!(s->conf->protocols & SELENE_PROTOCOL_TLS10) &&
+      !(s->conf->protocols & SELENE_PROTOCOL_SSL30)) {
     return selene_error_create(SELENE_EINVAL,
                                "TLS 1.0 or SSL 3.0 must be enabled when "
                                "using the OpenSSL Threaded backend.");
@@ -195,8 +195,8 @@ sln_ot_start(selene_t *s)
   SSL_set_bio(baton->ssl, baton->bio_read, baton->bio_write);
 
 #if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
-  if (s->conf.sni != NULL) {
-    SSL_set_tlsext_host_name(baton->ssl, s->conf.sni);
+  if (s->conf->sni != NULL) {
+    SSL_set_tlsext_host_name(baton->ssl, s->conf->sni);
   }
 #endif
 

@@ -31,6 +31,7 @@ extern "C" {
 #include "selene_visibility.h"
 #include "selene_version.h"
 #include "selene_error.h"
+#include "selene_conf.h"
 
 /** Opaque context of an SSL/TLS Session */
 typedef struct selene_t selene_t;
@@ -38,21 +39,12 @@ typedef struct selene_t selene_t;
 /**
  * Creates a Client SSL/TLS Context.
  */
-SELENE_API(selene_error_t*) selene_client_create(selene_t **ctxt);
+SELENE_API(selene_error_t*) selene_client_create(selene_conf_t *conf, selene_t **ctxt);
 
 /**
  * Creates a Server SSL/TLS Context.
  */
-SELENE_API(selene_error_t*) selene_server_create(selene_t **ctxt);
-
-/**
- * Creates a SSL/TLS Context using the configuration and state of an existing ctxt.
- *
- * The source context must not of been in a running state.  This should be used
- * to store common settings like lists of root certificates and common callbacks
- * for handling validation of certificates.
- */
-SELENE_API(selene_error_t*) selene_clone(selene_t *ctxt, selene_t **ctxt_out);
+SELENE_API(selene_error_t*) selene_server_create(selene_conf_t *conf, selene_t **ctxt);
 
 /**
  * Starts processing, call after you have Subscribed to events,
@@ -165,54 +157,6 @@ SELENE_API(void)
 selene_log_msg_get(selene_t *ctxt, const char **log_msg,
                    size_t *log_msg_len);
 
-
-/* Uses reasonable and sane defaults for all configuration options */
-SELENE_API(selene_error_t*)
-selene_conf_use_reasonable_defaults(selene_t *ctxt);
-
-/* TODO: think about cipher suite specifications in more depth */
-typedef enum {
-  SELENE_CS__UNUSED0 = 0,
-  SELENE_CS_RSA_WITH_RC4_128_SHA = (1U<<1),
-  SELENE_CS_RSA_WITH_AES_128_CBC_SHA = (1U<<2),
-  SELENE_CS_RSA_WITH_AES_256_CBC_SHA = (1U<<3),
-  SELENE_CS__MAX = (1U<<4),
-} selene_cipher_suites_e;
-
-SELENE_API(selene_error_t*)
-selene_conf_cipher_suites(selene_t *ctxt, int suite);
-
-typedef enum {
-  SELENE_PROTOCOL__UNUSED0 = 0,
-  SELENE_PROTOCOL_SSL30 = (1U<<1),
-  SELENE_PROTOCOL_TLS10 = (1U<<2),
-  SELENE_PROTOCOL_TLS11 = (1U<<3),
-  SELENE_PROTOCOL_TLS12 = (1U<<4),
-  SELENE_PROTOCOL__MAX = (1U<<5),
-} selene_protocol_e;
-
-SELENE_API(selene_error_t*)
-selene_conf_protocols(selene_t *ctxt, int protocols);
-
-/* TODO: this is a OpenSSL specific interface*/
-#if 0
-SELENE_API(selene_error_t*)
-selene_conf_crypto_device(selene_t *ctxt, const char* name);
-#endif
-
-/* Set Server name indication (client only) */
-SELENE_API(selene_error_t*)
-selene_conf_name_indication(selene_t *ctxt, const char* sni);
-
-/* Set the Certificate for the server to use.  If you
- * need a chain certificate, just append it to your
- * certifcate. (server only) */
-SELENE_API(selene_error_t*)
-selene_conf_cert(selene_t *ctxt, const char *certificate);
-
-/* Set the private key (server only) */
-SELENE_API(selene_error_t*)
-selene_conf_key(selene_t *ctxt, const char *key);
 
 #ifdef __cplusplus
 }

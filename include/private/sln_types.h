@@ -116,12 +116,12 @@ typedef struct {
   sln_standard_cb *destroy;
 } sln_backend_t;
 
-typedef struct {
+struct selene_conf_t{
   sln_mode_e mode;
   int protocols;
   int ciphers;
   const char *sni;
-} sln_conf_t;
+};
 
 typedef struct {
   sln_brigade_t *in_enc;
@@ -132,7 +132,7 @@ typedef struct {
 
 struct selene_t {
   sln_state_e state;
-  sln_conf_t conf;
+  selene_conf_t *conf;
 
   sln_log_level_e log_level;
   const char *log_msg;

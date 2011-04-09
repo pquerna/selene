@@ -52,14 +52,16 @@ sln_terminate(void)
 }
 
 static selene_error_t*
-sln_create(selene_t **p_sel, sln_mode_e mode)
+sln_create(selene_conf_t *conf, sln_mode_e mode, selene_t **p_sel)
 {
   selene_t *s;
 
   SELENE_ERR(sln_initialize());
 
   s = calloc(1, sizeof(selene_t));
-  s->conf.mode = mode;
+  s->conf = conf;
+  /* TODO: refactor mode (?) */
+  s->conf->mode = mode;
   s->state = SLN_STATE_INIT;
 
   s->log_level = SLN_LOG_EVERYTHING;
@@ -91,42 +93,21 @@ sln_create(selene_t **p_sel, sln_mode_e mode)
 }
 
 selene_error_t*
-selene_clone(selene_t *ctxt, selene_t **p_sel)
+selene_client_create(selene_conf_t *conf, selene_t **p_sel)
 {
-  selene_error_t* err;
-  selene_t *s = NULL;
-
-  err = sln_create(&s, ctxt->conf.mode);
-  if (err) {
-    return err;
-  }
-
-  /* TODO: copy event handlers */
-  /* TODO: copy config */
-  /* TODO: copy logging system */
-  return SELENE_SUCCESS;
+  return sln_create(conf, SLN_MODE_CLIENT, p_sel);
 }
 
 selene_error_t*
-selene_client_create(selene_t **p_sel)
+selene_server_create(selene_conf_t *conf, selene_t **p_sel)
 {
-  return sln_create(p_sel, SLN_MODE_CLIENT);
-}
-
-selene_error_t*
-selene_server_create(selene_t **p_sel)
-{
-  return sln_create(p_sel, SLN_MODE_SERVER);
+  return sln_create(conf, SLN_MODE_SERVER, p_sel);
 }
 
 void 
 selene_destroy(selene_t *s)
 {
   s->state = SLN_STATE_DEAD;
-
-  if (s->conf.sni != NULL) {
-    free((void*)s->conf.sni);
-  }
 
   sln_iobb_destroy(&s->bb);
 

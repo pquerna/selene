@@ -37,7 +37,7 @@
 
   #define SLN_ASSERT_CONTEXT(ctxt) do { \
     SLN_ASSERT(ctxt != NULL); \
-    SLN_ASSERT_ENUM(SLN_MODE, ctxt->conf.mode); \
+    SLN_ASSERT_ENUM(SLN_MODE, ctxt->conf->mode); \
     SLN_ASSERT_ENUM(SLN_STATE, ctxt->state); \
     SLN_ASSERT_ENUM(SLN_LOG, ctxt->log_level); \
     SLN_ASSERT(ctxt->log_msg_len >= 0); \

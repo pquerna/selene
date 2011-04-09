@@ -222,10 +222,6 @@ connect_to(selene_t *s, const char *host, int port, FILE *fp)
     exit(EXIT_FAILURE);
   }
 
-  SERR(selene_conf_use_reasonable_defaults(s));
-
-  SERR(selene_conf_name_indication(s, host));
-
   SERR(selene_start(s));
 
   while (client.write_err == 0)
@@ -284,18 +280,10 @@ int main(int argc, char* argv[])
   const char *host = SELENE_CLIENT_DEFAULT_HOST;
   int port = SELENE_CLIENT_DEFAULT_PORT;
   selene_t *s = NULL;
+  selene_conf_t *conf = NULL;
   selene_error_t *err = NULL;
   int rv = 0;
   int i;
-
-  err = selene_client_create(&s);
-  if (err != SELENE_SUCCESS) {
-    fprintf(stderr, "Failed to create client instance: (%d) %s [%s:%d]\n",
-            err->err, err->msg, err->file, err->line);
-    exit(EXIT_FAILURE);
-  }
-
-  selene_subscribe(s, SELENE_EVENT_LOG_MSG, have_logline, NULL);
 
   for (i = 1; i < argc; i++) {
     /* TODO: s_client compat */
@@ -327,20 +315,36 @@ int main(int argc, char* argv[])
   }
 
   if (host == NULL) {
-    selene_destroy(s);
     fprintf(stderr, "-host must be set\n");
     exit(EXIT_FAILURE);
   }
 
   if (port <= 0) {
-    selene_destroy(s);
     fprintf(stderr, "-port must be set\n");
     exit(EXIT_FAILURE);
   }
 
+
+  SERR(selene_conf_create(&conf));
+
+  SERR(selene_conf_use_reasonable_defaults(conf));
+
+  SERR(selene_conf_name_indication(conf, host));
+
+  err = selene_client_create(conf, &s);
+  if (err != SELENE_SUCCESS) {
+    fprintf(stderr, "Failed to create client instance: (%d) %s [%s:%d]\n",
+            err->err, err->msg, err->file, err->line);
+    exit(EXIT_FAILURE);
+  }
+
+  selene_subscribe(s, SELENE_EVENT_LOG_MSG, have_logline, NULL);
+
   rv = connect_to(s, host, port, stdin);
 
   selene_destroy(s);
+
+  selene_conf_destroy(conf);
 
   return rv;
 }

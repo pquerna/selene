@@ -1,0 +1,97 @@
+/*
+ * Licensed to Selene developers ('Selene') under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * Selene licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * @file selene_conf.h
+ */
+
+#ifndef _selene_conf_h_
+#define _selene_conf_h_
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+#include "selene_visibility.h"
+#include "selene_error.h"
+
+/** Opaque context for configuring many SSL/TLS sessions. */
+typedef struct selene_conf_t selene_conf_t;
+
+/**
+ * Creates a configuration context.
+ */
+SELENE_API(selene_error_t*) selene_conf_create(selene_conf_t **conf);
+
+/**
+ * Destroy a configuration context.
+ */
+SELENE_API(void) selene_conf_destroy(selene_conf_t *conf);
+
+/* Uses reasonable and sane defaults for all configuration options */
+SELENE_API(selene_error_t*)
+selene_conf_use_reasonable_defaults(selene_conf_t *conf);
+
+/* TODO: think about cipher suite specifications in more depth */
+typedef enum {
+  SELENE_CS__UNUSED0 = 0,
+  SELENE_CS_RSA_WITH_RC4_128_SHA = (1U<<1),
+  SELENE_CS_RSA_WITH_AES_128_CBC_SHA = (1U<<2),
+  SELENE_CS_RSA_WITH_AES_256_CBC_SHA = (1U<<3),
+  SELENE_CS__MAX = (1U<<4),
+} selene_cipher_suites_e;
+
+SELENE_API(selene_error_t*)
+selene_conf_cipher_suites(selene_conf_t *conf, int suite);
+
+typedef enum {
+  SELENE_PROTOCOL__UNUSED0 = 0,
+  SELENE_PROTOCOL_SSL30 = (1U<<1),
+  SELENE_PROTOCOL_TLS10 = (1U<<2),
+  SELENE_PROTOCOL_TLS11 = (1U<<3),
+  SELENE_PROTOCOL_TLS12 = (1U<<4),
+  SELENE_PROTOCOL__MAX = (1U<<5),
+} selene_protocol_e;
+
+SELENE_API(selene_error_t*)
+selene_conf_protocols(selene_conf_t *conf, int protocols);
+
+/* TODO: this is a OpenSSL specific interface*/
+#if 0
+SELENE_API(selene_error_t*)
+selene_conf_crypto_device(selene_conf_t *cont, const char* name);
+#endif
+
+/* Set Server name indication (client only) */
+SELENE_API(selene_error_t*)
+selene_conf_name_indication(selene_conf_t *conf, const char* sni);
+
+/* Set the Certificate for the server to use.  If you
+ * need a chain certificate, just append it to your
+ * certifcate. (server only) */
+SELENE_API(selene_error_t*)
+selene_conf_cert(selene_conf_t *conf, const char *certificate);
+
+/* Set the private key (server only) */
+SELENE_API(selene_error_t*)
+selene_conf_key(selene_conf_t *conf, const char *key);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+#endif /* _selene_conf_h_ */

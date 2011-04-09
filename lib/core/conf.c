@@ -19,14 +19,40 @@
 #include "sln_types.h"
 #include <string.h>
 
-selene_error_t *
-selene_conf_use_reasonable_defaults(selene_t *s)
+selene_error_t*
+selene_conf_create(selene_conf_t **p_conf)
 {
-  SELENE_ERR(selene_conf_cipher_suites(s, SELENE_CS_RSA_WITH_RC4_128_SHA | 
+  selene_conf_t *conf;
+
+  conf = calloc(1, sizeof(selene_conf_t));
+
+  *p_conf = conf;
+
+  return SELENE_SUCCESS;
+}
+
+
+
+void
+selene_conf_destroy(selene_conf_t *conf)
+{
+  /* TODO: is it worth ref counting this object? Maybe in debug mode only? */
+  if (conf->sni != NULL) {
+    free((void*)conf->sni);
+    conf->sni = NULL;
+  }
+
+  free(conf);
+}
+
+selene_error_t *
+selene_conf_use_reasonable_defaults(selene_conf_t *conf)
+{
+  SELENE_ERR(selene_conf_cipher_suites(conf, SELENE_CS_RSA_WITH_RC4_128_SHA | 
                                              SELENE_CS_RSA_WITH_AES_128_CBC_SHA |
                                              SELENE_CS_RSA_WITH_AES_256_CBC_SHA));
 
-  SELENE_ERR(selene_conf_protocols(s, SELENE_PROTOCOL_SSL30 | 
+  SELENE_ERR(selene_conf_protocols(conf, SELENE_PROTOCOL_SSL30 | 
                                          SELENE_PROTOCOL_TLS10 |
                                          SELENE_PROTOCOL_TLS11 |
                                          SELENE_PROTOCOL_TLS12));
@@ -35,35 +61,35 @@ selene_conf_use_reasonable_defaults(selene_t *s)
 }
 
 selene_error_t *
-selene_conf_cipher_suites(selene_t *s, int ciphers)
+selene_conf_cipher_suites(selene_conf_t *conf, int ciphers)
 {
   /* TODO: assert on inalid ciphers */
-  s->conf.ciphers = ciphers;
+  conf->ciphers = ciphers;
   return SELENE_SUCCESS;
 }
 
 selene_error_t *
-selene_conf_protocols(selene_t *s, int protocols)
+selene_conf_protocols(selene_conf_t *conf, int protocols)
 {
   /* TODO: assert on inalid protocols */
-  s->conf.protocols = protocols;
+  conf->protocols = protocols;
   return SELENE_SUCCESS;
 }
 
 selene_error_t *
-selene_conf_name_indication(selene_t *s, const char *hostname)
+selene_conf_name_indication(selene_conf_t *conf, const char *hostname)
 {
-  SLN_ERR_CLIENT_ONLY(s);
+  /* TODO: this might not make sense as a selene_conf (?) */
 
-  if (s->conf.sni != NULL) {
-    free((void*)s->conf.sni);
+  if (conf->sni != NULL) {
+    free((void*)conf->sni);
   }
 
   if (hostname) {
-    s->conf.sni = strdup(hostname);
+    conf->sni = strdup(hostname);
   }
   else {
-    s->conf.sni = NULL;
+    conf->sni = NULL;
   }
 
   return SELENE_SUCCESS;
