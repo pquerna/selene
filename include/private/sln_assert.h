@@ -35,9 +35,18 @@
 
   #define SLN_ASSERT_ENUM(type, target) SLN_ASSERT_RANGE(type ## __UNUSED0, type ## __MAX, target)
 
+  #define SLN_ASSERT_FLAGS(type, value) SLN_ASSERT((type & (value)) == 0)
+
+  #define SLN_ASSERT_CONF(conf) do { \
+    SLN_ASSERT(conf != NULL); \
+    /* TODO: this isn't good, need to improve */ \
+    SLN_ASSERT_FLAGS(conf->ciphers, SELENE_CS_RSA_WITH_RC4_128_SHA|SELENE_CS_RSA_WITH_AES_128_CBC_SHA|SELENE_CS_RSA_WITH_AES_256_CBC_SHA); \
+    SLN_ASSERT_FLAGS(conf->protocols, SELENE_PROTOCOL_SSL30|SELENE_PROTOCOL_TLS10|SELENE_PROTOCOL_TLS11|SELENE_PROTOCOL_TLS12); \
+  } while (0);
+
   #define SLN_ASSERT_CONTEXT(ctxt) do { \
     SLN_ASSERT(ctxt != NULL); \
-    SLN_ASSERT_ENUM(SLN_MODE, ctxt->conf->mode); \
+    SLN_ASSERT_CONF(ctxt->conf); \
     SLN_ASSERT_ENUM(SLN_STATE, ctxt->state); \
     SLN_ASSERT_ENUM(SLN_LOG, ctxt->log_level); \
     SLN_ASSERT(ctxt->log_msg_len >= 0); \
@@ -52,6 +61,8 @@
   #define SLN_ASSERT_RANGE(start, end, target)
 
   #define SLN_ASSERT_ENUM(type, target)
+
+  #define SLN_ASSERT_CONF(conf)
 
   #define SLN_ASSERT_CONTEXT(ctxt)
 
