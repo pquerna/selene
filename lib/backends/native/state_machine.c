@@ -23,9 +23,10 @@ sln_native_handshake_state_machine(selene_t *s, sln_native_baton_t *baton)
 {
   selene_error_t* err;
 
+  slnDbg(s, "enter handshake_state_machine=%d", baton->handshake);
   switch (baton->handshake) {
     case SLN_NATIVE_HANDSHAKE_CLIENT_SEND_HELLO:
-      err = sln_native_io_client_hello(s, baton);
+      err = sln_native_io_handshake_client_hello(s, baton);
       if (err) {
         return err;
       }
@@ -45,12 +46,15 @@ sln_native_handshake_state_machine(selene_t *s, sln_native_baton_t *baton)
   }
 
   if (!SLN_BRIGADE_EMPTY(s->bb.out_enc)) {
+    slnDbg(s, "Encrypted data waiting");
     SELENE_ERR(selene_publish(s, SELENE_EVENT_IO_OUT_ENC));
   }
 
   if (!SLN_BRIGADE_EMPTY(s->bb.out_cleartext)) {
+    slnDbg(s, "Cleartext data waiting");
     SELENE_ERR(selene_publish(s, SELENE_EVENT_IO_OUT_CLEAR));
   }
 
+  slnDbg(s, "exit handshake_state_machine=%d", baton->handshake);
   return SELENE_SUCCESS;
 }

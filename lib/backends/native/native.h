@@ -72,6 +72,22 @@ sln_native_handshake_state_machine(selene_t *s, sln_native_baton_t *baton);
 
 
 selene_error_t*
-sln_native_io_client_hello(selene_t *s, sln_native_baton_t *baton);
+sln_native_io_handshake_client_hello(selene_t *s, sln_native_baton_t *baton);
+
+
+typedef struct sln_native_msg_client_hello_t {
+  uint8_t version_major;
+  uint8_t version_minor;
+  uint32_t gmt_unix_time;
+  char random_bytes[28];
+  int ciphers;
+  /* TODO: uh, right */
+  char sessionId[10];
+  /* TODO: more extensions */
+  const char *server_name;
+} sln_native_msg_client_hello_t;
+
+selene_error_t*
+sln_native_msg_handshake_client_hello_to_bucket(sln_native_msg_client_hello_t *ch, sln_bucket_t **b);
 
 #endif

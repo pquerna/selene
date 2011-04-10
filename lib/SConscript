@@ -20,7 +20,8 @@ Import('venv')
 sources = Split("""
 backends/backends.c
 backends/native/init.c
-backends/native/io.c
+backends/native/handshake_io.c
+backends/native/handshake_messages.c
 backends/native/state_machine.c
 backends/openssl_threaded/init.c
 backends/openssl_threaded/io.c

@@ -17,10 +17,34 @@
 
 #include "sln_brigades.h"
 #include "native.h"
+#include <time.h>
+
+/* RFC 4346, Section 7.4. Handshake Protocol
+ *
+ * enum {
+ *          hello_request(0), client_hello(1), server_hello(2),
+ *          certificate(11), server_key_exchange (12),
+ *          certificate_request(13), server_hello_done(14),
+ *          certificate_verify(15), client_key_exchange(16),
+ *          finished(20), (255)
+ *      } HandshakeType;
+ */
 
 selene_error_t*
-sln_native_io_client_hello(selene_t *s, sln_native_baton_t *baton)
+sln_native_io_handshake_client_hello(selene_t *s, sln_native_baton_t *baton)
 {
-  /* TODO: write to s->bb.out_enc */
+  sln_native_msg_client_hello_t ch;
+  sln_bucket_t *b = NULL;
+
+  ch.version_major = 3;
+  ch.version_minor = 2;
+  ch.gmt_unix_time = time(NULL);
+
+  SELENE_ERR(sln_native_msg_handshake_client_hello_to_bucket(&ch, &b));
+
+  slnDbg(s, "client hello bucket= %p", b);
+
+  SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, b);
+
   return SELENE_SUCCESS;
 }

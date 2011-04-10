@@ -15,56 +15,27 @@
  * limitations under the License.
  */
 
-#include "sln_brigades.h"
 #include "native.h"
 
+/* TODO: move to better place */
+#define TLS_CLIENT_HELLO 1
 
 selene_error_t*
-sln_native_initilize()
+sln_native_msg_handshake_client_hello_to_bucket(sln_native_msg_client_hello_t *ch, sln_bucket_t **p_b)
 {
+  sln_bucket_t *b = NULL;
+  size_t len = 24 + 1 + 60;
+
+  /* TODO: handle all TLS extensions , and uh, everything else */
+  sln_bucket_create_empty(&b, 4 + len);
+
+  b->data[0] = TLS_CLIENT_HELLO;
+  b->data[1] = len >> 16;
+  b->data[2] = len >> 8;
+  b->data[3] = len;
+
+  *p_b = b;
+
   return SELENE_SUCCESS;
 }
 
-void
-sln_native_terminate()
-{
-}
-
-selene_error_t*
-sln_native_create(selene_t *s)
-{
-  sln_native_baton_t *baton;
-  SLN_ASSERT_CONTEXT(s);
-
-  baton = (sln_native_baton_t*) calloc(1, sizeof(*baton));
-  s->backend_baton = baton;
-
-  return SELENE_SUCCESS;
-}
-
-selene_error_t*
-sln_native_start(selene_t *s)
-{
-  sln_native_baton_t *baton;
-  SLN_ASSERT_CONTEXT(s);
-
-  baton = s->backend_baton;
-
-  if (s->mode == SLN_MODE_CLIENT) {
-    baton->handshake = SLN_NATIVE_HANDSHAKE_CLIENT_SEND_HELLO;
-  }
-  else {
-    baton->handshake = SLN_NATIVE_HANDSHAKE_SERVER_WAIT_CLIENT_HELLO;
-  }
-
-  slnDbg(s, "starting native client, handshake state %d", baton->handshake);
-
-  return sln_native_handshake_state_machine(s, baton);
-}
-
-selene_error_t*
-sln_native_destroy(selene_t *s)
-{
-
-  return SELENE_SUCCESS;
-}
