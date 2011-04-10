@@ -35,7 +35,7 @@
 
   #define SLN_ASSERT_ENUM(type, target) SLN_ASSERT_RANGE(type ## __UNUSED0, type ## __MAX, target)
 
-  #define SLN_ASSERT_FLAGS(type, value) SLN_ASSERT((type & (value)) == 0)
+  #define SLN_ASSERT_FLAGS(type, value) SLN_ASSERT((type | (value)) == (value))
 
   #define SLN_ASSERT_CONF(conf) do { \
     SLN_ASSERT(conf != NULL); \
