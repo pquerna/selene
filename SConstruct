@@ -51,6 +51,8 @@ if conf.env['CLANGXX']:
 conf.env['SELENE_PLATFORM'] = platform[:platform.find(' ')].upper()
 conf.env['SELENE_ARCH'] = platform[platform.find(' ')+1:].replace(" ", "_")
 
+conf.env['WANT_OPENSSL'] = False
+
 if conf.env['enable_native']:
   conf.env['WANT_OPENSSL'] = True
   conf.env.AppendUnique(CPPDEFINES=['WANT_NATIVE'])

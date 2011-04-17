@@ -74,6 +74,25 @@ sln_native_handshake_state_machine(selene_t *s, sln_native_baton_t *baton);
 selene_error_t*
 sln_native_io_handshake_client_hello(selene_t *s, sln_native_baton_t *baton);
 
+typedef enum {
+  SLN_NATIVE_CONTENT_TYPE__UNUSED0 = 0,
+  SLN_NATIVE_CONTENT_TYPE_CHANGE_CIPHER_SPEC = 1,
+  SLN_NATIVE_CONTENT_TYPE_ALERT = 2,
+  SLN_NATIVE_CONTENT_TYPE_HANDSHAKE = 3,
+  SLN_NATIVE_CONTENT_TYPE_APPLICATION = 4,
+  SLN_NATIVE_CONTENT_TYPE__MAX = 5
+} sln_native_content_type_e;
+
+typedef struct sln_native_msg_tls_t {
+  sln_native_content_type_e content_type;
+  uint8_t version_major;
+  uint8_t version_minor;
+  int length;
+} sln_native_msg_tls_t;
+
+selene_error_t*
+sln_native_msg_tls_to_bucket(sln_native_msg_tls_t *tls, sln_bucket_t **b);
+
 
 typedef struct sln_native_msg_client_hello_t {
   uint8_t version_major;

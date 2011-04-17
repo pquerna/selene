@@ -34,17 +34,29 @@ selene_error_t*
 sln_native_io_handshake_client_hello(selene_t *s, sln_native_baton_t *baton)
 {
   sln_native_msg_client_hello_t ch;
-  sln_bucket_t *b = NULL;
+  sln_native_msg_tls_t tls;
+  sln_bucket_t *btls = NULL;
+  sln_bucket_t *bhs = NULL;
 
   ch.version_major = 3;
   ch.version_minor = 2;
   ch.gmt_unix_time = time(NULL);
 
-  SELENE_ERR(sln_native_msg_handshake_client_hello_to_bucket(&ch, &b));
+  SELENE_ERR(sln_native_msg_handshake_client_hello_to_bucket(&ch, &bhs));
 
-  slnDbg(s, "client hello bucket= %p", b);
+  slnDbg(s, "client hello bucket= %p", bhs);
 
-  SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, b);
+  tls.content_type = SLN_NATIVE_CONTENT_TYPE_HANDSHAKE;
+  tls.version_major = 3;
+  tls.version_minor = 2;
+  tls.length = bhs->size;
+
+  SELENE_ERR(sln_native_msg_tls_to_bucket(&tls, &btls));
+
+
+  SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, btls);
+
+  SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, bhs);
 
   return SELENE_SUCCESS;
 }
