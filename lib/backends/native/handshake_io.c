@@ -18,6 +18,7 @@
 #include "sln_brigades.h"
 #include "native.h"
 #include <time.h>
+#include <string.h>
 
 /* RFC 4346, Section 7.4. Handshake Protocol
  *
@@ -40,8 +41,13 @@ sln_native_io_handshake_client_hello(selene_t *s, sln_native_baton_t *baton)
 
   ch.version_major = 3;
   ch.version_minor = 2;
-  ch.gmt_unix_time = time(NULL);
-
+  ch.utc_unix_time = time(NULL);
+  memset(&ch.random_bytes[0], 0xFF, sizeof(ch.random_bytes));
+  ch.session_id_len = 0;
+  ch.ciphers = &s->conf->ciphers;
+  ch.server_name = NULL;
+  ch.have_npn = 0;
+  ch.have_ocsp_stapling = 0;
   SELENE_ERR(sln_native_msg_handshake_client_hello_to_bucket(&ch, &bhs));
 
   slnDbg(s, "client hello bucket= %p", bhs);

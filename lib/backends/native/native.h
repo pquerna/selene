@@ -97,13 +97,14 @@ sln_native_msg_tls_to_bucket(sln_native_msg_tls_t *tls, sln_bucket_t **b);
 typedef struct sln_native_msg_client_hello_t {
   uint8_t version_major;
   uint8_t version_minor;
-  uint32_t gmt_unix_time;
+  uint32_t utc_unix_time;
   char random_bytes[28];
-  int ciphers;
-  /* TODO: uh, right */
-  char sessionId[10];
-  /* TODO: more extensions */
+  uint8_t session_id_len;
+  char session_id[32];
+  selene_cipher_suite_list_t *ciphers;
   const char *server_name;
+  int have_npn;
+  int have_ocsp_stapling;
 } sln_native_msg_client_hello_t;
 
 selene_error_t*
