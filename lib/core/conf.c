@@ -48,9 +48,16 @@ selene_conf_destroy(selene_conf_t *conf)
 selene_error_t *
 selene_conf_use_reasonable_defaults(selene_conf_t *conf)
 {
-  SELENE_ERR(selene_conf_cipher_suites(conf, SELENE_CS_RSA_WITH_RC4_128_SHA | 
-                                             SELENE_CS_RSA_WITH_AES_128_CBC_SHA |
-                                             SELENE_CS_RSA_WITH_AES_256_CBC_SHA));
+  selene_cipher_suite_list_t *ciphers = NULL;
+  SELENE_ERR(selene_cipher_suite_list_create(&ciphers));
+
+  SELENE_ERR(selene_cipher_suite_list_add(ciphers, SELENE_CS_RSA_WITH_RC4_128_SHA));
+  SELENE_ERR(selene_cipher_suite_list_add(ciphers, SELENE_CS_RSA_WITH_AES_128_CBC_SHA));
+  SELENE_ERR(selene_cipher_suite_list_add(ciphers, SELENE_CS_RSA_WITH_AES_256_CBC_SHA));
+
+  SELENE_ERR(selene_conf_cipher_suites(conf, ciphers));
+
+  selene_cipher_suite_list_destroy(ciphers);
 
   SELENE_ERR(selene_conf_protocols(conf, SELENE_PROTOCOL_SSL30 | 
                                          SELENE_PROTOCOL_TLS10 |
@@ -61,11 +68,44 @@ selene_conf_use_reasonable_defaults(selene_conf_t *conf)
 }
 
 selene_error_t *
-selene_conf_cipher_suites(selene_conf_t *conf, int ciphers)
+selene_conf_cipher_suites(selene_conf_t *conf, selene_cipher_suite_list_t *ciphers)
 {
-  /* TODO: assert on inalid ciphers */
-  conf->ciphers = ciphers;
+  memcpy(&conf->ciphers, ciphers, sizeof(selene_cipher_suite_list_t));
+
   return SELENE_SUCCESS;
+}
+
+selene_error_t*
+selene_cipher_suite_list_create(selene_cipher_suite_list_t **p_ciphers)
+{
+  selene_cipher_suite_list_t *ciphers;
+
+  ciphers = calloc(1, sizeof(selene_cipher_suite_list_t));
+
+  *p_ciphers = ciphers;
+
+  return SELENE_SUCCESS;
+}
+
+selene_error_t*
+selene_cipher_suite_list_add(selene_cipher_suite_list_t *ciphers, selene_cipher_suite_e suite)
+{
+  int i;
+  for (i = 0; i < ciphers->used; i++) {
+    if (ciphers->ciphers[i] == suite) {
+      return SELENE_SUCCESS;
+    }
+  }
+
+  ciphers->ciphers[ciphers->used] = suite;
+  ciphers->used++;
+
+  return SELENE_SUCCESS;
+}
+
+void selene_cipher_suite_list_destroy(selene_cipher_suite_list_t *ciphers)
+{
+  free(ciphers);
 }
 
 selene_error_t *

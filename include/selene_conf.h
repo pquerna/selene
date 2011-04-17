@@ -46,17 +46,37 @@ SELENE_API(void) selene_conf_destroy(selene_conf_t *conf);
 SELENE_API(selene_error_t*)
 selene_conf_use_reasonable_defaults(selene_conf_t *conf);
 
-/* TODO: think about cipher suite specifications in more depth */
 typedef enum {
   SELENE_CS__UNUSED0 = 0,
-  SELENE_CS_RSA_WITH_RC4_128_SHA = (1U<<1),
-  SELENE_CS_RSA_WITH_AES_128_CBC_SHA = (1U<<2),
-  SELENE_CS_RSA_WITH_AES_256_CBC_SHA = (1U<<3),
-  SELENE_CS__MAX = (1U<<4),
-} selene_cipher_suites_e;
+  SELENE_CS_RSA_WITH_RC4_128_SHA = 1,
+  SELENE_CS_RSA_WITH_AES_128_CBC_SHA = 2,
+  SELENE_CS_RSA_WITH_AES_256_CBC_SHA = 3,
+  SELENE_CS__MAX = 4
+} selene_cipher_suite_e;
 
+typedef struct selene_cipher_suite_list_t selene_cipher_suite_list_t;
+
+/**
+ * Creates an ordered list of Cipher Suites.
+ */
+SELENE_API(selene_error_t*) selene_cipher_suite_list_create(selene_cipher_suite_list_t **ciphers);
+
+/**
+ * Add a single cipher suite to the list.
+ */
+SELENE_API(selene_error_t*) selene_cipher_suite_list_add(selene_cipher_suite_list_t *ciphers, selene_cipher_suite_e suite);
+
+/**
+ * Destroys the list of Cipher Suites
+ */
+SELENE_API(void) selene_cipher_suite_list_destroy(selene_cipher_suite_list_t *ciphers);
+
+/**
+ * Configures a configuration context with a set of cipher suites.  The information is copied,
+ * so you retain ownership of the selene_cipher_suite_list_tn object.
+ */
 SELENE_API(selene_error_t*)
-selene_conf_cipher_suites(selene_conf_t *conf, int suite);
+selene_conf_cipher_suites(selene_conf_t *conf, selene_cipher_suite_list_t *cl);
 
 typedef enum {
   SELENE_PROTOCOL__UNUSED0 = 0,

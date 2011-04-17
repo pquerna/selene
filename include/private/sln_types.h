@@ -116,9 +116,14 @@ typedef struct {
   sln_standard_cb *destroy;
 } sln_backend_t;
 
+struct selene_cipher_suite_list_t {
+  int used;
+  int ciphers[SELENE_CS__MAX];
+};
+
 struct selene_conf_t{
   int protocols;
-  int ciphers;
+  selene_cipher_suite_list_t ciphers;
   const char *sni;
 };
 
