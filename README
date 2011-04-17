@@ -21,6 +21,12 @@ Selene is named after the Greek Goddess of the Moon, because I am
 terrible at naming projects:
   <http://en.wikipedia.org/wiki/Selene>
 
+Status:
+  A prototype backend (openssl-threaded) was used to validate the basics
+  of the selene_* API.  I am currently slowly working on the native Selene
+  TLS backend, which only uses OpenSSL for cryptographic operations, but
+  not the actual protocol parsing.
+
 Hacking Notes:
   * External Functions and types are prefixed with selene_*
   * Internal Functions and types are prefixed with sln_*
