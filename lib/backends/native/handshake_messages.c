@@ -109,8 +109,9 @@ sln_native_msg_handshake_client_hello_to_bucket(sln_native_msg_client_hello_t *c
     off += ch->session_id_len;
   }
 
-  b->data[off] = ch->ciphers->used >> 7;
-  b->data[off+1] = ch->ciphers->used << 1;
+  /* Length of the Cipher Suites in bytes */
+  b->data[off] = ch->ciphers->used * 2 >> 8;
+  b->data[off+1] = ch->ciphers->used * 2;
   off += 2;
 
   for (int i = 0; i < ch->ciphers->used; i++) {
