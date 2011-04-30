@@ -46,6 +46,12 @@ if conf.env['CLANG']:
 if conf.env['CLANGXX']:
   conf.env['CXX'] = conf.env['CLANGXX']
 
+if os.environ.has_key('CC'):
+  conf.env['CC'] = os.environ['CC']
+
+if os.environ.has_key('CXX'):
+  conf.env['CXX'] = os.environ['CXX']
+
 (st, platform) = conf.CheckUname("-sm")
 
 conf.env['SELENE_PLATFORM'] = platform[:platform.find(' ')].upper()
@@ -115,9 +121,10 @@ if env['SELENE_PLATFORM'] == 'FREEBSD' or True:
 
 variants = []
 for platform in [env['SELENE_PLATFORM']]:
-  for profile in options['PROFILE'].keys():
-    for build in ['STATIC', 'SHARED']:
-      variants.append({'PLATFORM': platform, 'PROFILE': profile, 'BUILD': build})
+  #for profile in options['PROFILE'].keys():
+  profile = env['profile']
+  for build in ['STATIC', 'SHARED']:
+    variants.append({'PLATFORM': platform, 'PROFILE': profile, 'BUILD': build})
 
 append_types = ['CCFLAGS', 'CFLAGS', 'CPPDEFINES', 'LIBS']
 replace_types = ['CC']
