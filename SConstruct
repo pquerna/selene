@@ -17,7 +17,7 @@
 
 EnsureSConsVersion(1, 1, 0)
 
-import os
+import os, sys
 from site_scons import ac
 from os.path import join as pjoin
 
@@ -36,6 +36,10 @@ env = Environment(options=opts,
                   tools=['default'])
 
 conf = Configure(env, custom_tests = {'CheckUname': ac.CheckUname})
+
+conf.env['PYTHON'] = env.WhereIs('python')
+if not conf.env['PYTHON']:
+  conf.env['PYTHON'] = sys.executable
 
 conf.env['CLANG'] = env.WhereIs('clang')
 conf.env['CLANGXX'] = env.WhereIs('clang++')
@@ -114,17 +118,14 @@ options = {
   },
 }
 
-# just turn off gcov builds until someone has time to setup zcov correctly
-if env['SELENE_PLATFORM'] == 'FREEBSD' or True:
-  # can't seem to get this to build :(
-  del options['PROFILE']['GCOV']
-
 variants = []
 for platform in [env['SELENE_PLATFORM']]:
-  #for profile in options['PROFILE'].keys():
-  profile = env['profile']
-  for build in ['STATIC', 'SHARED']:
-    variants.append({'PLATFORM': platform, 'PROFILE': profile, 'BUILD': build})
+  profiles = [env['profile'].upper()]
+  if 'coverage' in COMMAND_LINE_TARGETS:
+    profiles.append('GCOV')
+  for profile in set(profiles):
+    for build in ['STATIC', 'SHARED']:
+      variants.append({'PLATFORM': platform, 'PROFILE': profile, 'BUILD': build})
 
 append_types = ['CCFLAGS', 'CFLAGS', 'CPPDEFINES', 'LIBS']
 replace_types = ['CC']
@@ -136,6 +137,7 @@ env.AppendUnique(CPPPATH=['#/include'],
                  CCFLAGS=['-pedantic', '-std=c99'])
 all_targets = {}
 
+coverage_test_targets = []
 for vari in variants:
   targets = []
   platform = vari['PLATFORM']
@@ -171,6 +173,8 @@ for vari in variants:
       ])
     venv.AlwaysBuild(run)
     test_targets.append(run)
+    if ty == "GCOV":
+      coverage_test_targets.append(run)
 
   tools = venv.SConscript('tools/SConscript', variant_dir=pjoin(vdir, 'tools'), duplicate=0, exports='venv')
   targets.append(tools)
@@ -182,9 +186,14 @@ denv['DOXYGEN'] = 'doxygen'
 doxy = denv.Command(env.Dir('#/api-docs'), all_targets.values(),
                    ['rm -rf api-docs',
                     '$DOXYGEN'])
+
+cov = env.Command(env.File('#/build/coverage.txt'), coverage_test_targets,
+          ['$PYTHON ./tests/gcovr -r lib -o coverage.txt',
+           'cat coverage.txt'])
 denv.AlwaysBuild(doxy)
 env.Alias('docs', doxy)
 env.Alias('test', test_targets)
+env.Alias('coverage', cov)
 if not env.GetOption('clean'):
   env.Default(all_targets.values())
 else:
