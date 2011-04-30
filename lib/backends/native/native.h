@@ -64,12 +64,17 @@ typedef enum {
 
 typedef struct {
   sln_native_handshake_e handshake;
+  sln_brigade_t *in_handshake;
 } sln_native_baton_t;
 
 
 selene_error_t*
 sln_native_handshake_state_machine(selene_t *s, sln_native_baton_t *baton);
 
+/**
+ * TLS Protocol methods
+ */
+selene_error_t* sln_native_io_tls_read(selene_t *s, sln_native_baton_t *baton);
 
 /**
  * Client Writing Methods

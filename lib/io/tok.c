@@ -18,9 +18,44 @@
 #include "selene.h"
 #include "sln_types.h"
 #include "sln_tok.h"
+#include <string.h>
 
 selene_error_t*
 sln_tok_parser(sln_brigade_t *bb, sln_tok_cb cb, void *baton)
 {
+  selene_error_t* err;
+  sln_tok_value_t tvalue;
+  size_t bblen = sln_brigade_size(bb);
+  size_t offset = 0;
+
+  memset(&tvalue, 0, sizeof(tvalue));
+
+  tvalue.current = TOK_INIT;
+
+  err = cb(&tvalue, baton);
+
+  if (err) {
+    return err;
+  }
+
+  tvalue.current = tvalue.next;
+  switch (tvalue.next) {
+    case TOK__UNUSED:
+    case TOK__MAX:
+    case TOK_INIT:
+    case TOK_DONE:
+      break;
+
+    case TOK_SINGLE_BYTE:
+      if (bblen > 0) {
+        tvalue.v.byte = 0;
+        offset++;
+      }
+      break;
+    case TOK_SLICE_BRIGADE:
+      break;
+  }
+
+  tvalue.current = TOK__UNUSED;
   return SELENE_SUCCESS;
 }

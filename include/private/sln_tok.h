@@ -20,10 +20,24 @@
 
 #include "sln_brigades.h"
 
+typedef enum sln_tok_value_e {
+  /* TODO: rethink types */
+  TOK__UNUSED,
+  TOK_INIT,
+  TOK_SINGLE_BYTE,
+  TOK_SLICE_BRIGADE,
+  TOK_DONE,
+  TOK__MAX
+} sln_tok_value_e;
+
 typedef struct sln_tok_value_t {
-  size_t want;
-  size_t have;
-  char *p;
+  sln_tok_value_e current;
+  sln_tok_value_e next;
+  size_t wantlen;
+  union {
+    char byte;
+    sln_brigade_t *bb;
+  } v;
 } sln_tok_value_t;
 
 typedef selene_error_t* (sln_tok_cb)(sln_tok_value_t *v, void *baton);

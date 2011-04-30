@@ -48,12 +48,17 @@ enter_state_machine:
     case SLN_NATIVE_HANDSHAKE_SERVER_WAIT_CLIENT_HELLO:
 
       if (!SLN_BRIGADE_EMPTY(s->bb.in_enc)) {
-        err = sln_native_io_handshake_read_client_hello(s, baton);
-
+        err = sln_native_io_tls_read(s, baton);
         if (err) {
           return err;
         }
+      }
 
+      if (!SLN_BRIGADE_EMPTY(baton->in_handshake)) {
+        err = sln_native_io_handshake_read_client_hello(s, baton);
+        if (err) {
+          return err;
+        }
         if (baton->handshake != SLN_NATIVE_HANDSHAKE_SERVER_WAIT_CLIENT_HELLO) {
           goto enter_state_machine;
         }

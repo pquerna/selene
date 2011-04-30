@@ -24,6 +24,7 @@ backends/native/handshake_io.c
 backends/native/handshake_messages.c
 backends/native/protocol_messages.c
 backends/native/state_machine.c
+backends/native/tls_io.c
 backends/openssl_threaded/init.c
 backends/openssl_threaded/io.c
 backends/openssl_threaded/util.c
