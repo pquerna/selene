@@ -17,39 +17,16 @@
 
 #include "selene.h"
 #include "sln_tests.h"
+#include <stdio.h>
 
-static void init_conf(void **state)
-{
-  selene_conf_t *conf = NULL;
-  SLN_ERR(selene_conf_create(&conf));
-  SLN_ASSERT_CONF(conf);
-  selene_conf_destroy(conf);
+#define RUNT(module) do { \
+    int rv = sln_tests_ ## module (); \
+    if (rv != 0) { \
+      return rv; \
+    } \
+  } while (0);
+
+int main(int argc, char* argv[]) {
+  RUNT(init);
+  return 0;
 }
-
-static void init_client(void **state)
-{
-  selene_conf_t *conf = NULL;
-  selene_t *ctxt = NULL;
-  selene_conf_create(&conf);
-  SLN_ERR(selene_client_create(conf, &ctxt));
-  SLN_ASSERT_CONTEXT(ctxt);
-  selene_destroy(ctxt);
-  selene_conf_destroy(conf);
-}
-
-static void init_server(void **state)
-{
-  selene_conf_t *conf = NULL;
-  selene_t *ctxt = NULL;
-  selene_conf_create(&conf);
-  SLN_ERR(selene_server_create(conf, &ctxt));
-  SLN_ASSERT_CONTEXT(ctxt);
-  selene_destroy(ctxt);
-  selene_conf_destroy(conf);
-}
-
-SLN_TESTS_START(init)
-  SLN_TESTS_ENTRY(init_conf)
-  SLN_TESTS_ENTRY(init_client)
-  SLN_TESTS_ENTRY(init_server)
-SLN_TESTS_END(init)

@@ -29,18 +29,35 @@
 #include "sln_assert.h"
 #include "cmockery.h"
 
-/* TODO: could be built differently if we wanted a testall program */
-#define SLN_TESTS_START() \
+#ifdef SLN_TEST_ALL
+#define SLN_TESTS_START(module) \
+ int sln_tests_ ## module () { \
+    int rv = 0; \
+    const UnitTest tests [] = {
+
+#define SLN_TESTS_ENTRY(entry) \
+        unit_test(entry), \
+
+#define SLN_TESTS_END(module) \
+        }; \
+      rv = run_tests(tests); \
+      return rv; \
+    }
+
+#else
+
+#define SLN_TESTS_START(module) \
   int main(int argc, char* argv[]) { \
     const UnitTest tests[] = {
 
 #define SLN_TESTS_ENTRY(entry) \
         unit_test(entry), \
 
-#define SLN_TESTS_END() \
+#define SLN_TESTS_END(module) \
     }; \
     return run_tests(tests); \
   }
+#endif
 
 #undef SLN_ASSERT
 #define SLN_ASSERT(expression) \
@@ -59,6 +76,11 @@
     /* TODO: print the error in test case mode */ \
     SLN_ASSERT((selene__xx__err = (expression)) != SELENE_SUCCESS); \
   } while (0)
+
+#define SLN_TEST_MODULE(name) \
+  int sln_tests_ ## name ();
+
+SLN_TEST_MODULE(init)
 
 #endif
 

@@ -18,6 +18,7 @@
 Import('venv')
 
 sources = Split("""
+  test_all.c
   test_init.c
 """)
 
@@ -35,8 +36,9 @@ tenv = lenv.Clone()
 tenv.AppendUnique(CPPATH=['#/tests'])
 tenv.AppendUnique(LIBS=cmock)
 tenv.AppendUnique(LIBS=tenv['libselene'])
+tenv.AppendUnique(CPPDEFINES=['SLN_TEST_ALL=1'])
 tests = []
-for i in sources:
-  tests.append(tenv.Program(i[:i.rfind('.')], source=i))
+
+tests.append(tenv.Program('test_all', source=sources))
 
 Return('tests')
