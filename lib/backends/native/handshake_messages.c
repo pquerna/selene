@@ -145,4 +145,3 @@ sln_native_msg_handshake_client_hello_to_bucket(sln_native_msg_client_hello_t *c
 
   return SELENE_SUCCESS;
 }
-

@@ -35,6 +35,7 @@ core/log.c
 io/brigades.c
 io/buckets.c
 io/io.c
+io/tok.c
 """)
 
 libselene = None

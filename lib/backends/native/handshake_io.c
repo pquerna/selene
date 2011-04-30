@@ -16,6 +16,7 @@
  */
 
 #include "sln_brigades.h"
+#include "sln_tok.h"
 #include "native.h"
 #include <time.h>
 #include <string.h>
@@ -56,8 +57,6 @@ sln_native_io_handshake_client_hello(selene_t *s, sln_native_baton_t *baton)
   ch.have_ocsp_stapling = 0;
   SELENE_ERR(sln_native_msg_handshake_client_hello_to_bucket(&ch, &bhs));
 
-  slnDbg(s, "client hello bucket= %p", bhs);
-
   tls.content_type = SLN_NATIVE_CONTENT_TYPE_HANDSHAKE;
   tls.version_major = 3;
   tls.version_minor = 2;
@@ -69,6 +68,38 @@ sln_native_io_handshake_client_hello(selene_t *s, sln_native_baton_t *baton)
   SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, btls);
 
   SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, bhs);
+
+  return SELENE_SUCCESS;
+}
+
+typedef struct rchp_baton_t {
+  selene_t *s;
+  sln_native_baton_t *baton;
+} rchp_baton_t;
+
+static selene_error_t*
+read_client_hello_parser(sln_tok_value_t *v, void *baton)
+{
+  return SELENE_SUCCESS;
+}
+
+selene_error_t*
+sln_native_io_handshake_read_client_hello(selene_t *s, sln_native_baton_t *baton)
+{
+  rchp_baton_t pbaton;
+  size_t l = sln_brigade_size(s->bb.in_enc);
+
+  /* TODO: centralize */
+  size_t minimum_tls_protocol_size = 5;
+  if (l < minimum_tls_protocol_size) {
+    /* No state change, nothing we can do here */
+    return SELENE_SUCCESS;
+  }
+
+  pbaton.s = s;
+  pbaton.baton = baton;
+
+  sln_tok_parser(s->bb.in_enc, read_client_hello_parser, &pbaton);
 
   return SELENE_SUCCESS;
 }

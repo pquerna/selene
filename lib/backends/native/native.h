@@ -71,8 +71,27 @@ selene_error_t*
 sln_native_handshake_state_machine(selene_t *s, sln_native_baton_t *baton);
 
 
+/**
+ * Client Writing Methods
+ */
 selene_error_t*
 sln_native_io_handshake_client_hello(selene_t *s, sln_native_baton_t *baton);
+
+/**
+ * Client Reading Methods
+ */
+
+
+/**
+ * Server Writing Methods
+ */
+
+/**
+ * Server Reading Methods
+ */
+selene_error_t*
+sln_native_io_handshake_read_client_hello(selene_t *s, sln_native_baton_t *baton);
+
 
 typedef enum {
   SLN_NATIVE_CONTENT_TYPE__UNUSED0 = 0,

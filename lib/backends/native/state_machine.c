@@ -23,6 +23,7 @@ sln_native_handshake_state_machine(selene_t *s, sln_native_baton_t *baton)
 {
   selene_error_t* err;
 
+enter_state_machine:
   slnDbg(s, "enter handshake_state_machine=%d", baton->handshake);
   switch (baton->handshake) {
     case SLN_NATIVE_HANDSHAKE_CLIENT_SEND_HELLO:
@@ -40,9 +41,39 @@ sln_native_handshake_state_machine(selene_t *s, sln_native_baton_t *baton)
       break;
     case SLN_NATIVE_HANDSHAKE_CLIENT_APPDATA:
       break;
-    default:
-      /* TODO: server methods */
+
+    /***
+     * Start Server Methods.
+     */
+    case SLN_NATIVE_HANDSHAKE_SERVER_WAIT_CLIENT_HELLO:
+
+      if (!SLN_BRIGADE_EMPTY(s->bb.in_enc)) {
+        err = sln_native_io_handshake_read_client_hello(s, baton);
+
+        if (err) {
+          return err;
+        }
+
+        if (baton->handshake != SLN_NATIVE_HANDSHAKE_SERVER_WAIT_CLIENT_HELLO) {
+          goto enter_state_machine;
+        }
+      }
+      break;
+    case SLN_NATIVE_HANDSHAKE_SERVER_SEND_SERVER_HELLO_DONE:
+      break;
+    case SLN_NATIVE_HANDSHAKE_SERVER_WAIT_CLIENT_FINISHED:
+      break;
+    case SLN_NATIVE_HANDSHAKE_SERVER_SNED_FINISHED:
+      break;
+    case SLN_NATIVE_HANDSHAKE_SERVER_APPDATA:
+      break;
+
+    case SLN_NATIVE_HANDSHAKE__UNUSED0:
+    case SLN_NATIVE_HANDSHAKE__MAX:
+      /* TODO: better handle this */
       abort();
+      break;
+    //default:
   }
 
   if (!SLN_BRIGADE_EMPTY(s->bb.out_enc)) {
