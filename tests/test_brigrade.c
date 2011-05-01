@@ -95,21 +95,82 @@ static void brigade_flatten_leftover(void **state)
   assert_memory_equal(buf2, bufcmp2, 2);
 }
 
-static void brigade_pread(void **state)
+static void brigade_pread_simple(void **state)
 {
   sln_brigade_t *bb;
   sln_bucket_t *e;
+  char buf[5];
+  size_t len = 0;
 
   SLN_ERR(sln_brigade_create(&bb));
-  SLN_ERR(sln_bucket_create_empty(&e, 4000));
+  SLN_ERR(sln_bucket_create_empty(&e, 20));
   SLN_BRIGADE_INSERT_TAIL(bb, e);
-  sln_brigade_destroy(bb);
+  memset(e->data, 'B', e->size);
+  memset(e->data, 'A', 1);
 
+  SLN_ERR(sln_brigade_pread_bytes(bb, 0, 1, &buf[0], &len));
+  assert_int_equal(len, 1);
+  assert_memory_equal(buf, "A", 1);
+
+  SLN_ERR(sln_brigade_pread_bytes(bb, 1, 1, &buf[0], &len));
+  assert_int_equal(len, 1);
+  assert_memory_equal(buf, "B", 1);
+
+  SLN_ERR(sln_brigade_pread_bytes(bb, 0, 2, &buf[0], &len));
+  assert_int_equal(len, 2);
+  assert_memory_equal(buf, "AB", 2);
+
+  SLN_ERR(sln_brigade_pread_bytes(bb, 2, 2, &buf[0], &len));
+  assert_int_equal(len, 2);
+  assert_memory_equal(buf, "BB", 2);
+
+  sln_brigade_destroy(bb);
+}
+
+static void brigade_pread_more_buckets(void **state)
+{
+  sln_brigade_t *bb;
+  sln_bucket_t *e1;
+  sln_bucket_t *e2;
+  char buf[20];
+  size_t len = 0;
+
+  SLN_ERR(sln_brigade_create(&bb));
+  SLN_ERR(sln_bucket_create_empty(&e1, 10));
+  SLN_BRIGADE_INSERT_TAIL(bb, e1);
+  memset(e1->data, 'A', e1->size);
+
+  SLN_ERR(sln_bucket_create_empty(&e2, 10));
+  SLN_BRIGADE_INSERT_TAIL(bb, e2);
+  memset(e2->data, 'B', e2->size);
+
+  SLN_ERR(sln_brigade_pread_bytes(bb, 9, 1, &buf[0], &len));
+  assert_int_equal(len, 1);
+  assert_memory_equal(buf, "A", 1);
+
+  SLN_ERR(sln_brigade_pread_bytes(bb, 11, 1, &buf[0], &len));
+  assert_int_equal(len, 1);
+  assert_memory_equal(buf, "B", 1);
+
+  SLN_ERR(sln_brigade_pread_bytes(bb, 9, 2, &buf[0], &len));
+  assert_int_equal(len, 2);
+  assert_memory_equal(buf, "AB", 2);
+
+  SLN_ERR(sln_brigade_pread_bytes(bb, 11, 2, &buf[0], &len));
+  assert_int_equal(len, 2);
+  assert_memory_equal(buf, "BB", 2);
+
+  SLN_ERR(sln_brigade_pread_bytes(bb, 0, 20, &buf[0], &len));
+  assert_int_equal(len, 20);
+  assert_memory_equal(buf, "AAAAAAAAAABBBBBBBBBB", 20);
+
+  sln_brigade_destroy(bb);
 }
 
 SLN_TESTS_START(brigade)
   SLN_TESTS_ENTRY(brigade_operations)
   SLN_TESTS_ENTRY(brigade_flatten)
   SLN_TESTS_ENTRY(brigade_flatten_leftover)
-  SLN_TESTS_ENTRY(brigade_pread)
+  SLN_TESTS_ENTRY(brigade_pread_simple)
+  SLN_TESTS_ENTRY(brigade_pread_more_buckets)
 SLN_TESTS_END()

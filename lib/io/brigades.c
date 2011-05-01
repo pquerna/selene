@@ -67,7 +67,7 @@ sln_brigade_size(sln_brigade_t *bb)
   return total;
 }
 
-static int sln_min(int x, int y) {
+static size_t sln_min(size_t x, size_t y) {
   if (x < y) {
     return x;
   }
@@ -75,7 +75,7 @@ static int sln_min(int x, int y) {
 }
 
 selene_error_t*
-sln_brigade_pread_bytes(sln_brigade_t *bb, size_t wamt_offset, size_t want_length, char *buffer, size_t *got_len)
+sln_brigade_pread_bytes(sln_brigade_t *bb, size_t want_offset, size_t want_length, char *buffer, size_t *got_len)
 {
   /* Read into an offset into a buffer, crossing buckets as needed.  This produces
    * a copy of the data -- it is intended to be used for short reads where we are avoiding a malloc,
@@ -83,6 +83,7 @@ sln_brigade_pread_bytes(sln_brigade_t *bb, size_t wamt_offset, size_t want_lengt
    */
   size_t got = 0;
   size_t offset = 0;
+  size_t buffer_offset = 0;
   sln_bucket_t *b;
 
   SLN_RING_FOREACH(b, &(bb)->list, sln_bucket_t, link)
@@ -91,10 +92,16 @@ sln_brigade_pread_bytes(sln_brigade_t *bb, size_t wamt_offset, size_t want_lengt
       break;
     }
 
-    if (wamt_offset <= offset) {
-      /* COPY BYTES */
-      size_t tocopy = sln_min(b->size, got - want_length);
+    if (want_offset <= (offset + b->size)) {
+      size_t startpoint = 0;
+      if (want_offset > offset) {
+        startpoint = want_offset - offset;
+      }
+      size_t tocopy = sln_min(b->size - startpoint, want_length - got);
       got += tocopy;
+      memcpy(buffer+buffer_offset, b->data+startpoint, tocopy);
+      buffer_offset += tocopy;
+      offset += tocopy;
     }
     else {
       offset += b->size;
@@ -111,7 +118,8 @@ sln_brigade_pread_bytes(sln_brigade_t *bb, size_t wamt_offset, size_t want_lengt
     * return wooo
     */
 
-   return SELENE_SUCCESS;
+  *got_len = got;
+  return SELENE_SUCCESS;
 }
 
 selene_error_t*
