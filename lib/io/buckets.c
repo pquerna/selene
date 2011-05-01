@@ -82,7 +82,7 @@ sln_bucket_destroy(sln_bucket_t *b)
 {
   SLN_BUCKET_REMOVE(b);
 
-  if (b->memory_is_mine == 1) {
+  if (b->memory_is_mine == 1 && b->data != NULL) {
     free(b->data);
   }
 
