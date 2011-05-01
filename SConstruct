@@ -137,16 +137,17 @@ for platform in [env['SELENE_PLATFORM']]:
 
 append_types = ['CCFLAGS', 'CFLAGS', 'CPPDEFINES', 'LIBS']
 replace_types = ['CC']
-test_targets = []
 cov_targets = []
 # defaults for all platforms
 # TODO: non-gcc/clang platforms
 env.AppendUnique(CPPPATH=['#/include'],
                  CCFLAGS=['-pedantic', '-std=c99'])
 all_targets = {}
+all_test_targets = {}
 
 for vari in variants:
   targets = []
+  test_targets = []
   coverage_test_targets = []
   platform = vari['PLATFORM']
   profile =  vari['PROFILE']
@@ -199,6 +200,7 @@ for vari in variants:
   targets.append(tools)
 
   all_targets[variant] = targets
+  all_test_targets[variant] = test_targets
 
 denv = env.Clone()
 denv['DOXYGEN'] = 'doxygen'
@@ -208,7 +210,7 @@ doxy = denv.Command(env.Dir('#/api-docs'), all_targets.values(),
 
 denv.AlwaysBuild(doxy)
 env.Alias('docs', doxy)
-env.Alias('test', test_targets)
+env.Alias('test', all_test_targets[selected_variant])
 env.Alias('coverage', cov_targets)
 if not env.GetOption('clean'):
   env.Default([all_targets[selected_variant], cov_targets])
