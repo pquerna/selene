@@ -192,7 +192,7 @@ for vari in variants:
   if ty == "GCOV" and variant == selected_variant:
     cov = venv.Command(venv.File('%s/coverage.txt' % (vdir)), coverage_test_targets,
               # TODO: in an ideal world, we could use --object-directory=$VDIR
-              ['$PYTHON ./tests/gcovr -r . --object-directory=. -e extern -e build  -o $VDIR/coverage.txt',
+              ['$PYTHON ./tests/gcovr -r . --object-directory=. -e extern -e build -e test -o $VDIR/coverage.txt',
                'cat $VDIR/coverage.txt'])
     venv.AlwaysBuild(cov)
     cov_targets.append(cov)
