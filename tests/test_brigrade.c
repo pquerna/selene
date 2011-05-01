@@ -19,6 +19,23 @@
 #include "sln_tests.h"
 #include "sln_brigades.h"
 
+static void brigade_flatten(void **state)
+{
+  char buf[80];
+  size_t len = sizeof(buf);
+  sln_brigade_t *bb;
+  sln_bucket_t *e;
+
+  SLN_ERR(sln_brigade_create(&bb));
+  SLN_ERR(sln_bucket_create_empty(&e, 40));
+  SLN_BRIGADE_INSERT_TAIL(bb, e);
+  SLN_ERR(sln_bucket_create_empty(&e, 40));
+  SLN_BRIGADE_INSERT_TAIL(bb, e);
+  SLN_ERR(sln_brigade_flatten(bb, &buf[0], &len));
+  assert_int_equal(len, 80);
+  sln_brigade_destroy(bb);
+}
+
 static void brigade_pread(void **state)
 {
   sln_brigade_t *bb;
@@ -32,5 +49,6 @@ static void brigade_pread(void **state)
 }
 
 SLN_TESTS_START(brigade)
+  SLN_TESTS_ENTRY(brigade_flatten)
   SLN_TESTS_ENTRY(brigade_pread)
 SLN_TESTS_END()
