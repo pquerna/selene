@@ -31,6 +31,7 @@ static void init_client(void **state)
   selene_conf_t *conf = NULL;
   selene_t *ctxt = NULL;
   selene_conf_create(&conf);
+  SLN_ERR(selene_conf_use_reasonable_defaults(conf));
   SLN_ERR(selene_client_create(conf, &ctxt));
   SLN_ASSERT_CONTEXT(ctxt);
   selene_destroy(ctxt);
@@ -42,6 +43,7 @@ static void init_server(void **state)
   selene_conf_t *conf = NULL;
   selene_t *ctxt = NULL;
   selene_conf_create(&conf);
+  SLN_ERR(selene_conf_use_reasonable_defaults(conf));
   SLN_ERR(selene_server_create(conf, &ctxt));
   SLN_ASSERT_CONTEXT(ctxt);
   selene_destroy(ctxt);
