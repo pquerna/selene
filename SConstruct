@@ -94,7 +94,7 @@ options = {
       'CPPDEFINES': ['DARWIN'],
     },
     'LINUX': {
-      'CPPDEFINES': ['LINUX', '_XOPEN_SOURCE'],
+      'CPPDEFINES': ['LINUX', '_XOPEN_SOURCE', '_BSD_SOURCE'],
     },
     'FREEBSD': {
       'CPPDEFINES': ['FREEBSD'],
