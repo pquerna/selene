@@ -17,18 +17,41 @@
 
 #include "selene.h"
 #include "sln_tests.h"
-#include <stdio.h>
+#include "sln_buckets.h"
+#include <string.h>
 
-#define RUNT(module) do { \
-    int rv = sln_tests_ ## module (); \
-    if (rv != 0) { \
-      return rv; \
-    } \
-  } while (0);
-
-int main(int argc, char* argv[]) {
-  RUNT(init);
-  RUNT(brigade);
-  RUNT(buckets);
-  return 0;
+static void
+bucket_empty(void **state)
+{
+  sln_bucket_t *e;
+  SLN_ERR(sln_bucket_create_empty(&e, 4000));
+  sln_bucket_destroy(e);
 }
+
+static void
+bucket_with_bytes(void **state)
+{
+  char *data = malloc(7);
+  strncat(data, "foobar", 7);
+  sln_bucket_t *e;
+  SLN_ERR(sln_bucket_create_with_bytes(&e, data, strlen(data)));
+  assert_memory_equal(data, e->data, 6);
+  sln_bucket_destroy(e);
+  free(data);
+}
+
+static void
+bucket_copy_bytes(void **state)
+{
+  const char *data = "foobar";
+  sln_bucket_t *e;
+  SLN_ERR(sln_bucket_create_copy_bytes(&e, data, strlen(data)));
+  assert_memory_equal(data, e->data, 6);
+  sln_bucket_destroy(e);
+}
+
+SLN_TESTS_START(buckets)
+  SLN_TESTS_ENTRY(bucket_empty)
+  SLN_TESTS_ENTRY(bucket_with_bytes)
+  SLN_TESTS_ENTRY(bucket_copy_bytes)
+SLN_TESTS_END()

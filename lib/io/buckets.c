@@ -72,6 +72,8 @@ sln_bucket_create_with_bytes(sln_bucket_t **out_b, char* bytes, size_t size)
 
   b->data = bytes;
 
+  *out_b = b;
+
   return SELENE_SUCCESS;
 }
 
@@ -83,6 +85,8 @@ sln_bucket_destroy(sln_bucket_t *b)
   if (b->memory_is_mine == 1) {
     free(b->data);
   }
+
+  b->data = NULL;
 
   free(b);
 
