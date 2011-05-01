@@ -27,6 +27,12 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef __linux__
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+#endif
+
 #include <string.h>
 #ifdef _WIN32
 #include <windows.h>
