@@ -145,8 +145,6 @@ sln_brigade_flatten(sln_brigade_t *bb, char *c, size_t *len)
     c += data_len;
     actual += data_len;
 
-    SLN_BUCKET_REMOVE(b);
-
     if (b->size != data_len) {
       sln_bucket_t *tmpe;
       SLN_ASSERT(actual < *len);
