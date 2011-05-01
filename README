@@ -28,6 +28,10 @@ Status:
   not the actual protocol parsing.
 
 Hacking Notes:
+  * All contributors must sign an Apache Software Foundation CLA,
+    <http://www.apache.org/licenses/icla.txt> and agree
+    that Selene may be moved to the ASF at a future date.
+
   * External Functions and types are prefixed with selene_*
   * Internal Functions and types are prefixed with sln_*
   * 2 Spaces, httpd-ish style C.
