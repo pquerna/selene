@@ -15,22 +15,37 @@
  * limitations under the License.
  */
 
-#include "selene.h"
 #include "sln_tests.h"
-#include <stdio.h>
+#include "selene.h"
+#include "sln_tok.h"
 
-#define RUNT(module) do { \
-    int rv = sln_tests_ ## module (); \
-    if (rv != 0) { \
-      return rv; \
-    } \
-  } while (0);
+typedef struct baton_t {
+  int count;
+} baton_t;
 
-int main(int argc, char* argv[]) {
-  RUNT(init);
-  RUNT(brigade);
-  RUNT(buckets);
-  RUNT(events);
-  RUNT(tok);
-  return 0;
+static selene_error_t*
+tok_nowork_cb(sln_tok_value_t *v, void *baton_)
+{
+  baton_t *baton = (baton_t *)baton_;
+  baton->count++;
+  //v->next = TOK_SINGLE_BYTE;
+  v->next = TOK_DONE;
+  return SELENE_SUCCESS;
 }
+
+static void tok_nowork(void **state)
+{
+  sln_brigade_t *bb;
+  baton_t baton;
+  baton.count = 0;
+
+  SLN_ERR(sln_brigade_create(&bb));
+  SLN_ERR(sln_tok_parser(bb, tok_nowork_cb, &baton));
+
+  assert_int_equal(1, baton.count);
+  sln_brigade_destroy(bb);
+}
+
+SLN_TESTS_START(tok)
+  SLN_TESTS_ENTRY(tok_nowork)
+SLN_TESTS_END()

@@ -84,6 +84,7 @@ SLN_TEST_MODULE(init)
 SLN_TEST_MODULE(brigade)
 SLN_TEST_MODULE(buckets)
 SLN_TEST_MODULE(events)
+SLN_TEST_MODULE(tok)
 
 #endif
 
