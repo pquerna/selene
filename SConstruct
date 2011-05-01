@@ -27,6 +27,7 @@ opts.Add(PathVariable('with_openssl',
                       'Prefix to OpenSSL installation', None))
 
 opts.Add(EnumVariable('profile', 'build profile', 'debug', ['debug', 'gcov', 'release'], {}, True))
+opts.Add(EnumVariable('build_type', 'build profile', 'static', ['static', 'shared'], {}, True))
 
 opts.Add('enable_openssl_threaded', default=False, help='Enable Threaded OpenSSL backend')
 opts.Add('enable_native', default=True, help='Enable Native TLS, using OpenSSL for crytpo operations')
@@ -123,8 +124,9 @@ for platform in [env['SELENE_PLATFORM']]:
   profiles = [env['profile'].upper()]
   if 'coverage' in COMMAND_LINE_TARGETS:
     profiles.append('GCOV')
+  bt = [env['build_type'].upper()]
   for profile in set(profiles):
-    for build in ['STATIC', 'SHARED']:
+    for build in bt:
       variants.append({'PLATFORM': platform, 'PROFILE': profile, 'BUILD': build})
 
 append_types = ['CCFLAGS', 'CFLAGS', 'CPPDEFINES', 'LIBS']
@@ -164,7 +166,7 @@ for vari in variants:
   lib = venv.SConscript('lib/SConscript', variant_dir=pjoin(vdir, 'lib'), duplicate=0, exports='venv')
   targets.append(lib)
   venv['libselene'] = lib[0]
-
+  venv['VDIR'] = vdir
   tests = venv.SConscript('tests/SConscript', variant_dir=pjoin(vdir, 'tests'), duplicate=0, exports='venv')
   for t in tests[0]:
     run = venv.Command(str(t) + ".testrun", t,
@@ -174,6 +176,10 @@ for vari in variants:
     venv.AlwaysBuild(run)
     test_targets.append(run)
     if ty == "GCOV":
+      cleancov = venv.Command(env.File('$VDIR/.covclean'), coverage_test_targets,
+                ['find $VDIR -name \*.gcda -delete'])
+      venv.AlwaysBuild(cleancov)
+      venv.Depends(run, cleancov)
       coverage_test_targets.append(run)
 
   tools = venv.SConscript('tools/SConscript', variant_dir=pjoin(vdir, 'tools'), duplicate=0, exports='venv')
