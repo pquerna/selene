@@ -22,8 +22,13 @@
 static void brigade_pread(void **state)
 {
   sln_brigade_t *bb;
+  sln_bucket_t *e;
+
   SLN_ERR(sln_brigade_create(&bb));
+  SLN_ERR(sln_bucket_create_empty(&e, 4000));
+  SLN_BRIGADE_INSERT_TAIL(bb, e);
   sln_brigade_destroy(bb);
+
 }
 
 SLN_TESTS_START(brigade)
