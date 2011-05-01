@@ -31,8 +31,7 @@ bucket_empty(void **state)
 static void
 bucket_with_bytes(void **state)
 {
-  char *data = malloc(7);
-  strncat(data, "foobar", 7);
+  char *data = strdup("foobar");
   sln_bucket_t *e;
   SLN_ERR(sln_bucket_create_with_bytes(&e, data, strlen(data)));
   assert_memory_equal(data, e->data, 6);
