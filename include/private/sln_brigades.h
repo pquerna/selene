@@ -44,6 +44,15 @@ size_t
 sln_brigade_size(sln_brigade_t *bb);
 
 /**
+ * Flatten a section of a brigade into an existing buffer.
+ *
+ * If there is not enough data to fullfill the request, up to length is copied into the buffer.
+ */
+selene_error_t*
+sln_brigade_pread_bytes(sln_brigade_t *bb, size_t offset, size_t length, char *buffer, size_t *len);
+
+
+/**
  * Flatten from the front of the brigade, into a buffer.
  * Buckets up to this point are consumed.
  */

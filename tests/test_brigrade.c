@@ -17,17 +17,15 @@
 
 #include "selene.h"
 #include "sln_tests.h"
-#include <stdio.h>
+#include "sln_brigades.h"
 
-#define RUNT(module) do { \
-    int rv = sln_tests_ ## module (); \
-    if (rv != 0) { \
-      return rv; \
-    } \
-  } while (0);
-
-int main(int argc, char* argv[]) {
-  RUNT(init);
-  RUNT(brigade);
-  return 0;
+static void brigade_pread(void **state)
+{
+  sln_brigade_t *bb;
+  SLN_ERR(sln_brigade_create(&bb));
+  sln_brigade_destroy(bb);
 }
+
+SLN_TESTS_START(brigade)
+  SLN_TESTS_ENTRY(brigade_pread)
+SLN_TESTS_END()

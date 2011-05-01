@@ -23,9 +23,9 @@
 selene_error_t*
 sln_tok_parser(sln_brigade_t *bb, sln_tok_cb cb, void *baton)
 {
-  selene_error_t* err;
+  selene_error_t* err = SELENE_SUCCESS;
   sln_tok_value_t tvalue;
-  size_t bblen = sln_brigade_size(bb);
+  size_t rlen;
   size_t offset = 0;
 
   memset(&tvalue, 0, sizeof(tvalue));
@@ -47,9 +47,9 @@ sln_tok_parser(sln_brigade_t *bb, sln_tok_cb cb, void *baton)
       break;
 
     case TOK_SINGLE_BYTE:
-      if (bblen > 0) {
-        tvalue.v.byte = 0;
-        offset++;
+      err = sln_brigade_pread_bytes(bb, offset, 1, &tvalue.v.byte, &rlen);
+      if (err) {
+        return err;
       }
       break;
     case TOK_SLICE_BRIGADE:
@@ -57,5 +57,6 @@ sln_tok_parser(sln_brigade_t *bb, sln_tok_cb cb, void *baton)
   }
 
   tvalue.current = TOK__UNUSED;
-  return SELENE_SUCCESS;
+
+  return err;
 }

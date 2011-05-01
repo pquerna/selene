@@ -67,6 +67,53 @@ sln_brigade_size(sln_brigade_t *bb)
   return total;
 }
 
+static int sln_min(int x, int y) {
+  if (x < y) {
+    return x;
+  }
+  return y;
+}
+
+selene_error_t*
+sln_brigade_pread_bytes(sln_brigade_t *bb, size_t wamt_offset, size_t want_length, char *buffer, size_t *got_len)
+{
+  /* Read into an offset into a buffer, crossing buckets as needed.  This produces
+   * a copy of the data -- it is intended to be used for short reads where we are avoiding a malloc,
+   * for long reads your should probally use BRIGADE_SLICE, to cut up buckets.
+   */
+  size_t got = 0;
+  size_t offset = 0;
+  sln_bucket_t *b;
+
+  SLN_RING_FOREACH(b, &(bb)->list, sln_bucket_t, link)
+  {
+    if (got == want_length) {
+      break;
+    }
+
+    if (wamt_offset <= offset) {
+      /* COPY BYTES */
+      size_t tocopy = sln_min(b->size, got - want_length);
+      got += tocopy;
+    }
+    else {
+      offset += b->size;
+      continue;
+    }
+  }
+
+   /**
+    * Steps:
+    * Is there enough space?
+    * Find the starting bucket.
+    * copy until length... or end of bucket
+    * Find next bucket (repeat)
+    * return wooo
+    */
+
+   return SELENE_SUCCESS;
+}
+
 selene_error_t*
 sln_brigade_flatten(sln_brigade_t *bb, char *c, size_t *len)
 {

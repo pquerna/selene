@@ -38,7 +38,7 @@
 #define SLN_TESTS_ENTRY(entry) \
         unit_test(entry), \
 
-#define SLN_TESTS_END(module) \
+#define SLN_TESTS_END() \
         }; \
       rv = run_tests(tests); \
       return rv; \
@@ -53,7 +53,7 @@
 #define SLN_TESTS_ENTRY(entry) \
         unit_test(entry), \
 
-#define SLN_TESTS_END(module) \
+#define SLN_TESTS_END() \
     }; \
     return run_tests(tests); \
   }
@@ -81,6 +81,7 @@
   int sln_tests_ ## name ();
 
 SLN_TEST_MODULE(init)
+SLN_TEST_MODULE(brigade)
 
 #endif
 

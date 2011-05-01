@@ -20,6 +20,7 @@ Import('venv')
 sources = Split("""
   test_all.c
   test_init.c
+  test_brigrade.c
 """)
 
 
