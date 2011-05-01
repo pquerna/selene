@@ -26,8 +26,10 @@ opts = Variables('build.py')
 opts.Add(PathVariable('with_openssl',
                       'Prefix to OpenSSL installation', None))
 
-opts.Add(EnumVariable('profile', 'build profile', 'debug', ['debug', 'gcov', 'release'], {}, True))
-opts.Add(EnumVariable('build_type', 'build profile', 'static', ['static', 'shared'], {}, True))
+available_profiles = ['debug', 'gcov', 'release']
+available_build_types = ['static', 'shared']
+opts.Add(EnumVariable('profile', 'build profile', 'debug', available_profiles, {}, True))
+opts.Add(EnumVariable('build_type', 'build profile', 'static', available_build_types, {}, True))
 
 opts.Add('enable_openssl_threaded', default=False, help='Enable Threaded OpenSSL backend')
 opts.Add('enable_native', default=True, help='Enable Native TLS, using OpenSSL for crytpo operations')
@@ -124,11 +126,10 @@ if 'coverage' in COMMAND_LINE_TARGETS:
 
 variants = []
 for platform in [env['SELENE_PLATFORM']]:
-  profiles = [env['profile'].upper()]
   bt = [env['build_type'].upper()]
-  for profile in set(profiles):
-    for build in bt:
-      variants.append({'PLATFORM': platform, 'PROFILE': profile, 'BUILD': build})
+  for profile in available_profiles:
+    for build in available_build_types:
+      variants.append({'PLATFORM': platform.upper(), 'PROFILE': profile.upper(), 'BUILD': build.upper()})
 
 append_types = ['CCFLAGS', 'CFLAGS', 'CPPDEFINES', 'LIBS']
 replace_types = ['CC']
@@ -177,13 +178,13 @@ for vari in variants:
     venv.AlwaysBuild(run)
     test_targets.append(run)
     if ty == "GCOV":
-      cleancov = venv.Command(env.File('$VDIR/.covclean'), coverage_test_targets,
+      cleancov = venv.Command(venv.File('$VDIR/.covclean'), coverage_test_targets,
                 ['find $VDIR -name \*.gcda -delete'])
       venv.AlwaysBuild(cleancov)
       venv.Depends(run, cleancov)
       coverage_test_targets.append(run)
 
-  cov = venv.Command(env.File('%s/coverage.txt' % (vdir)), coverage_test_targets,
+  cov = venv.Command(venv.File('%s/coverage.txt' % (vdir)), coverage_test_targets,
             # TODO: in an ideal world, we could use --object-directory=$VDIR
             ['$PYTHON ./tests/gcovr -r . --object-directory=. -e extern -e build  -o $VDIR/coverage.txt',
              'cat $VDIR/coverage.txt'])
@@ -205,6 +206,8 @@ env.Alias('docs', doxy)
 env.Alias('test', test_targets)
 env.Alias('coverage', cov_targets)
 if not env.GetOption('clean'):
-  env.Default(all_targets.values())
+  selected_variant = '%s-%s-%s' % (env['SELENE_PLATFORM'].lower(), env['profile'].lower(), env['build_type'].lower())
+  print "Selected %s variant build..." % (selected_variant)
+  env.Default([all_targets[selected_variant]])
 else:
-  env.Default([all_targets.values(), 'test'])
+  env.Default([all_targets.values(), 'test', cov_targets])
