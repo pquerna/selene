@@ -188,7 +188,7 @@ doxy = denv.Command(env.Dir('#/api-docs'), all_targets.values(),
                     '$DOXYGEN'])
 
 cov = env.Command(env.File('#/build/coverage.txt'), coverage_test_targets,
-          ['$PYTHON ./tests/gcovr -b -r lib -o build/coverage.txt',
+          ['$PYTHON ./tests/gcovr -e extern -e build -r . -o build/coverage.txt',
            'cat build/coverage.txt'])
 env.AlwaysBuild(cov)
 
