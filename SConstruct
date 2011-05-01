@@ -38,6 +38,10 @@ env = Environment(options=opts,
                   ENV = os.environ.copy(),
                   tools=['default'])
 
+if 'coverage' in COMMAND_LINE_TARGETS:
+  env['profile'] = 'gcov'
+  env['build_type'] = 'static'
+
 conf = Configure(env, custom_tests = {'CheckUname': ac.CheckUname})
 
 conf.env['PYTHON'] = env.WhereIs('python')
@@ -121,8 +125,8 @@ options = {
   },
 }
 
-if 'coverage' in COMMAND_LINE_TARGETS:
-  env['profile'] = 'gcov'
+selected_variant = '%s-%s-%s' % (env['SELENE_PLATFORM'].lower(), env['profile'].lower(), env['build_type'].lower())
+print "Selected %s variant build..." % (selected_variant)
 
 variants = []
 for platform in [env['SELENE_PLATFORM']]:
@@ -184,12 +188,13 @@ for vari in variants:
       venv.Depends(run, cleancov)
       coverage_test_targets.append(run)
 
-  cov = venv.Command(venv.File('%s/coverage.txt' % (vdir)), coverage_test_targets,
-            # TODO: in an ideal world, we could use --object-directory=$VDIR
-            ['$PYTHON ./tests/gcovr -r . --object-directory=. -e extern -e build  -o $VDIR/coverage.txt',
-             'cat $VDIR/coverage.txt'])
-  venv.AlwaysBuild(cov)
-  cov_targets.append(cov)
+  if ty == "GCOV" and variant == selected_variant:
+    cov = venv.Command(venv.File('%s/coverage.txt' % (vdir)), coverage_test_targets,
+              # TODO: in an ideal world, we could use --object-directory=$VDIR
+              ['$PYTHON ./tests/gcovr -r . --object-directory=. -e extern -e build  -o $VDIR/coverage.txt',
+               'cat $VDIR/coverage.txt'])
+    venv.AlwaysBuild(cov)
+    cov_targets.append(cov)
   tools = venv.SConscript('tools/SConscript', variant_dir=pjoin(vdir, 'tools'), duplicate=0, exports='venv')
   targets.append(tools)
 
@@ -206,8 +211,6 @@ env.Alias('docs', doxy)
 env.Alias('test', test_targets)
 env.Alias('coverage', cov_targets)
 if not env.GetOption('clean'):
-  selected_variant = '%s-%s-%s' % (env['SELENE_PLATFORM'].lower(), env['profile'].lower(), env['build_type'].lower())
-  print "Selected %s variant build..." % (selected_variant)
-  env.Default([all_targets[selected_variant]])
+  env.Default([all_targets[selected_variant], cov_targets])
 else:
   env.Default([all_targets.values(), 'test', cov_targets])
