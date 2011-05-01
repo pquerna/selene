@@ -147,7 +147,6 @@ sln_brigade_flatten(sln_brigade_t *bb, char *c, size_t *len)
 
     if (b->size != data_len) {
       sln_bucket_t *tmpe;
-      SLN_ASSERT(actual < *len);
 
       SELENE_ERR(sln_bucket_create_copy_bytes(&tmpe, (b->data + data_len), b->size - data_len));
 
