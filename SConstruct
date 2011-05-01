@@ -119,11 +119,12 @@ options = {
   },
 }
 
+if 'coverage' in COMMAND_LINE_TARGETS:
+  env['profile'] = 'gcov'
+
 variants = []
 for platform in [env['SELENE_PLATFORM']]:
   profiles = [env['profile'].upper()]
-  if 'coverage' in COMMAND_LINE_TARGETS:
-    profiles.append('GCOV')
   bt = [env['build_type'].upper()]
   for profile in set(profiles):
     for build in bt:
@@ -132,16 +133,16 @@ for platform in [env['SELENE_PLATFORM']]:
 append_types = ['CCFLAGS', 'CFLAGS', 'CPPDEFINES', 'LIBS']
 replace_types = ['CC']
 test_targets = []
-
+cov_targets = []
 # defaults for all platforms
 # TODO: non-gcc/clang platforms
 env.AppendUnique(CPPPATH=['#/include'],
                  CCFLAGS=['-pedantic', '-std=c99'])
 all_targets = {}
 
-coverage_test_targets = []
 for vari in variants:
   targets = []
+  coverage_test_targets = []
   platform = vari['PLATFORM']
   profile =  vari['PROFILE']
   build = vari['BUILD']
@@ -182,6 +183,12 @@ for vari in variants:
       venv.Depends(run, cleancov)
       coverage_test_targets.append(run)
 
+  cov = venv.Command(env.File('%s/coverage.txt' % (vdir)), coverage_test_targets,
+            # TODO: in an ideal world, we could use --object-directory=$VDIR
+            ['$PYTHON ./tests/gcovr -r . --object-directory=. -e extern -e build  -o $VDIR/coverage.txt',
+             'cat $VDIR/coverage.txt'])
+  venv.AlwaysBuild(cov)
+  cov_targets.append(cov)
   tools = venv.SConscript('tools/SConscript', variant_dir=pjoin(vdir, 'tools'), duplicate=0, exports='venv')
   targets.append(tools)
 
@@ -193,15 +200,10 @@ doxy = denv.Command(env.Dir('#/api-docs'), all_targets.values(),
                    ['rm -rf api-docs',
                     '$DOXYGEN'])
 
-cov = env.Command(env.File('#/build/coverage.txt'), coverage_test_targets,
-          ['$PYTHON ./tests/gcovr -e extern -e build -r . -o build/coverage.txt',
-           'cat build/coverage.txt'])
-env.AlwaysBuild(cov)
-
 denv.AlwaysBuild(doxy)
 env.Alias('docs', doxy)
 env.Alias('test', test_targets)
-env.Alias('coverage', cov)
+env.Alias('coverage', cov_targets)
 if not env.GetOption('clean'):
   env.Default(all_targets.values())
 else:
