@@ -22,6 +22,7 @@ sources = Split("""
   test_init.c
   test_brigrade.c
   test_buckets.c
+  test_events.c
 """)
 
 

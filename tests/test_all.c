@@ -30,5 +30,6 @@ int main(int argc, char* argv[]) {
   RUNT(init);
   RUNT(brigade);
   RUNT(buckets);
+  RUNT(events);
   return 0;
 }
