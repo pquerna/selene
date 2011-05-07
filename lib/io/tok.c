@@ -67,7 +67,7 @@ sln_tok_parser(sln_brigade_t *bb, sln_tok_cb cb, void *baton)
         }
         break;
 
-      case TOK_SLICE_BRIGADE:
+      case TOK_COPY_BRIGADE:
 
         if (tvalue.wantlen > sln_brigade_size(bb)) {
           keepgoing = 0;

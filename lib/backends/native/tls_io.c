@@ -57,7 +57,7 @@ read_tls(sln_tok_value_t *v, void *baton_)
 
       break;
     case TLS_RS_MESSAGE:
-      if (v->current != TOK_SLICE_BRIGADE) {
+      if (v->current != TOK_COPY_BRIGADE) {
         abort();
       }
 
