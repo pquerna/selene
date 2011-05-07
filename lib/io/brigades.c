@@ -109,15 +109,6 @@ sln_brigade_pread_bytes(sln_brigade_t *bb, size_t want_offset, size_t want_lengt
     }
   }
 
-   /**
-    * Steps:
-    * Is there enough space?
-    * Find the starting bucket.
-    * copy until length... or end of bucket
-    * Find next bucket (repeat)
-    * return wooo
-    */
-
   *got_len = got;
   return SELENE_SUCCESS;
 }
@@ -175,3 +166,28 @@ sln_brigade_flatten(sln_brigade_t *bb, char *c, size_t *len)
   return SELENE_SUCCESS;
 }
 
+selene_error_t*
+sln_brigade_copy_into(sln_brigade_t *source_bb, size_t want_offset, size_t want_length, sln_brigade_t *into_bb)
+{
+  selene_error_t* err;
+  sln_bucket_t *e;
+  size_t rlen = 0;
+
+  err = sln_bucket_create_empty(&e, want_length);
+
+  if (err) {
+    return err;
+  }
+
+  /* TODO: this is maybe not the most efficient method... but fuck it, optimize it later right?*/
+  err = sln_brigade_pread_bytes(source_bb, want_offset, want_length, e->data, &rlen);
+
+  if (err) {
+    sln_bucket_destroy(e);
+    return err;
+  }
+
+  SLN_BRIGADE_INSERT_TAIL(into_bb, e);
+
+  return SELENE_SUCCESS;
+}

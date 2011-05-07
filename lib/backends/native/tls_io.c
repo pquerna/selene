@@ -44,13 +44,14 @@ read_tls(sln_tok_value_t *v, void *baton_)
   if (rtls->state == TLS_RS__UNUSED) {
     /* get our first byte for the TLS_RS_CONTENT_TYPE */
     rtls->state = TLS_RS_CONTENT_TYPE;
-    v->next = TOK_SINGLE_BYTE;
+    v->next = TOK_COPY_BYTES;
+    v->wantlen = 1;
     return SELENE_SUCCESS;
   }
 
   switch (rtls->state) {
     case TLS_RS_CONTENT_TYPE:
-      if (v->current != TOK_SINGLE_BYTE) {
+      if (v->current != TOK_COPY_BYTES) {
         abort();
       }
 

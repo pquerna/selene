@@ -59,6 +59,12 @@ sln_brigade_pread_bytes(sln_brigade_t *bb, size_t offset, size_t length, char *b
 selene_error_t*
 sln_brigade_flatten(sln_brigade_t *bb, char *c, size_t *len);
 
+/**
+ * Duplicate a section of a brigade, into the tail of another brigade.
+ */
+selene_error_t*
+sln_brigade_copy_into(sln_brigade_t *source_bb, size_t offset, size_t point, sln_brigade_t *into_bb);
+
 #define SLN_BRIGADE_SENTINEL(b) SLN_RING_SENTINEL(&(b)->list, sln_bucket_t, link)
 #define SLN_BRIGADE_EMPTY(b) SLN_RING_EMPTY(&(b)->list, sln_bucket_t, link)
 #define SLN_BRIGADE_FIRST(b) SLN_RING_FIRST(&(b)->list)

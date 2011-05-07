@@ -24,18 +24,20 @@ typedef enum sln_tok_value_e {
   /* TODO: rethink types */
   TOK__UNUSED,
   TOK_INIT,
-  TOK_SINGLE_BYTE,
+  TOK_COPY_BYTES,
   TOK_SLICE_BRIGADE,
   TOK_DONE,
   TOK__MAX
 } sln_tok_value_e;
+
+#define SLN_TOK_VALUE_MAX_BYTE_COPY_LEN 16
 
 typedef struct sln_tok_value_t {
   sln_tok_value_e current;
   sln_tok_value_e next;
   size_t wantlen;
   union {
-    char byte;
+    char bytes[SLN_TOK_VALUE_MAX_BYTE_COPY_LEN];
     sln_brigade_t *bb;
   } v;
 } sln_tok_value_t;

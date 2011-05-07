@@ -15,48 +15,92 @@
  * limitations under the License.
  */
 
+#include <string.h>
+
 #include "selene.h"
 #include "sln_types.h"
 #include "sln_tok.h"
-#include <string.h>
+#include "sln_assert.h"
 
 selene_error_t*
 sln_tok_parser(sln_brigade_t *bb, sln_tok_cb cb, void *baton)
 {
+  int keepgoing = 1;
   selene_error_t* err = SELENE_SUCCESS;
   sln_tok_value_t tvalue;
   size_t rlen;
   size_t offset = 0;
+  sln_brigade_t *tmpbb = NULL;
 
   memset(&tvalue, 0, sizeof(tvalue));
 
-  tvalue.current = TOK_INIT;
+  tvalue.next = TOK_INIT;
 
-  err = cb(&tvalue, baton);
+  while (keepgoing == 1) {
+    tvalue.current = tvalue.next;
 
-  if (err) {
-    return err;
+    err = cb(&tvalue, baton);
+
+    if (err) {
+      keepgoing = 0;
+      break;
+    }
+
+    switch (tvalue.next) {
+      case TOK__UNUSED:
+      case TOK__MAX:
+      case TOK_INIT:
+      case TOK_DONE:
+        keepgoing = 0;
+        break;
+
+      case TOK_COPY_BYTES:
+        SLN_ASSERT(tvalue.wantlen < SLN_TOK_VALUE_MAX_BYTE_COPY_LEN);
+
+        err = sln_brigade_pread_bytes(bb, offset, tvalue.wantlen, &tvalue.v.bytes[0], &rlen);
+        if (err) {
+          keepgoing = 0;
+          break;
+        }
+        if (rlen != tvalue.wantlen) {
+          keepgoing = 0;
+        }
+        break;
+
+      case TOK_SLICE_BRIGADE:
+
+        if (tvalue.wantlen > sln_brigade_size(bb)) {
+          keepgoing = 0;
+          break;
+        }
+
+        if (tmpbb == NULL) {
+          err = sln_brigade_create(&tmpbb);
+          if (err) {
+            keepgoing = 0;
+            break;
+          }
+        }
+        else {
+          sln_brigade_clear(tmpbb);
+        }
+
+        tvalue.v.bb = tmpbb;
+        /* TODO: optimization, this isn't required */
+        err = sln_brigade_copy_into(bb, offset, tvalue.wantlen, tmpbb);
+        if (err) {
+          keepgoing = 0;
+          break;
+        }
+        break;
+    }
+    offset += tvalue.wantlen;
+    tvalue.current = TOK__UNUSED;
   }
 
-  tvalue.current = tvalue.next;
-  switch (tvalue.next) {
-    case TOK__UNUSED:
-    case TOK__MAX:
-    case TOK_INIT:
-    case TOK_DONE:
-      break;
-
-    case TOK_SINGLE_BYTE:
-      err = sln_brigade_pread_bytes(bb, offset, 1, &tvalue.v.byte, &rlen);
-      if (err) {
-        return err;
-      }
-      break;
-    case TOK_SLICE_BRIGADE:
-      break;
+  if (tmpbb != NULL) {
+    sln_brigade_destroy(tmpbb);
   }
-
-  tvalue.current = TOK__UNUSED;
 
   return err;
 }

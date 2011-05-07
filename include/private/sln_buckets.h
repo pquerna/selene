@@ -35,7 +35,7 @@ selene_error_t*
 sln_bucket_create_with_bytes(sln_bucket_t **b, char* bytes, size_t size);
 
 /* Cleanup a memory buffer */
-selene_error_t*
+void
 sln_bucket_destroy(sln_bucket_t *b);
 
 #define SLN_BUCKET_REMOVE(e) SLN_RING_REMOVE((e), link)

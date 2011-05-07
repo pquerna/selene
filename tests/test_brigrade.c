@@ -167,10 +167,40 @@ static void brigade_pread_more_buckets(void **state)
   sln_brigade_destroy(bb);
 }
 
+static void brigade_copy_into(void **state)
+{
+  sln_brigade_t *source;
+  sln_brigade_t *dest;
+  sln_bucket_t *e1;
+  char buf[20];
+  size_t len = 0;
+
+  SLN_ERR(sln_brigade_create(&source));
+  SLN_ERR(sln_bucket_create_empty(&e1, 10));
+  SLN_BRIGADE_INSERT_TAIL(source, e1);
+  memset(e1->data, 'A', e1->size);
+
+  SLN_ERR(sln_brigade_create(&dest));
+  SLN_ERR(sln_brigade_copy_into(source, 0, 10, dest));
+  assert_int_equal(sln_brigade_size(dest), 10);
+  SLN_ERR(sln_brigade_pread_bytes(dest, 0, 10, &buf[0], &len));
+  assert_memory_equal(buf, "AAAAAAAAAA", 2);
+  sln_brigade_clear(dest);
+
+  SLN_ERR(sln_brigade_create(&dest));
+  SLN_ERR(sln_brigade_copy_into(source, 2, 4, dest));
+  assert_int_equal(sln_brigade_size(dest), 4);
+  SLN_ERR(sln_brigade_pread_bytes(dest, 0, 4, &buf[0], &len));
+  assert_memory_equal(buf, "AAAA", 4);
+  sln_brigade_clear(dest);
+
+}
+
 SLN_TESTS_START(brigade)
   SLN_TESTS_ENTRY(brigade_operations)
   SLN_TESTS_ENTRY(brigade_flatten)
   SLN_TESTS_ENTRY(brigade_flatten_leftover)
   SLN_TESTS_ENTRY(brigade_pread_simple)
   SLN_TESTS_ENTRY(brigade_pread_more_buckets)
+  SLN_TESTS_ENTRY(brigade_copy_into)
 SLN_TESTS_END()
