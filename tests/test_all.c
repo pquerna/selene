@@ -32,5 +32,6 @@ int main(int argc, char* argv[]) {
   RUNT(buckets);
   RUNT(events);
   RUNT(tok);
+  RUNT(tls_io);
   return 0;
 }

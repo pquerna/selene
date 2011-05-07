@@ -17,6 +17,7 @@
 
 #include "native.h"
 #include "sln_tok.h"
+#include <string.h>
 
 typedef enum tls_record_state_e {
   TLS_RS__UNUSED,
@@ -33,7 +34,29 @@ typedef struct rtls_baton_t {
   selene_t *s;
   tls_record_state_e state;
   sln_native_baton_t *baton;
+  uint8_t content_type;
+  uint8_t version_major;
+  uint8_t version_minor;
+  uint16_t length;
 } rtls_baton_t;
+
+static int
+is_valid_content_type(uint8_t input) {
+  /**
+   * 0x14 20 ChangeCipherSpec
+   * 0x15 21 Alert
+   * 0x16 22 Handshake
+   * 0x17 23 Application
+   */
+
+  if (input == 20 ||
+      input == 21 ||
+      input == 22 ||
+      input == 23) {
+    return 1;
+  }
+  return 0;
+}
 
 static selene_error_t*
 read_tls(sln_tok_value_t *v, void *baton_)
@@ -41,26 +64,35 @@ read_tls(sln_tok_value_t *v, void *baton_)
   rtls_baton_t *rtls = (rtls_baton_t*)baton_;
   sln_native_baton_t *baton = rtls->baton;
 
-  if (rtls->state == TLS_RS__UNUSED) {
-    /* get our first byte for the TLS_RS_CONTENT_TYPE */
-    rtls->state = TLS_RS_CONTENT_TYPE;
-    v->next = TOK_COPY_BYTES;
-    v->wantlen = 1;
-    return SELENE_SUCCESS;
-  }
-
   switch (rtls->state) {
+    case TLS_RS__UNUSED:
+      /* get our first byte for the TLS_RS_CONTENT_TYPE */
+      rtls->state = TLS_RS_CONTENT_TYPE;
+      v->next = TOK_COPY_BYTES;
+      v->wantlen = 1;
+      break;
     case TLS_RS_CONTENT_TYPE:
-      if (v->current != TOK_COPY_BYTES) {
-        abort();
+      rtls->content_type = v->v.bytes[0];
+      if (!is_valid_content_type(rtls->content_type)) {
+        return selene_error_createf(SELENE_EINVAL, "Invalid content type: %u", rtls->content_type);
       }
-
+      rtls->state = TLS_RS_VERSION;
+      v->next = TOK_COPY_BYTES;
+      v->wantlen = 2;
+      break;
+    case TLS_RS_VERSION:
+      rtls->version_major = v->v.bytes[0];
+      rtls->version_minor = v->v.bytes[1];
+      rtls->state = TLS_RS_LENGTH;
+      v->next = TOK_COPY_BYTES;
+      v->wantlen = 2;
+      break;
+    case TLS_RS_LENGTH:
+      rtls->state = TLS_RS_MESSAGE;
+      v->next = TOK_COPY_BRIGADE;
+      v->wantlen = 500;
       break;
     case TLS_RS_MESSAGE:
-      if (v->current != TOK_COPY_BRIGADE) {
-        abort();
-      }
-
       SLN_BRIGADE_CONCAT(baton->in_handshake, v->v.bb);
       break;
     default:
@@ -78,6 +110,7 @@ sln_native_io_tls_read(selene_t *s, sln_native_baton_t *baton)
   rtls_baton_t rtls;
   selene_error_t* err;
 
+  memset(&rtls, 0, sizeof(rtls));
   rtls.s = s;
   rtls.baton = baton;
   rtls.state = TLS_RS__UNUSED;
