@@ -72,7 +72,7 @@ static void tls_io_slowly(void **state)
 
   baton = (sln_native_baton_t *)s->backend_baton;
 
-  for (i = 0; i < maxlen; i++) {
+  for (i = 0; i <= maxlen; i++) {
     SLN_ERR(sln_bucket_create_copy_bytes(&e1,
                                          openssl_client_hello_basic,
                                          i));
@@ -80,7 +80,10 @@ static void tls_io_slowly(void **state)
     err  = sln_native_io_tls_read(s, baton);
     if (err) {
       SLN_ASSERT(err->err == SELENE_EINVAL);
-      fprintf(stderr, "got error: (%d) %s\n", err->err, err->msg);
+    }
+    else if (baton->peer_version_major != 0) {
+      assert_int_equal(baton->peer_version_major, 3);
+      assert_int_equal(baton->peer_version_minor, 1);
     }
     sln_brigade_clear(s->bb.in_enc);
   }

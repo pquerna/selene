@@ -65,6 +65,8 @@ typedef enum {
 typedef struct {
   sln_native_handshake_e handshake;
   sln_brigade_t *in_handshake;
+  uint8_t peer_version_major;
+  uint8_t peer_version_minor;
 } sln_native_baton_t;
 
 
