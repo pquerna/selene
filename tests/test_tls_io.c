@@ -85,6 +85,7 @@ static void tls_io_slowly(void **state)
       assert_int_equal(baton->peer_version_major, 3);
       assert_int_equal(baton->peer_version_minor, 1);
     }
+    sln_brigade_clear(baton->in_handshake);
     sln_brigade_clear(s->bb.in_enc);
   }
 
