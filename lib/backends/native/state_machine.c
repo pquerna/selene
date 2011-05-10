@@ -68,7 +68,7 @@ enter_state_machine:
       break;
     case SLN_NATIVE_HANDSHAKE_SERVER_WAIT_CLIENT_FINISHED:
       break;
-    case SLN_NATIVE_HANDSHAKE_SERVER_SNED_FINISHED:
+    case SLN_NATIVE_HANDSHAKE_SERVER_SEND_FINISHED:
       break;
     case SLN_NATIVE_HANDSHAKE_SERVER_APPDATA:
       break;
