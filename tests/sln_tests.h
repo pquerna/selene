@@ -86,6 +86,7 @@ SLN_TEST_MODULE(buckets)
 SLN_TEST_MODULE(events)
 SLN_TEST_MODULE(tok)
 SLN_TEST_MODULE(tls_io)
+SLN_TEST_MODULE(handshake_io)
 
 #endif
 

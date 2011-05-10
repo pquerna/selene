@@ -33,5 +33,6 @@ int main(int argc, char* argv[]) {
   RUNT(events);
   RUNT(tok);
   RUNT(tls_io);
+  RUNT(handshake_io);
   return 0;
 }

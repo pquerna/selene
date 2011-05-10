@@ -97,16 +97,71 @@ typedef struct hs_baton_t {
   selene_t *s;
   handshake_state_e state;
   sln_native_baton_t *baton;
-  sln_native_msg_client_hello_t ch;
+  uint8_t message_type;
+  uint32_t length;
 } hs_baton_t;
+
+static int
+is_valid_message_type(uint8_t input) {
+  /**
+    * 0	HelloRequest
+    * 1	ClientHello
+    * 2	ServerHello
+    * 11	Certificate
+    * 12	ServerKeyExchange
+    * 13	CertificateRequest
+    * 14	ServerHelloDone
+    * 15	CertificateVerify
+    * 16	ClientKeyExchange
+    * 20	Finished
+    */
+
+  if (input == 0 ||
+      input == 1 ||
+      input == 2 ||
+      input == 11 ||
+      input == 12 ||
+      input == 13 ||
+      input == 14 ||
+      input == 15 ||
+      input == 16 ||
+      input == 20) {
+    return 1;
+  }
+  return 0;
+}
 
 static selene_error_t*
 read_handshake_parser(sln_tok_value_t *v, void *baton_)
 {
   hs_baton_t *hs = (hs_baton_t*)baton_;
-  hs->state = HS__DONE;
-  v->next = TOK_DONE;
-  v->wantlen = 0;
+  switch (hs->state) {
+    case HS__INIT:
+      hs->state = HS_MESSAGE_TYPE;
+      v->next = TOK_COPY_BYTES;
+      v->wantlen = 1;
+      break;
+    case HS_MESSAGE_TYPE:
+      hs->message_type = v->v.bytes[0];
+      if (!is_valid_message_type(hs->message_type)) {
+        return selene_error_createf(SELENE_EINVAL, "Invalid handshake message type: %u", hs->message_type);
+      }
+      hs->state = HS_LENGTH;
+      v->next = TOK_COPY_BYTES;
+      v->wantlen = 3;
+      break;
+    case HS_LENGTH:
+      hs->length = (((unsigned char)v->v.bytes[0]) << 16 | ((unsigned char)v->v.bytes[1]) << 8 |  ((unsigned char)v->v.bytes[2]));
+      hs->state = HS__DONE;
+      v->next = TOK_DONE;
+      v->wantlen = 0;
+      /* TODO: based on hs->message_type, jump to the right parser */
+      break;
+    default:
+      hs->state = HS__DONE;
+      v->next = TOK_DONE;
+      v->wantlen = 0;
+  }
   return SELENE_SUCCESS;
 }
 
@@ -119,7 +174,7 @@ sln_native_io_handshake_read(selene_t *s, sln_native_baton_t *baton)
   hs.baton = baton;
   hs.state = HS__INIT;
 
-  sln_tok_parser(s->bb.in_enc, read_handshake_parser, &hs);
+  sln_tok_parser(baton->in_handshake, read_handshake_parser, &hs);
 
   return SELENE_SUCCESS;
 }
