@@ -97,7 +97,7 @@ sln_native_io_handshake_client_hello(selene_t *s, sln_native_baton_t *baton);
  * Server Reading Methods
  */
 selene_error_t*
-sln_native_io_handshake_read_client_hello(selene_t *s, sln_native_baton_t *baton);
+sln_native_io_handshake_read(selene_t *s, sln_native_baton_t *baton);
 
 
 typedef enum {

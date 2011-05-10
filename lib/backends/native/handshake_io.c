@@ -72,34 +72,54 @@ sln_native_io_handshake_client_hello(selene_t *s, sln_native_baton_t *baton)
   return SELENE_SUCCESS;
 }
 
-typedef struct rchp_baton_t {
+typedef enum handshake_state_e {
+  HS__UNUSED,
+  HS__INIT,
+  HS_MESSAGE_TYPE,
+  HS_LENGTH,
+  HS_CLIENT_HELLO_VERSION,
+  HS_CLIENT_HELLO_UTC,
+  HS_CLIENT_HELLO_RANDOM,
+  HS_CLIENT_HELLO_SESSION_LENGTH,
+  HS_CLIENT_HELLO_SESSION_ID,
+  HS_CLIENT_HELLO_CIPHER_SUITES_LENGTH,
+  HS_CLIENT_HELLO_CIPHER_SUITES,
+  HS_CLIENT_HELLO_COMPRESSION,
+  HS_CLIENT_HELLO_EXT_LENGTH,
+  HS_CLIENT_HELLO_EXT_TYPE,
+  HS_CLIENT_HELLO_EXT_SNI_LENGTH,
+  HS_CLIENT_HELLO_EXT_SNI_VALUE,
+  HS__DONE,
+  HS__MAX,
+} handshake_state_e;
+
+typedef struct hs_baton_t {
   selene_t *s;
+  handshake_state_e state;
   sln_native_baton_t *baton;
-} rchp_baton_t;
+  sln_native_msg_client_hello_t ch;
+} hs_baton_t;
 
 static selene_error_t*
-read_client_hello_parser(sln_tok_value_t *v, void *baton)
+read_handshake_parser(sln_tok_value_t *v, void *baton_)
 {
+  hs_baton_t *hs = (hs_baton_t*)baton_;
+  hs->state = HS__DONE;
+  v->next = TOK_DONE;
+  v->wantlen = 0;
   return SELENE_SUCCESS;
 }
 
 selene_error_t*
-sln_native_io_handshake_read_client_hello(selene_t *s, sln_native_baton_t *baton)
+sln_native_io_handshake_read(selene_t *s, sln_native_baton_t *baton)
 {
-  rchp_baton_t pbaton;
-  size_t l = sln_brigade_size(s->bb.in_enc);
+  hs_baton_t hs;
 
-  /* TODO: centralize */
-  size_t minimum_tls_protocol_size = 5;
-  if (l < minimum_tls_protocol_size) {
-    /* No state change, nothing we can do here */
-    return SELENE_SUCCESS;
-  }
+  hs.s = s;
+  hs.baton = baton;
+  hs.state = HS__INIT;
 
-  pbaton.s = s;
-  pbaton.baton = baton;
-
-  sln_tok_parser(s->bb.in_enc, read_client_hello_parser, &pbaton);
+  sln_tok_parser(s->bb.in_enc, read_handshake_parser, &hs);
 
   return SELENE_SUCCESS;
 }

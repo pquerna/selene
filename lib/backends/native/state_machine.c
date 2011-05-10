@@ -55,7 +55,7 @@ enter_state_machine:
       }
 
       if (!SLN_BRIGADE_EMPTY(baton->in_handshake)) {
-        err = sln_native_io_handshake_read_client_hello(s, baton);
+        err = sln_native_io_handshake_read(s, baton);
         if (err) {
           return err;
         }
