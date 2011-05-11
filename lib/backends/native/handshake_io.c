@@ -93,16 +93,18 @@ typedef enum handshake_state_e {
   HS__MAX,
 } handshake_state_e;
 
+
 typedef struct hs_baton_t {
   selene_t *s;
   handshake_state_e state;
   sln_native_baton_t *baton;
   uint8_t message_type;
   uint32_t length;
+  void *current_msg;
 } hs_baton_t;
 
-static int
-is_valid_message_type(uint8_t input) {
+
+typedef enum hs_mt_e {
   /**
     * 0	HelloRequest
     * 1	ClientHello
@@ -115,17 +117,30 @@ is_valid_message_type(uint8_t input) {
     * 16	ClientKeyExchange
     * 20	Finished
     */
+  HS_MT_HELLO_REQUEST = 0,
+  HS_MT_CLIENT_HELLO = 1,
+  HS_MT_SERVER_HELLO = 2,
+  HS_MT_CERTIFICATE = 11,
+  HS_MT_SERVER_KEY_EXCHANGE = 12,
+  HS_MT_CERTIFICATE_REQUEST = 13,
+  HS_MT_SERVER_HELLO_DONE = 14,
+  HS_MT_CERTIFICATE_VERIFY = 15,
+  HS_MT_CLIENT_KEY_EXCHANGE = 16,
+  HS_MT_FINISHED = 20,
+} hs_mt_e;
 
-  if (input == 0 ||
-      input == 1 ||
-      input == 2 ||
-      input == 11 ||
-      input == 12 ||
-      input == 13 ||
-      input == 14 ||
-      input == 15 ||
-      input == 16 ||
-      input == 20) {
+static int
+is_valid_message_type(uint8_t input) {
+  if (input == HS_MT_HELLO_REQUEST ||
+      input == HS_MT_CLIENT_HELLO ||
+      input == HS_MT_SERVER_HELLO ||
+      input == HS_MT_CERTIFICATE ||
+      input == HS_MT_SERVER_KEY_EXCHANGE ||
+      input == HS_MT_CERTIFICATE_REQUEST ||
+      input == HS_MT_SERVER_HELLO_DONE ||
+      input == HS_MT_CERTIFICATE_VERIFY ||
+      input == HS_MT_CLIENT_KEY_EXCHANGE ||
+      input == HS_MT_FINISHED) {
     return 1;
   }
   return 0;
@@ -152,11 +167,52 @@ read_handshake_parser(sln_tok_value_t *v, void *baton_)
       break;
     case HS_LENGTH:
       hs->length = (((unsigned char)v->v.bytes[0]) << 16 | ((unsigned char)v->v.bytes[1]) << 8 |  ((unsigned char)v->v.bytes[2]));
+      /* TODO: handle more message types */
+      if (hs->message_type == HS_MT_CLIENT_HELLO) {
+        hs->state = HS_CLIENT_HELLO_VERSION;
+        v->next = TOK_COPY_BYTES;
+        v->wantlen = 2;
+      }
+      else {
+        hs->state = HS__DONE;
+        v->next = TOK_DONE;
+        v->wantlen = 0;
+      }
+      break;
+
+    case HS_CLIENT_HELLO_VERSION:
+    {
+      sln_native_msg_client_hello_t *ch = calloc(1, sizeof(sln_native_msg_client_hello_t));
+      hs->current_msg = ch;
+      ch->version_major = v->v.bytes[0];
+      ch->version_minor = v->v.bytes[1];
+
+      hs->state = HS_CLIENT_HELLO_UTC;
+      v->next = TOK_COPY_BYTES;
+      v->wantlen = 4;
+      break;
+    }
+
+    case HS_CLIENT_HELLO_UTC:
+    {
+      sln_native_msg_client_hello_t *ch = (sln_native_msg_client_hello_t*) hs->current_msg;
+      ch->utc_unix_time = v->v.bytes[0] ;
       hs->state = HS__DONE;
       v->next = TOK_DONE;
       v->wantlen = 0;
-      /* TODO: based on hs->message_type, jump to the right parser */
       break;
+    }
+
+    case HS_CLIENT_HELLO_RANDOM:
+    case HS_CLIENT_HELLO_SESSION_LENGTH:
+    case HS_CLIENT_HELLO_SESSION_ID:
+    case HS_CLIENT_HELLO_CIPHER_SUITES_LENGTH:
+    case HS_CLIENT_HELLO_CIPHER_SUITES:
+    case HS_CLIENT_HELLO_COMPRESSION:
+    case HS_CLIENT_HELLO_EXT_LENGTH:
+    case HS_CLIENT_HELLO_EXT_TYPE:
+    case HS_CLIENT_HELLO_EXT_SNI_LENGTH:
+    case HS_CLIENT_HELLO_EXT_SNI_VALUE:
     default:
       hs->state = HS__DONE;
       v->next = TOK_DONE;
@@ -173,8 +229,14 @@ sln_native_io_handshake_read(selene_t *s, sln_native_baton_t *baton)
   hs.s = s;
   hs.baton = baton;
   hs.state = HS__INIT;
+  hs.current_msg = NULL;
 
   sln_tok_parser(baton->in_handshake, read_handshake_parser, &hs);
+
+  if (hs.current_msg != NULL) {
+    /* TOOD: this is wrrrrrong */
+    free(hs.current_msg);
+  }
 
   return SELENE_SUCCESS;
 }
