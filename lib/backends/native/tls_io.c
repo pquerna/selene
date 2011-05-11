@@ -29,6 +29,7 @@ typedef enum tls_record_state_e {
   TLS_RS_MESSAGE,
   TLS_RS_MAC,
   TLS_RS_PADDING,
+  TLS_RS_MAYBE_HTTP_REQUEST,
   TLS_RS__DONE,
   TLS_RS__MAX,
 } tls_record_state_e;
@@ -74,10 +75,29 @@ read_tls(sln_tok_value_t *v, void *baton_)
       v->next = TOK_COPY_BYTES;
       v->wantlen = 1;
       break;
+    case TLS_RS_MAYBE_HTTP_REQUEST:
+      if ((rtls->content_type == 'G' && memcmp(&v->v.bytes[0], "ET ", 3) == 0) ||
+          (rtls->content_type == 'P' && memcmp(&v->v.bytes[0], "OST", 3) == 0)) {
+        selene_publish(rtls->s, SELENE_EVENT_TLS_GOT_HTTP);
+        return selene_error_create(SELENE_EINVAL, "Got possible HTTP request instead of TLS?");
+      }
+      else {
+        return selene_error_createf(SELENE_EINVAL, "Invalid content type: %u", rtls->content_type);
+      }
+      break;
     case TLS_RS_CONTENT_TYPE:
       rtls->content_type = v->v.bytes[0];
       if (!is_valid_content_type(rtls->content_type)) {
-        return selene_error_createf(SELENE_EINVAL, "Invalid content type: %u", rtls->content_type);
+        /* TODO: accept this ONLY for the very first TLS message we recieve */
+        if ((rtls->content_type == 'G' || rtls->content_type == 'P')) {
+          rtls->state = TLS_RS_MAYBE_HTTP_REQUEST;
+          v->next = TOK_COPY_BYTES;
+          v->wantlen = 3;
+          break;
+        }
+        else {
+          return selene_error_createf(SELENE_EINVAL, "Invalid content type: %u", rtls->content_type);
+        }
       }
       rtls->state = TLS_RS_VERSION;
       v->next = TOK_COPY_BYTES;

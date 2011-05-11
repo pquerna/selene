@@ -93,6 +93,52 @@ static void tls_io_slowly(void **state)
   selene_conf_destroy(conf);
 }
 
+
+static const char *http_message = "GET /\r\nHost: example.com\r\n";
+typedef struct http_cb_t {
+  int gotit;
+} http_cb_t;
+
+selene_error_t*
+http_cb(selene_t *ctxt, selene_event_e event, void *baton)
+{
+  http_cb_t *b = (http_cb_t*) baton;
+  b->gotit++;
+  return SELENE_SUCCESS;
+}
+
+static void tls_http_accident(void **state)
+{
+  selene_error_t *err;
+  sln_native_baton_t *baton;
+  selene_conf_t *conf = NULL;
+  selene_t *s = NULL;
+  http_cb_t cbb;
+  sln_bucket_t *e1;
+
+  selene_conf_create(&conf);
+  SLN_ERR(selene_conf_use_reasonable_defaults(conf));
+  SLN_ERR(selene_server_create(conf, &s));
+  SLN_ASSERT_CONTEXT(s);
+
+  baton = (sln_native_baton_t *)s->backend_baton;
+
+  cbb.gotit = 0;
+  selene_handler_set(s, SELENE_EVENT_TLS_GOT_HTTP, http_cb, &cbb);
+
+  SLN_ERR(sln_bucket_create_copy_bytes(&e1,
+                                       http_message,
+                                       strlen(http_message)));
+  SLN_BRIGADE_INSERT_TAIL(s->bb.in_enc, e1);
+  err  = sln_native_io_tls_read(s, baton);
+  SLN_ASSERT(err != NULL);
+  SLN_ASSERT(err->err == SELENE_EINVAL);
+  assert_int_equal(1, cbb.gotit);
+  selene_destroy(s);
+  selene_conf_destroy(conf);
+}
+
 SLN_TESTS_START(tls_io)
   SLN_TESTS_ENTRY(tls_io_slowly)
+  SLN_TESTS_ENTRY(tls_http_accident)
 SLN_TESTS_END()

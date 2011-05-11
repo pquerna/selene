@@ -69,7 +69,10 @@ typedef enum {
   SELENE_EVENT_IO_IN_CLEAR = 4,
   SELENE_EVENT_IO_OUT_CLEAR = 5,
   SELENE_EVENT_LOG_MSG = 6,
-  SELENE_EVENT__MAX = 7,
+  /* The first bytes of our TLS data looked like an HTTP request, maybe send
+   * your client a nice error message? */
+  SELENE_EVENT_TLS_GOT_HTTP = 7,
+  SELENE_EVENT__MAX = 8,
 } selene_event_e;
 
 typedef enum {
