@@ -27,6 +27,7 @@
   } while (0);
 
 int main(int argc, char* argv[]) {
+  RUNT(logging);
   RUNT(init);
   RUNT(brigade);
   RUNT(buckets);

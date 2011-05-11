@@ -24,6 +24,7 @@ sources = Split("""
   test_events.c
   test_handshake_io.c
   test_init.c
+  test_logging.c
   test_tok.c
   test_tls_io.c
 """)
