@@ -50,8 +50,27 @@ static void init_server(void **state)
   selene_conf_destroy(conf);
 }
 
+static void errors(void **state)
+{
+  selene_error_t *err = selene_error_create_impl(1, "test", 42, "filename");
+  assert_int_equal(err->err, 1);
+  assert_int_equal(err->line, 42);
+  assert_string_equal(err->msg, "test");
+  assert_string_equal(err->file, "filename");
+  selene_error_clear(err);
+
+  err = selene_error_createf_impl(2, 43, "xfilename", "foo:%s", "test");
+  assert_int_equal(err->err, 2);
+  assert_int_equal(err->line, 43);
+  assert_string_equal(err->msg, "foo:test");
+  assert_string_equal(err->file, "xfilename");
+  selene_error_clear(err);
+
+}
+
 SLN_TESTS_START(init)
   SLN_TESTS_ENTRY(init_conf)
   SLN_TESTS_ENTRY(init_client)
   SLN_TESTS_ENTRY(init_server)
+  SLN_TESTS_ENTRY(errors)
 SLN_TESTS_END()
