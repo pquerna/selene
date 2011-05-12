@@ -22,7 +22,7 @@ backends/backends.c
 backends/native/init.c
 backends/native/handshake_io.c
 backends/native/handshake_messages.c
-backends/native/protocol_messages.c
+backends/native/tls_messages.c
 backends/native/state_machine.c
 backends/native/tls_io.c
 backends/openssl_threaded/init.c
