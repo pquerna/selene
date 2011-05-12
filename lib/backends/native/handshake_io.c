@@ -64,7 +64,7 @@ sln_native_io_handshake_client_hello(selene_t *s, sln_native_baton_t *baton)
   tls.version_minor = 1;
   tls.length = bhs->size;
 
-  SELENE_ERR(sln_native_msg_tls_to_bucket(&tls, &btls));
+  SELENE_ERR(sln_tls_unparse_header(&tls, &btls));
 
 
   SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, btls);
