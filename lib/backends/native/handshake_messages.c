@@ -16,15 +16,12 @@
  */
 
 #include "native.h"
+#include "sln_tok.h"
+#include "handshake_messages.h"
 #include <string.h>
 
-/* TODO: move to better place */
-#define HS_MSG_TYPE_CLIENT_HELLO 1
-#define HS_MSG_TYPE_SERVER_HELLO 2
-
-
 selene_error_t*
-sln_native_msg_handshake_client_hello_to_bucket(sln_native_msg_client_hello_t *ch, sln_bucket_t **p_b)
+sln_handshake_unparse_client_hello(sln_native_msg_client_hello_t *ch, sln_bucket_t **p_b)
 {
   sln_bucket_t *b = NULL;
   size_t off = 0;
@@ -81,7 +78,7 @@ sln_native_msg_handshake_client_hello_to_bucket(sln_native_msg_client_hello_t *c
 
   sln_bucket_create_empty(&b, len);
 
-  b->data[0] = HS_MSG_TYPE_CLIENT_HELLO;
+  b->data[0] = SLN_HS_MSG_TYPE_CLIENT_HELLO;
   int dlen = len - 4;
   b->data[1] = dlen >> 16;
   b->data[2] = dlen >> 8;
@@ -144,4 +141,79 @@ sln_native_msg_handshake_client_hello_to_bucket(sln_native_msg_client_hello_t *c
   *p_b = b;
 
   return SELENE_SUCCESS;
+}
+
+typedef struct ch_baton_t {
+  sln_handshake_client_hello_state_e state;
+  sln_native_msg_client_hello_t ch;
+} ch_baton_t;
+
+selene_error_t*
+sln_handshake_parse_client_hello_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, void **baton)
+{
+  ch_baton_t *chb = calloc(1, sizeof(ch_baton_t));
+  chb->state = SLN_HS_CLIENT_HELLO_VERSION;
+  v->next = TOK_COPY_BYTES;
+  v->wantlen = 2;
+  *baton = (void*)chb;
+  return SELENE_SUCCESS;
+}
+
+selene_error_t*
+sln_handshake_parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
+{
+  ch_baton_t *chb = (ch_baton_t*)baton;
+  sln_native_msg_client_hello_t *ch = &chb->ch;
+
+  switch (chb->state) {
+    case SLN_HS_CLIENT_HELLO_VERSION:
+    {
+      ch->version_major = v->v.bytes[0];
+      ch->version_minor = v->v.bytes[1];
+
+      chb->state = SLN_HS_CLIENT_HELLO_UTC;
+      v->next = TOK_COPY_BYTES;
+      v->wantlen = 4;
+      break;
+    }
+
+    case SLN_HS_CLIENT_HELLO_UTC:
+    {
+      ch->utc_unix_time = v->v.bytes[0];
+      chb->state = SLN_HS_CLIENT_HELLO_RANDOM;
+      v->next = TOK_DONE;
+      v->wantlen = 0;
+      break;
+    }
+
+    case SLN_HS_CLIENT_HELLO_RANDOM:
+    case SLN_HS_CLIENT_HELLO_SESSION_LENGTH:
+    case SLN_HS_CLIENT_HELLO_SESSION_ID:
+    case SLN_HS_CLIENT_HELLO_CIPHER_SUITES_LENGTH:
+    case SLN_HS_CLIENT_HELLO_CIPHER_SUITES:
+    case SLN_HS_CLIENT_HELLO_COMPRESSION:
+    case SLN_HS_CLIENT_HELLO_EXT_LENGTH:
+    case SLN_HS_CLIENT_HELLO_EXT_TYPE:
+    case SLN_HS_CLIENT_HELLO_EXT_SNI_LENGTH:
+    case SLN_HS_CLIENT_HELLO_EXT_SNI_VALUE:
+      /* TODO: finish */
+      v->next = TOK_DONE;
+      v->wantlen = 0;
+      break;
+  }
+
+  return SELENE_SUCCESS;
+}
+
+void
+sln_handshake_parse_client_hello_destroy(sln_hs_baton_t *hs, void *baton)
+{
+  ch_baton_t *chb = (ch_baton_t*)baton;
+
+  if (chb->ch.server_name != NULL) {
+    /* TODO: centralize */
+    free((char*)chb->ch.server_name);
+  }
+
+  free(chb);
 }
