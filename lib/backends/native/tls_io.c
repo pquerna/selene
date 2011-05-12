@@ -20,6 +20,19 @@
 #include <string.h>
 #include <stdio.h>
 
+typedef enum tls_ct_e {
+  /**
+   * 0x14 20 ChangeCipherSpec
+   * 0x15 21 Alert
+   * 0x16 22 Handshake
+   * 0x17 23 Application
+   */
+   TLS_CT_CHANGE_CIPHER_SPEC = 20,
+   TLS_CT_ALERT = 21,
+   TLS_CT_HANDSHAKE = 22,
+   TLS_CT_APPLICATION = 23,
+} tls_ct_e;
+
 typedef enum tls_record_state_e {
   TLS_RS__UNUSED,
   TLS_RS__INIT,
@@ -38,7 +51,7 @@ typedef struct rtls_baton_t {
   selene_t *s;
   tls_record_state_e state;
   sln_native_baton_t *baton;
-  uint8_t content_type;
+  tls_ct_e content_type;
   uint8_t version_major;
   uint8_t version_minor;
   uint16_t length;
@@ -46,17 +59,10 @@ typedef struct rtls_baton_t {
 
 static int
 is_valid_content_type(uint8_t input) {
-  /**
-   * 0x14 20 ChangeCipherSpec
-   * 0x15 21 Alert
-   * 0x16 22 Handshake
-   * 0x17 23 Application
-   */
-
-  if (input == 20 ||
-      input == 21 ||
-      input == 22 ||
-      input == 23) {
+  if (input == TLS_CT_CHANGE_CIPHER_SPEC ||
+      input == TLS_CT_ALERT ||
+      input == TLS_CT_HANDSHAKE ||
+      input == TLS_CT_APPLICATION) {
     return 1;
   }
   return 0;
@@ -117,7 +123,21 @@ read_tls(sln_tok_value_t *v, void *baton_)
       v->wantlen = rtls->length;
       break;
     case TLS_RS_MESSAGE:
-      SLN_BRIGADE_CONCAT(baton->in_handshake, v->v.bb);
+      /* TODO: efficient slicing of brigades instead of copying data here */
+      switch (rtls->content_type) {
+        case TLS_CT_CHANGE_CIPHER_SPEC:
+          SLN_BRIGADE_CONCAT(baton->in_ccs, v->v.bb);
+          break;
+        case TLS_CT_ALERT:
+          SLN_BRIGADE_CONCAT(baton->in_alert, v->v.bb);
+          break;
+        case TLS_CT_HANDSHAKE:
+          SLN_BRIGADE_CONCAT(baton->in_handshake, v->v.bb);
+          break;
+        case TLS_CT_APPLICATION:
+          SLN_BRIGADE_CONCAT(baton->in_application, v->v.bb);
+          break;
+      }
       rtls->state = TLS_RS__DONE;
       v->next = TOK_DONE;
       v->wantlen = 0;
