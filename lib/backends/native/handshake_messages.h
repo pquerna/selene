@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef _handshake_message_h_
-#define _handshake_message_h_
+#ifndef _handshake_messages_h_
+#define _handshake_messages_h_
 
 
 /* TODO: move to better place */
