@@ -82,6 +82,7 @@ read_tls(sln_tok_value_t *v, void *baton_)
       v->wantlen = 1;
       break;
     case TLS_RS_MAYBE_HTTP_REQUEST:
+      /* TODO: send alert breaking connection */
       if ((rtls->content_type == 'G' && memcmp(&v->v.bytes[0], "ET ", 3) == 0) ||
           (rtls->content_type == 'P' && memcmp(&v->v.bytes[0], "OST", 3) == 0)) {
         selene_publish(rtls->s, SELENE_EVENT_TLS_GOT_HTTP);
@@ -102,6 +103,7 @@ read_tls(sln_tok_value_t *v, void *baton_)
           break;
         }
         else {
+          /* TODO: send alert breaking connection */
           return selene_error_createf(SELENE_EINVAL, "Invalid content type: %u", rtls->content_type);
         }
       }
@@ -136,6 +138,9 @@ read_tls(sln_tok_value_t *v, void *baton_)
           break;
         case TLS_CT_APPLICATION:
           SLN_BRIGADE_CONCAT(baton->in_application, v->v.bb);
+          break;
+        default:
+          /* TODO: send alert breaking connection */
           break;
       }
       rtls->state = TLS_RS__DONE;
