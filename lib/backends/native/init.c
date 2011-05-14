@@ -63,7 +63,7 @@ sln_native_start(selene_t *s)
 
   slnDbg(s, "starting native client, handshake state %d", baton->handshake);
 
-  return sln_native_handshake_state_machine(s, baton);
+  return sln_native_state_machine(s, baton);
 }
 
 selene_error_t*

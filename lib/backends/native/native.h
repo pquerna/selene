@@ -62,7 +62,12 @@ typedef enum {
   SLN_NATIVE_HANDSHAKE__MAX = 11
 } sln_native_handshake_e;
 
+typedef enum sln_native_connstate_e {
+  SLN_NATIVE_CONNSTATE_HANDSHAKE,
+} sln_native_connstate_e;
+
 typedef struct {
+  sln_native_connstate_e connstate;
   sln_native_handshake_e handshake;
   int ready_for_appdata;
   int got_first_packet;
@@ -76,7 +81,7 @@ typedef struct {
 
 
 selene_error_t*
-sln_native_handshake_state_machine(selene_t *s, sln_native_baton_t *baton);
+sln_native_state_machine(selene_t *s, sln_native_baton_t *baton);
 
 /**
  * TLS Protocol methods
