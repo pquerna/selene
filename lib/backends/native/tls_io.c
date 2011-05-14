@@ -17,6 +17,7 @@
 
 #include "native.h"
 #include "sln_tok.h"
+#include "alert_messages.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -171,7 +172,8 @@ sln_native_io_tls_read(selene_t *s, sln_native_baton_t *baton)
   err = sln_tok_parser(s->bb.in_enc, read_tls, &rtls);
 
   if (err) {
-    /* TODO: send alert message, abort connection? */
+    /* TODO: logging here? */
+    sln_io_alert_fatal(s, SLN_ALERT_DESC_INTERNAL_ERROR);
     return err;
   }
 

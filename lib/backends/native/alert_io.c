@@ -19,3 +19,46 @@
 #include "alert_messages.h"
 #include "sln_tok.h"
 
+static selene_error_t *
+sln_io_alert(selene_t *s, sln_alert_level_e level, sln_alert_description_e desc)
+{
+  selene_error_t *err;
+  sln_bucket_t *btls = NULL;
+  sln_bucket_t *balert = NULL;
+  sln_msg_alert_t alert;
+  sln_native_msg_tls_t tls;
+
+  alert.level =  level;
+  alert.description = desc;
+
+  SELENE_ERR(sln_alert_unparse(&alert, &balert));
+
+  if (err) {
+    return err;
+  }
+
+  tls.content_type = SLN_NATIVE_CONTENT_TYPE_ALERT;
+  tls.version_major = 3;
+  tls.version_minor = 1;
+  tls.length = balert->size;
+
+  SELENE_ERR(sln_tls_unparse_header(&tls, &btls));
+
+  SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, btls);
+
+  SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, balert);
+
+  return err;
+}
+
+selene_error_t *
+sln_io_alert_fatal(selene_t *s, sln_alert_description_e desc)
+{
+  return sln_io_alert(s, SLN_ALERT_LEVEL_FATAL, desc);
+}
+
+selene_error_t *
+sln_io_alert_warning(selene_t *s, sln_alert_description_e desc)
+{
+  return sln_io_alert(s, SLN_ALERT_LEVEL_WARNING, desc);
+}
