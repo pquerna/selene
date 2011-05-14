@@ -21,10 +21,25 @@
 selene_error_t*
 sln_native_handshake_state_machine(selene_t *s, sln_native_baton_t *baton)
 {
-  selene_error_t* err;
+  selene_error_t* err = SELENE_SUCCESS;
 
 enter_state_machine:
   slnDbg(s, "enter handshake_state_machine=%d", baton->handshake);
+
+  if (!SLN_BRIGADE_EMPTY(s->bb.in_enc)) {
+    err = sln_native_io_tls_read(s, baton);
+    if (err) {
+      return err;
+    }
+  }
+
+  if (baton->ready_for_appdata && !SLN_BRIGADE_EMPTY(s->bb.in_cleartext)) {
+    //err = sln_native_io_tls_write_appdata(s, baton);
+    if (err) {
+      return err;
+    }
+  }
+
   switch (baton->handshake) {
     case SLN_NATIVE_HANDSHAKE_CLIENT_SEND_HELLO:
       err = sln_native_io_handshake_client_hello(s, baton);
@@ -46,14 +61,6 @@ enter_state_machine:
      * Start Server Methods.
      */
     case SLN_NATIVE_HANDSHAKE_SERVER_WAIT_CLIENT_HELLO:
-
-      if (!SLN_BRIGADE_EMPTY(s->bb.in_enc)) {
-        err = sln_native_io_tls_read(s, baton);
-        if (err) {
-          return err;
-        }
-      }
-
       if (!SLN_BRIGADE_EMPTY(baton->in_handshake)) {
         err = sln_native_io_handshake_read(s, baton);
         if (err) {

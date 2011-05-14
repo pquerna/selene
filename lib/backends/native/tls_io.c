@@ -97,7 +97,7 @@ read_tls(sln_tok_value_t *v, void *baton_)
       rtls->content_type = v->v.bytes[0];
       if (!is_valid_content_type(rtls->content_type)) {
         /* TODO: accept this ONLY for the very first TLS message we recieve */
-        if ((rtls->content_type == 'G' || rtls->content_type == 'P')) {
+        if (baton->got_first_packet == 0 && (rtls->content_type == 'G' || rtls->content_type == 'P')) {
           rtls->state = TLS_RS_MAYBE_HTTP_REQUEST;
           v->next = TOK_COPY_BYTES;
           v->wantlen = 3;
@@ -108,6 +108,7 @@ read_tls(sln_tok_value_t *v, void *baton_)
           return selene_error_createf(SELENE_EINVAL, "Invalid content type: %u", rtls->content_type);
         }
       }
+      baton->got_first_packet = 1;
       rtls->state = TLS_RS_VERSION;
       v->next = TOK_COPY_BYTES;
       v->wantlen = 2;

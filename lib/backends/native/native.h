@@ -64,6 +64,8 @@ typedef enum {
 
 typedef struct {
   sln_native_handshake_e handshake;
+  int ready_for_appdata;
+  int got_first_packet;
   sln_brigade_t *in_handshake;
   sln_brigade_t *in_alert;
   sln_brigade_t *in_ccs;
