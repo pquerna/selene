@@ -36,7 +36,7 @@ sln_native_create(selene_t *s)
   sln_native_baton_t *baton;
   SLN_ASSERT_CONTEXT(s);
 
-  baton = (sln_native_baton_t*) calloc(1, sizeof(*baton));
+  baton = (sln_native_baton_t*) sln_calloc(s, sizeof(*baton));
   s->backend_baton = baton;
   sln_brigade_create(&baton->in_ccs);
   sln_brigade_create(&baton->in_alert);
@@ -79,7 +79,9 @@ sln_native_destroy(selene_t *s)
   sln_brigade_destroy(baton->in_handshake);
   sln_brigade_destroy(baton->in_application);
 
-  free(baton);
+  sln_free(s, baton);
+
+  s->backend_baton = NULL;
 
   return SELENE_SUCCESS;
 }

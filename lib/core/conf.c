@@ -19,16 +19,50 @@
 #include "sln_types.h"
 #include <string.h>
 
+static void*
+malloc_cb(void *baton, size_t len) {
+  return malloc(len);
+}
+
+static void*
+calloc_cb(void *baton, size_t len) {
+  return calloc(1, len);
+}
+
+static void
+free_cb(void *baton, void *ptr) {
+  free(ptr);
+}
+
+static selene_alloc_t default_aloc = {
+  NULL,
+  malloc_cb,
+  calloc_cb,
+  free_cb
+};
+
 selene_error_t*
-selene_conf_create(selene_conf_t **p_conf)
+selene_conf_create_with_allloc(selene_conf_t **p_conf, selene_alloc_t *alloc)
 {
   selene_conf_t *conf;
 
-  conf = calloc(1, sizeof(selene_conf_t));
+  if (alloc == NULL) {
+    alloc = &default_aloc;
+  }
+
+  conf = alloc->calloc(alloc->baton, sizeof(selene_conf_t));
+
+  conf->alloc = alloc;
 
   *p_conf = conf;
 
   return SELENE_SUCCESS;
+}
+
+selene_error_t*
+selene_conf_create(selene_conf_t **p_conf)
+{
+  return selene_conf_create_with_allloc(p_conf, NULL);
 }
 
 

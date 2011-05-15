@@ -58,7 +58,7 @@ sln_create(selene_conf_t *conf, sln_mode_e mode, selene_t **p_sel)
 
   SELENE_ERR(sln_initialize());
 
-  s = calloc(1, sizeof(selene_t));
+  s = conf->alloc->calloc(conf->alloc->baton, sizeof(selene_t));
   s->conf = conf;
   s->mode = mode;
   s->state = SLN_STATE_INIT;
@@ -69,7 +69,7 @@ sln_create(selene_conf_t *conf, sln_mode_e mode, selene_t **p_sel)
   s->log_msg_level = SLN_LOG_NOTHING;
 
   /* TODO: leaks on errors here */
-  SELENE_ERR(sln_iobb_create(&s->bb));
+  SELENE_ERR(sln_iobb_create(s, &s->bb));
 
   SELENE_ERR(sln_events_create(s));
 
@@ -108,13 +108,13 @@ selene_destroy(selene_t *s)
 {
   s->state = SLN_STATE_DEAD;
 
-  sln_iobb_destroy(&s->bb);
+  sln_iobb_destroy(s, &s->bb);
 
   sln_events_destroy(s);
 
   s->backend.destroy(s);
 
-  free(s);
+  sln_free(s, s);
 
   sln_terminate();
 

@@ -20,7 +20,7 @@
 #include "sln_brigades.h"
 
 selene_error_t*
-sln_iobb_create(sln_iobb_t *iobb)
+sln_iobb_create(selene_t *s, sln_iobb_t *iobb)
 {
   SELENE_ERR(sln_brigade_create(&iobb->in_enc));
   SELENE_ERR(sln_brigade_create(&iobb->out_enc));
@@ -30,7 +30,7 @@ sln_iobb_create(sln_iobb_t *iobb)
 }
 
 void
-sln_iobb_destroy(sln_iobb_t *iobb)
+sln_iobb_destroy(selene_t *s, sln_iobb_t *iobb)
 {
   sln_brigade_destroy(iobb->in_enc);
   sln_brigade_destroy(iobb->out_enc);

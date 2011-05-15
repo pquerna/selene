@@ -122,6 +122,7 @@ struct selene_cipher_suite_list_t {
 };
 
 struct selene_conf_t{
+  selene_alloc_t *alloc;
   int protocols;
   selene_cipher_suite_list_t ciphers;
   const char *sni;
@@ -150,6 +151,10 @@ struct selene_t {
   sln_backend_t backend;
   void *backend_baton;
 };
+
+void* sln_alloc(selene_t *s, size_t len);
+void* sln_calloc(selene_t *s, size_t len);
+void sln_free(selene_t *s, void *ptr);
 
 #define SLN_ERR_CLIENT_ONLY(s) do { \
   if (s->conf.mode != SLN_MODE_CLIENT) { \

@@ -35,6 +35,7 @@ core/error.c
 core/event.c
 core/init.c
 core/log.c
+core/mem.c
 io/brigades.c
 io/buckets.c
 io/io.c

@@ -151,7 +151,7 @@ typedef struct ch_baton_t {
 selene_error_t*
 sln_handshake_parse_client_hello_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, void **baton)
 {
-  ch_baton_t *chb = calloc(1, sizeof(ch_baton_t));
+  ch_baton_t *chb = sln_calloc(hs->s, sizeof(ch_baton_t));
   chb->state = SLN_HS_CLIENT_HELLO_VERSION;
   v->next = TOK_COPY_BYTES;
   v->wantlen = 2;
@@ -212,8 +212,8 @@ sln_handshake_parse_client_hello_destroy(sln_hs_baton_t *hs, void *baton)
 
   if (chb->ch.server_name != NULL) {
     /* TODO: centralize */
-    free((char*)chb->ch.server_name);
+    sln_free(hs->s, (char*)chb->ch.server_name);
   }
 
-  free(chb);
+  sln_free(hs->s, chb);
 }

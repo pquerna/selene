@@ -23,10 +23,10 @@
 #include "sln_buckets.h"
 
 selene_error_t*
-sln_iobb_create(sln_iobb_t *iobb);
+sln_iobb_create(selene_t *s, sln_iobb_t *iobb);
 
 void
-sln_iobb_destroy(sln_iobb_t *iobb);
+sln_iobb_destroy(selene_t *s, sln_iobb_t *iobb);
 
 selene_error_t*
 sln_brigade_create(sln_brigade_t **bb);

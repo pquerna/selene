@@ -32,10 +32,29 @@ extern "C" {
 /** Opaque context for configuring many SSL/TLS sessions. */
 typedef struct selene_conf_t selene_conf_t;
 
+typedef void* (selene_malloc_cb)(void *baton, size_t len);
+typedef void (selene_free_cb)(void *baton, void *ptr);
+
+typedef struct selene_alloc_t {
+  /* Baton passed into all memory operations */
+  void *baton;
+  /* Allocate uninitizlized memory */
+  selene_malloc_cb *malloc;
+  /* Allocate memory set to zero */
+  selene_malloc_cb *calloc;
+  /* Free a previosly allocated memory block */
+  selene_free_cb *free;
+} selene_alloc_t;
+
 /**
  * Creates a configuration context.
  */
 SELENE_API(selene_error_t*) selene_conf_create(selene_conf_t **conf);
+
+/**
+ * Creates a configuration context, with a specified memory allocator
+ */
+SELENE_API(selene_error_t*) selene_conf_create_with_alloc(selene_conf_t **conf, selene_alloc_t *alloc);
 
 /**
  * Destroy a configuration context.

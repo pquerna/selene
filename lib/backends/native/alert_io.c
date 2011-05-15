@@ -67,7 +67,7 @@ sln_native_io_alert_read(selene_t *s, sln_native_baton_t *baton)
   ab.s = s;
   ab.baton = baton;
   ab.state = SLN_ALERT_STATE__INIT;
-  ab.alert = calloc(1, sizeof(sln_msg_alert_t));
+  ab.alert = sln_calloc(s, sizeof(sln_msg_alert_t));
 
   sln_tok_parser(baton->in_alert, sln_native_alert_parse, &ab);
 
@@ -76,7 +76,7 @@ sln_native_io_alert_read(selene_t *s, sln_native_baton_t *baton)
     /* TODO: handle close notify */
   }
 
-  free(ab.alert);
+  sln_free(s, ab.alert);
 
   return SELENE_SUCCESS;
 }

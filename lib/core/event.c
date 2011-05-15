@@ -44,7 +44,7 @@ selene_error_t*
 sln_events_create(selene_t *s)
 {
   int i;
-  s->events = calloc(1, sizeof(sln_events_t) * SELENE_EVENT__MAX);
+  s->events = sln_calloc(s, sizeof(sln_events_t) * SELENE_EVENT__MAX);
   for (i = 0; i < SELENE_EVENT__MAX; i++) {
     sln_events_t *events = &(s->events[i]);
     SLN_RING_INIT(&events->list, sln_eventcb_t, link);
@@ -62,10 +62,10 @@ sln_events_destroy(selene_t *s)
     while (!SLN_RING_EMPTY(&(events)->list, sln_eventcb_t, link)) {
       sln_eventcb_t *e = SLN_RING_FIRST(&(events)->list);
       SLN_RING_REMOVE(e, link);
-      free(e);
+      sln_free(s, e);
     }
   }
-  free(s->events);
+  sln_free(s, s->events);
 }
 
 selene_error_t*
@@ -101,7 +101,7 @@ selene_subscribe(selene_t *s, selene_event_e event,
 
   events = &(s->events[event]);
 
-  b = calloc(1, sizeof(sln_eventcb_t));
+  b = sln_calloc(s, sizeof(sln_eventcb_t));
 
   b->cb = cb;
   b->baton = baton;
@@ -128,7 +128,7 @@ selene_unsubscribe(selene_t *s, selene_event_e event,
   {
     if (b->cb == cb && b->baton == baton) {
       SLN_RING_REMOVE(b, link);
-      free(b);
+      sln_free(s, b);
       return SELENE_SUCCESS;
     }
   }
