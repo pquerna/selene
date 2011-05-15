@@ -27,6 +27,10 @@ static char alert_close_notify[] = {
   0x01, 0x00
 };
 
+static char alert_bogus[] = {
+  0x01, 0xFA
+};
+
 static void alert_msg(void **state)
 {
   selene_error_t *err;
@@ -47,6 +51,42 @@ static void alert_msg(void **state)
   for (i = maxlen; i <= maxlen; i++) {
     SLN_ERR(sln_bucket_create_copy_bytes(sln_test_alloc, &e1,
                                          alert_close_notify,
+                                         i));
+    SLN_BRIGADE_INSERT_TAIL(baton->in_alert, e1);
+    err  = sln_native_io_alert_read(s, baton);
+    if (err) {
+      SLN_ASSERT(err->err == SELENE_EINVAL);
+    }
+    else {
+      /* TODO: more asserts */
+    }
+    sln_brigade_clear(baton->in_alert);
+  }
+
+  selene_destroy(s);
+  selene_conf_destroy(conf);
+}
+
+static void alert_invalid_msg(void **state)
+{
+  selene_error_t *err;
+  sln_native_baton_t *baton;
+  selene_conf_t *conf = NULL;
+  selene_t *s = NULL;
+  sln_bucket_t *e1;
+  size_t maxlen = sizeof(alert_bogus);
+  size_t i;
+
+  selene_conf_create(&conf);
+  SLN_ERR(selene_conf_use_reasonable_defaults(conf));
+  SLN_ERR(selene_server_create(conf, &s));
+  SLN_ASSERT_CONTEXT(s);
+
+  baton = (sln_native_baton_t *)s->backend_baton;
+
+  for (i = maxlen; i <= maxlen; i++) {
+    SLN_ERR(sln_bucket_create_copy_bytes(sln_test_alloc, &e1,
+                                         alert_bogus,
                                          i));
     SLN_BRIGADE_INSERT_TAIL(baton->in_alert, e1);
     err  = sln_native_io_alert_read(s, baton);
@@ -102,5 +142,6 @@ static void alert_to_self(void **state)
 
 SLN_TESTS_START(alert_io)
   SLN_TESTS_ENTRY(alert_msg)
+  SLN_TESTS_ENTRY(alert_invalid_msg)
   SLN_TESTS_ENTRY(alert_to_self)
 SLN_TESTS_END()
