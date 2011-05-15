@@ -90,5 +90,8 @@ SLN_TEST_MODULE(tls_io)
 SLN_TEST_MODULE(handshake_io)
 SLN_TEST_MODULE(alert_io)
 
+
+selene_alloc_t *sln_test_alloc;
+
 #endif
 

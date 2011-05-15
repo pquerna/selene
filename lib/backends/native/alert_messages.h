@@ -75,7 +75,7 @@ typedef struct sln_alert_baton_t {
 } sln_alert_baton_t;
 
 selene_error_t*
-sln_native_alert_unparse(sln_msg_alert_t *alert, sln_bucket_t **p_b);
+sln_native_alert_unparse(selene_t *s, sln_msg_alert_t *alert, sln_bucket_t **p_b);
 
 selene_error_t*
 sln_native_io_alert_fatal(selene_t *s, sln_alert_description_e desc);

@@ -45,7 +45,7 @@ static void alert_msg(void **state)
   baton = (sln_native_baton_t *)s->backend_baton;
 
   for (i = maxlen; i <= maxlen; i++) {
-    SLN_ERR(sln_bucket_create_copy_bytes(&e1,
+    SLN_ERR(sln_bucket_create_copy_bytes(sln_test_alloc, &e1,
                                          alert_close_notify,
                                          i));
     SLN_BRIGADE_INSERT_TAIL(baton->in_alert, e1);
@@ -82,7 +82,7 @@ static void alert_to_self(void **state)
 
   baton = (sln_native_baton_t *)s->backend_baton;
 
-  err = sln_native_alert_unparse(&alert, &balert);
+  err = sln_native_alert_unparse(s, &alert, &balert);
   SLN_ASSERT(err == SELENE_SUCCESS);
   SLN_BRIGADE_INSERT_TAIL(baton->in_handshake, balert);
 

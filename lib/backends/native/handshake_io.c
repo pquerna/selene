@@ -57,14 +57,14 @@ sln_native_io_handshake_client_hello(selene_t *s, sln_native_baton_t *baton)
   ch.server_name = NULL;
   ch.have_npn = 0;
   ch.have_ocsp_stapling = 0;
-  SELENE_ERR(sln_handshake_unparse_client_hello(&ch, &bhs));
+  SELENE_ERR(sln_handshake_unparse_client_hello(s, &ch, &bhs));
 
   tls.content_type = SLN_NATIVE_CONTENT_TYPE_HANDSHAKE;
   tls.version_major = 3;
   tls.version_minor = 1;
   tls.length = bhs->size;
 
-  SELENE_ERR(sln_tls_unparse_header(&tls, &btls));
+  SELENE_ERR(sln_tls_unparse_header(s, &tls, &btls));
 
 
   SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, btls);

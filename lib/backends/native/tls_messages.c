@@ -18,13 +18,13 @@
 #include "native.h"
 
 selene_error_t*
-sln_tls_unparse_header(sln_native_msg_tls_t *tls, sln_bucket_t **p_b)
+sln_tls_unparse_header(selene_t *s, sln_native_msg_tls_t *tls, sln_bucket_t **p_b)
 {
   sln_bucket_t *b = NULL;
   
   size_t len = 5;
 
-  sln_bucket_create_empty(&b, len);
+  sln_bucket_create_empty(s->alloc, &b, len);
 
   switch (tls->content_type) {
     case SLN_NATIVE_CONTENT_TYPE_CHANGE_CIPHER_SPEC:

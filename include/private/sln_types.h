@@ -51,6 +51,7 @@ typedef struct sln_brigade_t sln_brigade_t;
 /* A chunk of memory */
 struct sln_bucket_t {
   SLN_RING_ENTRY(sln_bucket_t) link;
+  selene_alloc_t *alloc;
   /* When destroying this bucket, can we also destroy memory */
   int memory_is_mine;
   size_t size;
@@ -61,6 +62,7 @@ struct sln_bucket_t {
 /* A list of chunks (aka, a bucket brigade) */
 struct sln_brigade_t {
   SLN_RING_HEAD(sln_bucket_list, sln_bucket_t) list;
+  selene_alloc_t *alloc;
 };
 
 typedef struct sln_eventcb_t sln_eventcb_t;
@@ -121,7 +123,7 @@ struct selene_cipher_suite_list_t {
   int ciphers[SELENE_CS__MAX];
 };
 
-struct selene_conf_t{
+struct selene_conf_t {
   selene_alloc_t *alloc;
   int protocols;
   selene_cipher_suite_list_t ciphers;
@@ -136,6 +138,7 @@ typedef struct {
 } sln_iobb_t;
 
 struct selene_t {
+  selene_alloc_t *alloc;
   sln_mode_e mode;
   sln_state_e state;
   selene_conf_t *conf;

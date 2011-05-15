@@ -23,13 +23,13 @@
 #include "sln_buckets.h"
 
 selene_error_t*
-sln_iobb_create(selene_t *s, sln_iobb_t *iobb);
+sln_iobb_create(selene_alloc_t *alloc, sln_iobb_t *iobb);
 
 void
-sln_iobb_destroy(selene_t *s, sln_iobb_t *iobb);
+sln_iobb_destroy(sln_iobb_t *iobb);
 
 selene_error_t*
-sln_brigade_create(sln_brigade_t **bb);
+sln_brigade_create(selene_alloc_t *alloc, sln_brigade_t **bb);
 
 /* Destroys the brigade, and all member buckets */
 void

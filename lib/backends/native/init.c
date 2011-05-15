@@ -38,10 +38,10 @@ sln_native_create(selene_t *s)
 
   baton = (sln_native_baton_t*) sln_calloc(s, sizeof(*baton));
   s->backend_baton = baton;
-  sln_brigade_create(&baton->in_ccs);
-  sln_brigade_create(&baton->in_alert);
-  sln_brigade_create(&baton->in_handshake);
-  sln_brigade_create(&baton->in_application);
+  sln_brigade_create(s->alloc, &baton->in_ccs);
+  sln_brigade_create(s->alloc, &baton->in_alert);
+  sln_brigade_create(s->alloc, &baton->in_handshake);
+  sln_brigade_create(s->alloc, &baton->in_application);
 
   return SELENE_SUCCESS;
 }

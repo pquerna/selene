@@ -73,7 +73,7 @@ static void handshake_io_slowly(void **state)
   baton = (sln_native_baton_t *)s->backend_baton;
 
   for (i = maxlen; i <= maxlen; i++) {
-    SLN_ERR(sln_bucket_create_copy_bytes(&e1,
+    SLN_ERR(sln_bucket_create_copy_bytes(sln_test_alloc, &e1,
                                          openssl_client_hello_basic,
                                          i));
     SLN_BRIGADE_INSERT_TAIL(baton->in_handshake, e1);

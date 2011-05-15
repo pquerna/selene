@@ -104,7 +104,7 @@ struct sln_hs_baton_t {
 
 
 selene_error_t*
-sln_handshake_unparse_client_hello(sln_native_msg_client_hello_t *ch, sln_bucket_t **b);
+sln_handshake_unparse_client_hello(selene_t *s, sln_native_msg_client_hello_t *ch, sln_bucket_t **b);
 
 selene_error_t*
 sln_handshake_parse_client_hello_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, void **baton);

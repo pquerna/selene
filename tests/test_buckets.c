@@ -24,7 +24,7 @@ static void
 bucket_empty(void **state)
 {
   sln_bucket_t *e;
-  SLN_ERR(sln_bucket_create_empty(&e, 4000));
+  SLN_ERR(sln_bucket_create_empty(sln_test_alloc, &e, 4000));
   sln_bucket_destroy(e);
 }
 
@@ -33,7 +33,7 @@ bucket_with_bytes(void **state)
 {
   char *data = strdup("foobar");
   sln_bucket_t *e;
-  SLN_ERR(sln_bucket_create_with_bytes(&e, data, strlen(data)));
+  SLN_ERR(sln_bucket_create_with_bytes(sln_test_alloc, &e, data, strlen(data)));
   assert_memory_equal(data, e->data, 6);
   sln_bucket_destroy(e);
   free(data);
@@ -44,7 +44,7 @@ bucket_copy_bytes(void **state)
 {
   const char *data = "foobar";
   sln_bucket_t *e;
-  SLN_ERR(sln_bucket_create_copy_bytes(&e, data, strlen(data)));
+  SLN_ERR(sln_bucket_create_copy_bytes(sln_test_alloc, &e, data, strlen(data)));
   assert_memory_equal(data, e->data, 6);
   sln_bucket_destroy(e);
 }

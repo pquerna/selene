@@ -40,7 +40,7 @@ static void tok_nowork(void **state)
   baton_t baton;
   baton.count = 0;
 
-  SLN_ERR(sln_brigade_create(&bb));
+  SLN_ERR(sln_brigade_create(sln_test_alloc, &bb));
   SLN_ERR(sln_tok_parser(bb, tok_nowork_cb, &baton));
 
   assert_int_equal(1, baton.count);
@@ -70,8 +70,8 @@ static void tok_bytes(void **state)
   baton_t baton;
   baton.count = 0;
 
-  SLN_ERR(sln_brigade_create(&bb));
-  SLN_ERR(sln_bucket_create_empty(&e1, 10));
+  SLN_ERR(sln_brigade_create(sln_test_alloc, &bb));
+  SLN_ERR(sln_bucket_create_empty(sln_test_alloc, &e1, 10));
   SLN_BRIGADE_INSERT_TAIL(bb, e1);
   memset(e1->data, 'A', e1->size);
   SLN_ERR(sln_tok_parser(bb, tok_bytes_cb, &baton));
@@ -106,8 +106,8 @@ static void tok_copy_brigade(void **state)
   baton_t baton;
   baton.count = 0;
 
-  SLN_ERR(sln_brigade_create(&bb));
-  SLN_ERR(sln_bucket_create_empty(&e1, 10));
+  SLN_ERR(sln_brigade_create(sln_test_alloc, &bb));
+  SLN_ERR(sln_bucket_create_empty(sln_test_alloc, &e1, 10));
   SLN_BRIGADE_INSERT_TAIL(bb, e1);
   memset(e1->data, 'A', e1->size);
   SLN_ERR(sln_tok_parser(bb, tok_copy_brigade_cb, &baton));

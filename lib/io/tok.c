@@ -75,7 +75,7 @@ sln_tok_parser(sln_brigade_t *bb, sln_tok_cb cb, void *baton)
         }
 
         if (tmpbb == NULL) {
-          err = sln_brigade_create(&tmpbb);
+          err = sln_brigade_create(bb->alloc, &tmpbb);
           if (err) {
             keepgoing = 0;
             break;

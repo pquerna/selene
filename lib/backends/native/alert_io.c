@@ -30,14 +30,14 @@ sln_native_io_alert(selene_t *s, sln_alert_level_e level, sln_alert_description_
   alert.level =  level;
   alert.description = desc;
 
-  SELENE_ERR(sln_native_alert_unparse(&alert, &balert));
+  SELENE_ERR(sln_native_alert_unparse(s, &alert, &balert));
 
   tls.content_type = SLN_NATIVE_CONTENT_TYPE_ALERT;
   tls.version_major = 3;
   tls.version_minor = 1;
   tls.length = balert->size;
 
-  SELENE_ERR(sln_tls_unparse_header(&tls, &btls));
+  SELENE_ERR(sln_tls_unparse_header(s, &tls, &btls));
 
   SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, btls);
 

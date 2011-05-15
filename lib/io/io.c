@@ -20,17 +20,17 @@
 #include "sln_brigades.h"
 
 selene_error_t*
-sln_iobb_create(selene_t *s, sln_iobb_t *iobb)
+sln_iobb_create(selene_alloc_t *alloc, sln_iobb_t *iobb)
 {
-  SELENE_ERR(sln_brigade_create(&iobb->in_enc));
-  SELENE_ERR(sln_brigade_create(&iobb->out_enc));
-  SELENE_ERR(sln_brigade_create(&iobb->in_cleartext));
-  SELENE_ERR(sln_brigade_create(&iobb->out_cleartext));
+  SELENE_ERR(sln_brigade_create(alloc, &iobb->in_enc));
+  SELENE_ERR(sln_brigade_create(alloc, &iobb->out_enc));
+  SELENE_ERR(sln_brigade_create(alloc, &iobb->in_cleartext));
+  SELENE_ERR(sln_brigade_create(alloc, &iobb->out_cleartext));
   return SELENE_SUCCESS;
 }
 
 void
-sln_iobb_destroy(selene_t *s, sln_iobb_t *iobb)
+sln_iobb_destroy(sln_iobb_t *iobb)
 {
   sln_brigade_destroy(iobb->in_enc);
   sln_brigade_destroy(iobb->out_enc);
@@ -46,7 +46,7 @@ selene_io_in_clear_bytes(selene_t *s,
 {
   sln_bucket_t *e = NULL;
 
-  SELENE_ERR(sln_bucket_create_copy_bytes(&e, bytes, length));
+  SELENE_ERR(sln_bucket_create_copy_bytes(s->alloc, &e, bytes, length));
 
   SLN_BRIGADE_INSERT_TAIL(s->bb.in_enc, e);
 
@@ -64,7 +64,7 @@ selene_io_in_clear_iovec(selene_t *s, const struct iovec *vec, int iovcnt)
 
   /* TODO: possible to optimize this? */
   for (i = 0; i < iovcnt; i++) {
-    SELENE_ERR(sln_bucket_create_copy_bytes(&e, vec[i].iov_base, vec[i].iov_len));
+    SELENE_ERR(sln_bucket_create_copy_bytes(s->alloc, &e, vec[i].iov_base, vec[i].iov_len));
     SLN_BRIGADE_INSERT_TAIL(s->bb.in_enc, e);
   }
 
@@ -80,7 +80,7 @@ selene_io_in_enc_bytes(selene_t *s,
 {
   sln_bucket_t *e = NULL;
 
-  SELENE_ERR(sln_bucket_create_copy_bytes(&e, bytes, length));
+  SELENE_ERR(sln_bucket_create_copy_bytes(s->alloc, &e, bytes, length));
 
   SLN_BRIGADE_INSERT_TAIL(s->bb.in_enc, e);
 

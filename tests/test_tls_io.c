@@ -73,7 +73,7 @@ static void tls_io_slowly(void **state)
   baton = (sln_native_baton_t *)s->backend_baton;
 
   for (i = 0; i <= maxlen; i++) {
-    SLN_ERR(sln_bucket_create_copy_bytes(&e1,
+    SLN_ERR(sln_bucket_create_copy_bytes(sln_test_alloc, &e1,
                                          openssl_client_hello_basic,
                                          i));
     SLN_BRIGADE_INSERT_TAIL(s->bb.in_enc, e1);
@@ -126,7 +126,7 @@ static void tls_http_accident(void **state)
   cbb.gotit = 0;
   selene_handler_set(s, SELENE_EVENT_TLS_GOT_HTTP, http_cb, &cbb);
 
-  SLN_ERR(sln_bucket_create_copy_bytes(&e1,
+  SLN_ERR(sln_bucket_create_copy_bytes(sln_test_alloc, &e1,
                                        http_message,
                                        strlen(http_message)));
   SLN_BRIGADE_INSERT_TAIL(s->bb.in_enc, e1);

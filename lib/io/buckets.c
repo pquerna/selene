@@ -20,10 +20,11 @@
 #include "sln_types.h"
 #include <string.h>
 
-static void create_sized(sln_bucket_t **out_b, size_t size)
+static void create_sized(selene_alloc_t *alloc, sln_bucket_t **out_b, size_t size)
 {
-  sln_bucket_t *b = calloc(1, sizeof(sln_bucket_t));
+  sln_bucket_t *b = alloc->calloc(alloc->baton, sizeof(sln_bucket_t));
 
+  b->alloc = alloc;
   b->memory_is_mine = 1;
   b->size = size;
 
@@ -33,11 +34,11 @@ static void create_sized(sln_bucket_t **out_b, size_t size)
 }
 
 selene_error_t*
-sln_bucket_create_empty(sln_bucket_t **out_b, size_t size)
+sln_bucket_create_empty(selene_alloc_t *alloc, sln_bucket_t **out_b, size_t size)
 {
   sln_bucket_t *b = NULL;
 
-  create_sized(&b, size);
+  create_sized(alloc, &b, size);
 
   /* TODO: pool allocator */
   b->data = malloc(size);
@@ -48,11 +49,11 @@ sln_bucket_create_empty(sln_bucket_t **out_b, size_t size)
 }
 
 selene_error_t*
-sln_bucket_create_copy_bytes(sln_bucket_t **out_b, const char* bytes, size_t size)
+sln_bucket_create_copy_bytes(selene_alloc_t *alloc, sln_bucket_t **out_b, const char* bytes, size_t size)
 {
   sln_bucket_t *b = NULL;
 
-  SELENE_ERR(sln_bucket_create_empty(&b, size));
+  SELENE_ERR(sln_bucket_create_empty(alloc, &b, size));
 
   memcpy(b->data, bytes, size);
 
@@ -62,11 +63,11 @@ sln_bucket_create_copy_bytes(sln_bucket_t **out_b, const char* bytes, size_t siz
 }
 
 selene_error_t*
-sln_bucket_create_with_bytes(sln_bucket_t **out_b, char* bytes, size_t size)
+sln_bucket_create_with_bytes(selene_alloc_t *alloc, sln_bucket_t **out_b, char* bytes, size_t size)
 {
   sln_bucket_t *b = NULL;
 
-  create_sized(&b, size);
+  create_sized(alloc, &b, size);
 
   b->memory_is_mine = 0;
 
@@ -83,10 +84,10 @@ sln_bucket_destroy(sln_bucket_t *b)
   SLN_BUCKET_REMOVE(b);
 
   if (b->memory_is_mine == 1 && b->data != NULL) {
-    free(b->data);
+    b->alloc->free(b->alloc->baton, b->data);
   }
 
   b->data = NULL;
 
-  free(b);
+  b->alloc->free(b->alloc->baton, b);
 }

@@ -15,29 +15,20 @@
  * limitations under the License.
  */
 
-
-#ifndef _sln_buckets_h_
-#define _sln_buckets_h_
-
 #include "selene.h"
 #include "sln_types.h"
 
-/* Create an empty memory bucket, of a specififed size */
-selene_error_t*
-sln_bucket_create_empty(selene_alloc_t *alloc, sln_bucket_t **b, size_t size);
+void* sln_alloc(selene_t *s, size_t len)
+{
+  return s->conf->alloc->malloc(s->conf->alloc->baton, len);
+}
 
-/* Create a memory buffer, copying the bytes */
-selene_error_t*
-sln_bucket_create_copy_bytes(selene_alloc_t *alloc, sln_bucket_t **b, const char* bytes, size_t size);
+void* sln_calloc(selene_t *s, size_t len)
+{
+  return s->conf->alloc->calloc(s->conf->alloc->baton, len);
+}
 
-/* Create a memory buffer, taking ownership of the bytes (including calling free()) */
-selene_error_t*
-sln_bucket_create_with_bytes(selene_alloc_t *alloc, sln_bucket_t **b, char* bytes, size_t size);
-
-/* Cleanup a memory buffer */
-void
-sln_bucket_destroy(sln_bucket_t *b);
-
-#define SLN_BUCKET_REMOVE(e) SLN_RING_REMOVE((e), link)
-
-#endif
+void sln_free(selene_t *s, void *ptr)
+{
+  s->conf->alloc->free(s->conf->alloc->baton, ptr);
+}

@@ -19,6 +19,30 @@
 #include "sln_tests.h"
 #include <stdio.h>
 
+static void*
+malloc_cb(void *baton, size_t len) {
+  return malloc(len);
+}
+
+static void*
+calloc_cb(void *baton, size_t len) {
+  return calloc(1, len);
+}
+
+static void
+free_cb(void *baton, void *ptr) {
+  free(ptr);
+}
+
+static selene_alloc_t test_alloc = {
+  NULL,
+  malloc_cb,
+  calloc_cb,
+  free_cb
+};
+
+selene_alloc_t* sln_test_alloc = &test_alloc;
+
 #define RUNT(module) do { \
     int rv = sln_tests_ ## module (); \
     if (rv != 0) { \

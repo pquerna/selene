@@ -130,6 +130,6 @@ typedef struct sln_native_msg_tls_t {
 } sln_native_msg_tls_t;
 
 selene_error_t*
-sln_tls_unparse_header(sln_native_msg_tls_t *tls, sln_bucket_t **b);
+sln_tls_unparse_header(selene_t *s, sln_native_msg_tls_t *tls, sln_bucket_t **b);
 
 #endif

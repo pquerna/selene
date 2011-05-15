@@ -21,7 +21,7 @@
 #include <string.h>
 
 selene_error_t*
-sln_handshake_unparse_client_hello(sln_native_msg_client_hello_t *ch, sln_bucket_t **p_b)
+sln_handshake_unparse_client_hello(selene_t *s, sln_native_msg_client_hello_t *ch, sln_bucket_t **p_b)
 {
   sln_bucket_t *b = NULL;
   size_t off = 0;
@@ -76,7 +76,7 @@ sln_handshake_unparse_client_hello(sln_native_msg_client_hello_t *ch, sln_bucket
   len += num_extensions * 4;
   len += extlen;
 
-  sln_bucket_create_empty(&b, len);
+  sln_bucket_create_empty(s->alloc, &b, len);
 
   b->data[0] = SLN_HS_MSG_TYPE_CLIENT_HELLO;
   int dlen = len - 4;
