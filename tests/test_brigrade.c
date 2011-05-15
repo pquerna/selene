@@ -31,6 +31,7 @@ static void brigade_operations(void **state)
   assert_int_equal(sln_brigade_size(bb), 40);
   SLN_BUCKET_REMOVE(e);
   assert_int_equal(sln_brigade_size(bb), 0);
+  sln_bucket_destroy(e);
   sln_brigade_destroy(bb);
 }
 
