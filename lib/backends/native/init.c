@@ -69,6 +69,17 @@ sln_native_start(selene_t *s)
 selene_error_t*
 sln_native_destroy(selene_t *s)
 {
+  sln_native_baton_t *baton;
+  SLN_ASSERT_CONTEXT(s);
+
+  baton = s->backend_baton;
+
+  sln_brigade_destroy(baton->in_ccs);
+  sln_brigade_destroy(baton->in_alert);
+  sln_brigade_destroy(baton->in_handshake);
+  sln_brigade_destroy(baton->in_application);
+
+  free(baton);
 
   return SELENE_SUCCESS;
 }
