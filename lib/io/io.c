@@ -57,6 +57,23 @@ selene_io_in_clear_bytes(selene_t *s,
 
 
 SELENE_API(selene_error_t*)
+selene_io_in_clear_iovec(selene_t *s, const struct iovec *vec, int iovcnt)
+{
+  int i;
+  sln_bucket_t *e = NULL;
+
+  /* TODO: possible to optimize this? */
+  for (i = 0; i < iovcnt; i++) {
+    SELENE_ERR(sln_bucket_create_copy_bytes(&e, vec[i].iov_base, vec[i].iov_len));
+    SLN_BRIGADE_INSERT_TAIL(s->bb.in_enc, e);
+  }
+
+  SELENE_ERR(selene_publish(s, SELENE_EVENT_IO_IN_CLEAR));
+
+  return SELENE_SUCCESS;
+}
+
+SELENE_API(selene_error_t*)
 selene_io_in_enc_bytes(selene_t *s,
                        const char* bytes,
                        size_t length)

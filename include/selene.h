@@ -27,6 +27,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 #include <stdlib.h>
+#include <sys/socket.h>
 #include "selene_visibility.h"
 #include "selene_version.h"
 #include "selene_error.h"
@@ -130,6 +131,11 @@ SELENE_API(selene_error_t*)
 selene_io_in_clear_bytes(selene_t *ctxt,
                          const char* bytes,
                          size_t length);
+
+SELENE_API(selene_error_t*)
+selene_io_in_clear_iovec(selene_t *s,
+                          const struct iovec *vec,
+                          int iovcnt);
 
 /* Hand encrypted input bytes to Selene */
 SELENE_API(selene_error_t*)
