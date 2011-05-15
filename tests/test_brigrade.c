@@ -186,6 +186,7 @@ static void brigade_copy_into(void **state)
   SLN_ERR(sln_brigade_pread_bytes(dest, 0, 10, &buf[0], &len));
   assert_memory_equal(buf, "AAAAAAAAAA", 2);
   sln_brigade_clear(dest);
+  sln_brigade_destroy(dest);
 
   SLN_ERR(sln_brigade_create(&dest));
   SLN_ERR(sln_brigade_copy_into(source, 2, 4, dest));
@@ -193,7 +194,9 @@ static void brigade_copy_into(void **state)
   SLN_ERR(sln_brigade_pread_bytes(dest, 0, 4, &buf[0], &len));
   assert_memory_equal(buf, "AAAA", 4);
   sln_brigade_clear(dest);
+  sln_brigade_destroy(dest);
 
+  sln_brigade_destroy(source);
 }
 
 SLN_TESTS_START(brigade)
