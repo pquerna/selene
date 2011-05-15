@@ -133,6 +133,7 @@ static void tls_http_accident(void **state)
   err  = sln_native_io_tls_read(s, baton);
   SLN_ASSERT(err != NULL);
   SLN_ASSERT(err->err == SELENE_EINVAL);
+  selene_error_clear(err);
   assert_int_equal(1, cbb.gotit);
   selene_destroy(s);
   selene_conf_destroy(conf);
