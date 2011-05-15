@@ -42,7 +42,7 @@ typedef struct log_cb_t {
   const char *cmp;
 } log_cb_t;
 
-selene_error_t*
+static selene_error_t*
 log_cb(selene_t *s, selene_event_e event, void *baton)
 {
   const char *log_msg;

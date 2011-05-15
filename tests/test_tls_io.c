@@ -99,7 +99,7 @@ typedef struct http_cb_t {
   int gotit;
 } http_cb_t;
 
-selene_error_t*
+static selene_error_t*
 http_cb(selene_t *ctxt, selene_event_e event, void *baton)
 {
   http_cb_t *b = (http_cb_t*) baton;

@@ -89,12 +89,13 @@ selene_io_in_enc_bytes(selene_t *s,
   return SELENE_SUCCESS;
 }
 
-selene_error_t* bb_chomp_to_buffer(selene_t *s,
-                                   sln_brigade_t *bb,
-                                   char* buffer,
-                                   size_t blen,
-                                   size_t *length,
-                                   size_t *remaining)
+static selene_error_t*
+bb_chomp_to_buffer(selene_t *s,
+                   sln_brigade_t *bb,
+                   char* buffer,
+                   size_t blen,
+                   size_t *length,
+                   size_t *remaining)
 {
   *remaining = 0;
   *length = 0;
