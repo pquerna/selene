@@ -22,7 +22,6 @@
 static selene_error_t *
 sln_native_io_alert(selene_t *s, sln_alert_level_e level, sln_alert_description_e desc)
 {
-  selene_error_t *err;
   sln_bucket_t *btls = NULL;
   sln_bucket_t *balert = NULL;
   sln_msg_alert_t alert;
@@ -32,10 +31,6 @@ sln_native_io_alert(selene_t *s, sln_alert_level_e level, sln_alert_description_
   alert.description = desc;
 
   SELENE_ERR(sln_native_alert_unparse(&alert, &balert));
-
-  if (err) {
-    return err;
-  }
 
   tls.content_type = SLN_NATIVE_CONTENT_TYPE_ALERT;
   tls.version_major = 3;
@@ -48,7 +43,7 @@ sln_native_io_alert(selene_t *s, sln_alert_level_e level, sln_alert_description_
 
   SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, balert);
 
-  return err;
+  return SELENE_SUCCESS;
 }
 
 selene_error_t *
