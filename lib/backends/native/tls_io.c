@@ -174,7 +174,7 @@ sln_native_io_tls_read(selene_t *s, sln_native_baton_t *baton)
 
   if (err) {
     /* TODO: logging here? */
-    sln_io_alert_fatal(s, SLN_ALERT_DESC_INTERNAL_ERROR);
+    sln_native_io_alert_fatal(s, SLN_ALERT_DESC_INTERNAL_ERROR);
     return err;
   }
 

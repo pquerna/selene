@@ -33,6 +33,13 @@ enter_state_machine:
     }
   }
 
+  if (!SLN_BRIGADE_EMPTY(baton->in_alert)) {
+    err = sln_native_io_alert_read(s, baton);
+    if (err) {
+      return err;
+    }
+  }
+
   if (baton->ready_for_appdata && !SLN_BRIGADE_EMPTY(s->bb.in_cleartext)) {
     //err = sln_native_io_tls_write_appdata(s, baton);
     if (err) {

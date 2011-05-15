@@ -88,6 +88,9 @@ sln_native_state_machine(selene_t *s, sln_native_baton_t *baton);
  */
 selene_error_t* sln_native_io_tls_read(selene_t *s, sln_native_baton_t *baton);
 
+selene_error_t* sln_native_io_alert_read(selene_t *s, sln_native_baton_t *baton);
+
+
 /**
  * Client Writing Methods
  */

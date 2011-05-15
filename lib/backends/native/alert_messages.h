@@ -18,6 +18,8 @@
 #ifndef _alert_messages_h_
 #define _alert_messages_h_
 
+#include "sln_tok.h"
+
 typedef enum sln_alert_level_e {
   SLN_ALERT_LEVEL_WARNING = 1,
   SLN_ALERT_LEVEL_FATAL = 2,
@@ -51,18 +53,37 @@ typedef enum sln_alert_description_e {
   SLN_ALERT_DESC_UNSUPPORTED_EXTENSION = 110,
 } sln_alert_description_e;
 
+typedef enum sln_alert_state_e {
+  SLN_ALERT_STATE__UNUSED,
+  SLN_ALERT_STATE__INIT,
+  SLN_ALERT_STATE_LEVEL,
+  SLN_ALERT_STATE_DESCRIPTION,
+  SLN_ALERT_STATE__DONE,
+  SLN_ALERT_STATE__MAX,
+} sln_alert_state_e;
+
 typedef struct sln_msg_alert_t {
   sln_alert_level_e level;
   sln_alert_description_e description;
 } sln_msg_alert_t;
 
-selene_error_t*
-sln_alert_unparse(sln_msg_alert_t *alert, sln_bucket_t **p_b);
+typedef struct sln_alert_baton_t {
+  selene_t *s;
+  sln_native_baton_t *baton;
+  sln_alert_state_e state;
+  sln_msg_alert_t *alert;
+} sln_alert_baton_t;
 
 selene_error_t*
-sln_io_alert_fatal(selene_t *s, sln_alert_description_e desc);
+sln_native_alert_unparse(sln_msg_alert_t *alert, sln_bucket_t **p_b);
 
 selene_error_t*
-sln_io_alert_warning(selene_t *s, sln_alert_description_e desc);
+sln_native_io_alert_fatal(selene_t *s, sln_alert_description_e desc);
 
+selene_error_t*
+sln_native_io_alert_warning(selene_t *s, sln_alert_description_e desc);
+
+selene_error_t*
+sln_native_alert_parse(sln_tok_value_t *v, void *baton_);
+  
 #endif

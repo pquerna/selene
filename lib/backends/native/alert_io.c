@@ -20,7 +20,7 @@
 #include "sln_tok.h"
 
 static selene_error_t *
-sln_io_alert(selene_t *s, sln_alert_level_e level, sln_alert_description_e desc)
+sln_native_io_alert(selene_t *s, sln_alert_level_e level, sln_alert_description_e desc)
 {
   selene_error_t *err;
   sln_bucket_t *btls = NULL;
@@ -31,7 +31,7 @@ sln_io_alert(selene_t *s, sln_alert_level_e level, sln_alert_description_e desc)
   alert.level =  level;
   alert.description = desc;
 
-  SELENE_ERR(sln_alert_unparse(&alert, &balert));
+  SELENE_ERR(sln_native_alert_unparse(&alert, &balert));
 
   if (err) {
     return err;
@@ -52,13 +52,33 @@ sln_io_alert(selene_t *s, sln_alert_level_e level, sln_alert_description_e desc)
 }
 
 selene_error_t *
-sln_io_alert_fatal(selene_t *s, sln_alert_description_e desc)
+sln_native_io_alert_fatal(selene_t *s, sln_alert_description_e desc)
 {
-  return sln_io_alert(s, SLN_ALERT_LEVEL_FATAL, desc);
+  return sln_native_io_alert(s, SLN_ALERT_LEVEL_FATAL, desc);
 }
 
 selene_error_t *
-sln_io_alert_warning(selene_t *s, sln_alert_description_e desc)
+sln_native_io_alert_warning(selene_t *s, sln_alert_description_e desc)
 {
-  return sln_io_alert(s, SLN_ALERT_LEVEL_WARNING, desc);
+  return sln_native_io_alert(s, SLN_ALERT_LEVEL_WARNING, desc);
+}
+
+
+selene_error_t*
+sln_native_io_alert_read(selene_t *s, sln_native_baton_t *baton)
+{
+  sln_alert_baton_t ab;
+
+  ab.s = s;
+  ab.baton = baton;
+  ab.state = SLN_ALERT_STATE__INIT;
+
+  sln_tok_parser(baton->in_alert, sln_native_alert_parse, &ab);
+
+  if (ab.state == SLN_ALERT_STATE__DONE) {
+    /* TODO: emit event for alert */
+    /* TODO: handle close notify */
+  }
+
+  return SELENE_SUCCESS;
 }
