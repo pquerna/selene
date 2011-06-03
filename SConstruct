@@ -31,9 +31,6 @@ available_build_types = ['static', 'shared']
 opts.Add(EnumVariable('profile', 'build profile', 'debug', available_profiles, {}, True))
 opts.Add(EnumVariable('build_type', 'build profile', 'static', available_build_types, {}, True))
 
-opts.Add('enable_openssl_threaded', default=False, help='Enable Threaded OpenSSL backend')
-opts.Add('enable_native', default=True, help='Enable Native TLS, using OpenSSL for crytpo operations')
-
 env = Environment(options=opts,
                   ENV = os.environ.copy(),
                   tools=['default'])
@@ -68,17 +65,7 @@ if os.environ.has_key('CXX'):
 conf.env['SELENE_PLATFORM'] = platform[:platform.find(' ')].upper()
 conf.env['SELENE_ARCH'] = platform[platform.find(' ')+1:].replace(" ", "_")
 
-conf.env['WANT_OPENSSL'] = False
-
-if conf.env['enable_native']:
-  conf.env['WANT_OPENSSL'] = True
-  conf.env.AppendUnique(CPPDEFINES=['WANT_NATIVE'])
-
-if conf.env['enable_openssl_threaded']:
-  conf.env['WANT_OPENSSL'] = True
-  conf.env.AppendUnique(CPPDEFINES=['WANT_OPENSSL_THREADED'])
-  if conf.CheckLibWithHeader('libpthread', 'pthread.h', 'C', '', True):
-    conf.env.AppendUnique(CPPDEFINES=['WANT_PTHREADS'])
+conf.env['WANT_OPENSSL'] = True
 
 if conf.env['WANT_OPENSSL']:
   if conf.env.get('with_openssl'):
