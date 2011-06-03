@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+#include "sln_tok.h"
+
 #ifndef _handshake_messages_h_
 #define _handshake_messages_h_
 
@@ -114,6 +116,8 @@ sln_handshake_parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, vo
 
 void
 sln_handshake_parse_client_hello_destroy(sln_hs_baton_t *hs, void *baton);
+
+selene_error_t* sln_handshake_handle_client_hello(selene_t *ctxt, selene_event_e event, void *baton_);
 
 #endif
 

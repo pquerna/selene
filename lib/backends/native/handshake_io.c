@@ -174,7 +174,15 @@ sln_native_io_handshake_read(selene_t *s, sln_native_baton_t *baton)
 
   if (hs.current_msg_baton != NULL && hs.current_msg_destroy != NULL) {
     hs.current_msg_destroy(&hs, hs.current_msg_baton);
+    selene_publish(s, SELENE__EVENT_HS_GOT_CLIENT_HELLO);
   }
 
+  return SELENE_SUCCESS;
+}
+
+selene_error_t*
+sln_handshake_handle_client_hello(selene_t *ctxt, selene_event_e event, void *baton_)
+{
+  /* TODO: fetch current message, */
   return SELENE_SUCCESS;
 }

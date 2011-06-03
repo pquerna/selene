@@ -17,7 +17,7 @@
 
 #include "sln_brigades.h"
 #include "native.h"
-
+#include "handshake_messages.h"
 
 selene_error_t*
 sln_native_initilize()
@@ -42,6 +42,8 @@ sln_native_create(selene_t *s)
   sln_brigade_create(s->alloc, &baton->in_alert);
   sln_brigade_create(s->alloc, &baton->in_handshake);
   sln_brigade_create(s->alloc, &baton->in_application);
+
+  selene_handler_set(s, SELENE__EVENT_HS_GOT_CLIENT_HELLO, sln_handshake_handle_client_hello, NULL);
 
   return SELENE_SUCCESS;
 }
