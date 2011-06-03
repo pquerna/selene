@@ -34,7 +34,7 @@ free_cb(void *baton, void *ptr) {
   free(ptr);
 }
 
-static selene_alloc_t default_aloc = {
+static selene_alloc_t default_alloc = {
   NULL,
   malloc_cb,
   calloc_cb,
@@ -47,7 +47,7 @@ selene_conf_create_with_allloc(selene_conf_t **p_conf, selene_alloc_t *alloc)
   selene_conf_t *conf;
 
   if (alloc == NULL) {
-    alloc = &default_aloc;
+    alloc = &default_alloc;
   }
 
   conf = alloc->calloc(alloc->baton, sizeof(selene_conf_t));
