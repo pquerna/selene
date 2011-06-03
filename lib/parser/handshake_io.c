@@ -185,8 +185,9 @@ sln_handshake_handle_client_hello(selene_t *s, selene_event_e event, void *baton
   sln_parser_baton_t *baton = s->backend_baton;
   sln_msg_client_hello_t *ch = baton->msg.client_hello;
 
-  if (ch->version_major <= 3) {
-    /* TODO: validate minimum version */
+  if (ch->version_major < 3) {
+    /* Disable SSLv2 and 'older' */
+    sln_io_alert_fatal(s, SLN_ALERT_DESC_PROTOCOL_VERSION);
     return SELENE_SUCCESS;
   }
 

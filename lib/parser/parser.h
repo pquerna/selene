@@ -26,7 +26,7 @@
 
 typedef struct sln_parser_baton_t sln_parser_baton_t;
 
-
+#include "alert_messages.h"
 #include "handshake_messages.h"
 
 /**
