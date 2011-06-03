@@ -20,7 +20,7 @@
 #include "sln_tok.h"
 #include <string.h>
 #include <stdio.h>
-#include "../lib/backends/native/native.h"
+#include "../lib/parser/parser.h"
 
 /**
  * Packet Capture from OpenSSL s_client sending a client hello.
@@ -58,7 +58,7 @@ static char openssl_client_hello_basic[] = {
 static void tls_io_slowly(void **state)
 {
   selene_error_t *err;
-  sln_native_baton_t *baton;
+  sln_parser_baton_t *baton;
   selene_conf_t *conf = NULL;
   selene_t *s = NULL;
   sln_bucket_t *e1;
@@ -70,14 +70,14 @@ static void tls_io_slowly(void **state)
   SLN_ERR(selene_server_create(conf, &s));
   SLN_ASSERT_CONTEXT(s);
 
-  baton = (sln_native_baton_t *)s->backend_baton;
+  baton = (sln_parser_baton_t *)s->backend_baton;
 
   for (i = 0; i <= maxlen; i++) {
     SLN_ERR(sln_bucket_create_copy_bytes(sln_test_alloc, &e1,
                                          openssl_client_hello_basic,
                                          i));
     SLN_BRIGADE_INSERT_TAIL(s->bb.in_enc, e1);
-    err  = sln_native_io_tls_read(s, baton);
+    err  = sln_io_tls_read(s, baton);
     if (err) {
       SLN_ASSERT(err->err == SELENE_EINVAL);
     }
@@ -110,7 +110,7 @@ http_cb(selene_t *ctxt, selene_event_e event, void *baton)
 static void tls_http_accident(void **state)
 {
   selene_error_t *err;
-  sln_native_baton_t *baton;
+  sln_parser_baton_t *baton;
   selene_conf_t *conf = NULL;
   selene_t *s = NULL;
   http_cb_t cbb;
@@ -121,7 +121,7 @@ static void tls_http_accident(void **state)
   SLN_ERR(selene_server_create(conf, &s));
   SLN_ASSERT_CONTEXT(s);
 
-  baton = (sln_native_baton_t *)s->backend_baton;
+  baton = (sln_parser_baton_t *)s->backend_baton;
 
   cbb.gotit = 0;
   selene_handler_set(s, SELENE_EVENT_TLS_GOT_HTTP, http_cb, &cbb);
@@ -130,7 +130,7 @@ static void tls_http_accident(void **state)
                                        http_message,
                                        strlen(http_message)));
   SLN_BRIGADE_INSERT_TAIL(s->bb.in_enc, e1);
-  err  = sln_native_io_tls_read(s, baton);
+  err  = sln_io_tls_read(s, baton);
   SLN_ASSERT(err != NULL);
   SLN_ASSERT(err->err == SELENE_EINVAL);
   selene_error_clear(err);

@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-#include "native.h"
+#include "parser.h"
 
 selene_error_t*
-sln_tls_unparse_header(selene_t *s, sln_native_msg_tls_t *tls, sln_bucket_t **p_b)
+sln_tls_unparse_header(selene_t *s, sln_msg_tls_t *tls, sln_bucket_t **p_b)
 {
   sln_bucket_t *b = NULL;
   
@@ -27,16 +27,16 @@ sln_tls_unparse_header(selene_t *s, sln_native_msg_tls_t *tls, sln_bucket_t **p_
   sln_bucket_create_empty(s->alloc, &b, len);
 
   switch (tls->content_type) {
-    case SLN_NATIVE_CONTENT_TYPE_CHANGE_CIPHER_SPEC:
+    case SLN_CONTENT_TYPE_CHANGE_CIPHER_SPEC:
       b->data[0] = 0x14;
       break;
-    case SLN_NATIVE_CONTENT_TYPE_ALERT:
+    case SLN_CONTENT_TYPE_ALERT:
       b->data[0] = 0x15;
       break;
-    case SLN_NATIVE_CONTENT_TYPE_HANDSHAKE:
+    case SLN_CONTENT_TYPE_HANDSHAKE:
       b->data[0] = 0x16;
       break;
-    case SLN_NATIVE_CONTENT_TYPE_APPLICATION:
+    case SLN_CONTENT_TYPE_APPLICATION:
       b->data[0] = 0x17;
       break;
     default:

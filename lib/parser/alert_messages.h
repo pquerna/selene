@@ -69,21 +69,21 @@ typedef struct sln_msg_alert_t {
 
 typedef struct sln_alert_baton_t {
   selene_t *s;
-  sln_native_baton_t *baton;
+  sln_parser_baton_t *baton;
   sln_alert_state_e state;
   sln_msg_alert_t *alert;
 } sln_alert_baton_t;
 
 selene_error_t*
-sln_native_alert_unparse(selene_t *s, sln_msg_alert_t *alert, sln_bucket_t **p_b);
+sln_alert_unparse(selene_t *s, sln_msg_alert_t *alert, sln_bucket_t **p_b);
 
 selene_error_t*
-sln_native_io_alert_fatal(selene_t *s, sln_alert_description_e desc);
+sln_io_alert_fatal(selene_t *s, sln_alert_description_e desc);
 
 selene_error_t*
-sln_native_io_alert_warning(selene_t *s, sln_alert_description_e desc);
+sln_io_alert_warning(selene_t *s, sln_alert_description_e desc);
 
 selene_error_t*
-sln_native_alert_parse(sln_tok_value_t *v, void *baton_);
+sln_alert_parse(sln_tok_value_t *v, void *baton_);
   
 #endif

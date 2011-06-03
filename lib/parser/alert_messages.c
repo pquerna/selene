@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-#include "native.h"
+#include "parser.h"
 #include "alert_messages.h"
 
 selene_error_t*
-sln_native_alert_unparse(selene_t *s, sln_msg_alert_t *alert, sln_bucket_t **p_b)
+sln_alert_unparse(selene_t *s, sln_msg_alert_t *alert, sln_bucket_t **p_b)
 {
   sln_bucket_t *b = NULL;
   size_t len = 2;
@@ -82,7 +82,7 @@ is_valid_alert_description(int desc)
 }
 
 selene_error_t*
-sln_native_alert_parse(sln_tok_value_t *v, void *baton_)
+sln_alert_parse(sln_tok_value_t *v, void *baton_)
 {
   selene_error_t* err = SELENE_SUCCESS;
   sln_alert_baton_t *ab = (sln_alert_baton_t*)baton_;

@@ -17,7 +17,7 @@
 
 #include "sln_brigades.h"
 #include "sln_tok.h"
-#include "native.h"
+#include "parser.h"
 #include "handshake_messages.h"
 
 #include <time.h>
@@ -37,10 +37,10 @@
  */
 
 selene_error_t*
-sln_native_io_handshake_client_hello(selene_t *s, sln_native_baton_t *baton)
+sln_io_handshake_client_hello(selene_t *s, sln_parser_baton_t *baton)
 {
-  sln_native_msg_client_hello_t ch;
-  sln_native_msg_tls_t tls;
+  sln_msg_client_hello_t ch;
+  sln_msg_tls_t tls;
   sln_bucket_t *btls = NULL;
   sln_bucket_t *bhs = NULL;
 
@@ -59,7 +59,7 @@ sln_native_io_handshake_client_hello(selene_t *s, sln_native_baton_t *baton)
   ch.have_ocsp_stapling = 0;
   SELENE_ERR(sln_handshake_unparse_client_hello(s, &ch, &bhs));
 
-  tls.content_type = SLN_NATIVE_CONTENT_TYPE_HANDSHAKE;
+  tls.content_type = SLN_CONTENT_TYPE_HANDSHAKE;
   tls.version_major = 3;
   tls.version_minor = 1;
   tls.length = bhs->size;
@@ -159,7 +159,7 @@ read_handshake_parser(sln_tok_value_t *v, void *baton_)
 }
 
 selene_error_t*
-sln_native_io_handshake_read(selene_t *s, sln_native_baton_t *baton)
+sln_io_handshake_read(selene_t *s, sln_parser_baton_t *baton)
 {
   sln_hs_baton_t hs;
 

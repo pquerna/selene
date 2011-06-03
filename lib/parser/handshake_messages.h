@@ -75,7 +75,7 @@ typedef enum sln_handshake_client_hello_state_e {
   SLN_HS_CLIENT_HELLO_EXT_SNI_VALUE,
 } sln_handshake_client_hello_state_e;
 
-typedef struct sln_native_msg_client_hello_t {
+typedef struct sln_msg_client_hello_t {
   uint8_t version_major;
   uint8_t version_minor;
   uint32_t utc_unix_time;
@@ -86,7 +86,7 @@ typedef struct sln_native_msg_client_hello_t {
   const char *server_name;
   int have_npn;
   int have_ocsp_stapling;
-} sln_native_msg_client_hello_t;
+} sln_msg_client_hello_t;
 
 typedef struct sln_hs_baton_t sln_hs_baton_t;
 
@@ -96,7 +96,7 @@ typedef void (sln_hs_msg_destroy_cb)(sln_hs_baton_t* hs, void *baton);
 struct sln_hs_baton_t {
   selene_t *s;
   sln_handshake_state_e state;
-  sln_native_baton_t *baton;
+  sln_parser_baton_t *baton;
   uint8_t message_type;
   uint32_t length;
   void *current_msg_baton;
@@ -106,7 +106,7 @@ struct sln_hs_baton_t {
 
 
 selene_error_t*
-sln_handshake_unparse_client_hello(selene_t *s, sln_native_msg_client_hello_t *ch, sln_bucket_t **b);
+sln_handshake_unparse_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sln_bucket_t **b);
 
 selene_error_t*
 sln_handshake_parse_client_hello_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, void **baton);

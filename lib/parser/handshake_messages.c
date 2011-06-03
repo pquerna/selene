@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-#include "native.h"
+#include "parser.h"
 #include "sln_tok.h"
 #include "handshake_messages.h"
 #include <string.h>
 
 selene_error_t*
-sln_handshake_unparse_client_hello(selene_t *s, sln_native_msg_client_hello_t *ch, sln_bucket_t **p_b)
+sln_handshake_unparse_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sln_bucket_t **p_b)
 {
   sln_bucket_t *b = NULL;
   size_t off = 0;
@@ -145,7 +145,7 @@ sln_handshake_unparse_client_hello(selene_t *s, sln_native_msg_client_hello_t *c
 
 typedef struct ch_baton_t {
   sln_handshake_client_hello_state_e state;
-  sln_native_msg_client_hello_t ch;
+  sln_msg_client_hello_t ch;
 } ch_baton_t;
 
 selene_error_t*
@@ -163,7 +163,7 @@ selene_error_t*
 sln_handshake_parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
 {
   ch_baton_t *chb = (ch_baton_t*)baton;
-  sln_native_msg_client_hello_t *ch = &chb->ch;
+  sln_msg_client_hello_t *ch = &chb->ch;
 
   switch (chb->state) {
     case SLN_HS_CLIENT_HELLO_VERSION:

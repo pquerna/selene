@@ -20,8 +20,8 @@
 #include "sln_tok.h"
 #include <string.h>
 #include <stdio.h>
-#include "../lib/backends/native/native.h"
-#include "../lib/backends/native/alert_messages.h"
+#include "../lib/parser/parser.h"
+#include "../lib/parser/alert_messages.h"
 
 static char alert_close_notify[] = {
   0x01, 0x00
@@ -34,7 +34,7 @@ static char alert_bogus[] = {
 static void alert_msg(void **state)
 {
   selene_error_t *err;
-  sln_native_baton_t *baton;
+  sln_parser_baton_t *baton;
   selene_conf_t *conf = NULL;
   selene_t *s = NULL;
   sln_bucket_t *e1;
@@ -46,14 +46,14 @@ static void alert_msg(void **state)
   SLN_ERR(selene_server_create(conf, &s));
   SLN_ASSERT_CONTEXT(s);
 
-  baton = (sln_native_baton_t *)s->backend_baton;
+  baton = (sln_parser_baton_t *)s->backend_baton;
 
   for (i = maxlen; i <= maxlen; i++) {
     SLN_ERR(sln_bucket_create_copy_bytes(sln_test_alloc, &e1,
                                          alert_close_notify,
                                          i));
     SLN_BRIGADE_INSERT_TAIL(baton->in_alert, e1);
-    err  = sln_native_io_alert_read(s, baton);
+    err  = sln_io_alert_read(s, baton);
     if (err) {
       SLN_ASSERT(err->err == SELENE_EINVAL);
     }
@@ -70,7 +70,7 @@ static void alert_msg(void **state)
 static void alert_invalid_msg(void **state)
 {
   selene_error_t *err;
-  sln_native_baton_t *baton;
+  sln_parser_baton_t *baton;
   selene_conf_t *conf = NULL;
   selene_t *s = NULL;
   sln_bucket_t *e1;
@@ -82,14 +82,14 @@ static void alert_invalid_msg(void **state)
   SLN_ERR(selene_server_create(conf, &s));
   SLN_ASSERT_CONTEXT(s);
 
-  baton = (sln_native_baton_t *)s->backend_baton;
+  baton = (sln_parser_baton_t *)s->backend_baton;
 
   for (i = maxlen; i <= maxlen; i++) {
     SLN_ERR(sln_bucket_create_copy_bytes(sln_test_alloc, &e1,
                                          alert_bogus,
                                          i));
     SLN_BRIGADE_INSERT_TAIL(baton->in_alert, e1);
-    err  = sln_native_io_alert_read(s, baton);
+    err  = sln_io_alert_read(s, baton);
     if (err) {
       SLN_ASSERT(err->err == SELENE_EINVAL);
     }
@@ -108,7 +108,7 @@ static void alert_to_self(void **state)
   selene_error_t *err;
   sln_bucket_t *balert = NULL;
   sln_msg_alert_t alert;
-  sln_native_baton_t *baton;
+  sln_parser_baton_t *baton;
   selene_conf_t *conf = NULL;
   selene_t *s = NULL;
 
@@ -120,13 +120,13 @@ static void alert_to_self(void **state)
   alert.level = SLN_ALERT_LEVEL_FATAL;
   alert.description = SLN_ALERT_DESC_UNEXPECTED_MESSAGE;
 
-  baton = (sln_native_baton_t *)s->backend_baton;
+  baton = (sln_parser_baton_t *)s->backend_baton;
 
-  err = sln_native_alert_unparse(s, &alert, &balert);
+  err = sln_alert_unparse(s, &alert, &balert);
   SLN_ASSERT(err == SELENE_SUCCESS);
   SLN_BRIGADE_INSERT_TAIL(baton->in_handshake, balert);
 
-  err  = sln_native_io_alert_read(s, baton);
+  err  = sln_io_alert_read(s, baton);
 
   if (err) {
     SLN_ASSERT(err->err == SELENE_EINVAL);

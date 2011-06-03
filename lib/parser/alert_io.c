@@ -15,24 +15,24 @@
  * limitations under the License.
  */
 
-#include "native.h"
+#include "parser.h"
 #include "alert_messages.h"
 #include "sln_tok.h"
 
 static selene_error_t *
-sln_native_io_alert(selene_t *s, sln_alert_level_e level, sln_alert_description_e desc)
+sln_io_alert(selene_t *s, sln_alert_level_e level, sln_alert_description_e desc)
 {
   sln_bucket_t *btls = NULL;
   sln_bucket_t *balert = NULL;
   sln_msg_alert_t alert;
-  sln_native_msg_tls_t tls;
+  sln_msg_tls_t tls;
 
   alert.level =  level;
   alert.description = desc;
 
-  SELENE_ERR(sln_native_alert_unparse(s, &alert, &balert));
+  SELENE_ERR(sln_alert_unparse(s, &alert, &balert));
 
-  tls.content_type = SLN_NATIVE_CONTENT_TYPE_ALERT;
+  tls.content_type = SLN_CONTENT_TYPE_ALERT;
   tls.version_major = 3;
   tls.version_minor = 1;
   tls.length = balert->size;
@@ -47,20 +47,20 @@ sln_native_io_alert(selene_t *s, sln_alert_level_e level, sln_alert_description_
 }
 
 selene_error_t *
-sln_native_io_alert_fatal(selene_t *s, sln_alert_description_e desc)
+sln_io_alert_fatal(selene_t *s, sln_alert_description_e desc)
 {
-  return sln_native_io_alert(s, SLN_ALERT_LEVEL_FATAL, desc);
+  return sln_io_alert(s, SLN_ALERT_LEVEL_FATAL, desc);
 }
 
 selene_error_t *
-sln_native_io_alert_warning(selene_t *s, sln_alert_description_e desc)
+sln_io_alert_warning(selene_t *s, sln_alert_description_e desc)
 {
-  return sln_native_io_alert(s, SLN_ALERT_LEVEL_WARNING, desc);
+  return sln_io_alert(s, SLN_ALERT_LEVEL_WARNING, desc);
 }
 
 
 selene_error_t*
-sln_native_io_alert_read(selene_t *s, sln_native_baton_t *baton)
+sln_io_alert_read(selene_t *s, sln_parser_baton_t *baton)
 {
   sln_alert_baton_t ab;
 
@@ -69,7 +69,7 @@ sln_native_io_alert_read(selene_t *s, sln_native_baton_t *baton)
   ab.state = SLN_ALERT_STATE__INIT;
   ab.alert = sln_calloc(s, sizeof(sln_msg_alert_t));
 
-  sln_tok_parser(baton->in_alert, sln_native_alert_parse, &ab);
+  sln_tok_parser(baton->in_alert, sln_alert_parse, &ab);
 
   if (ab.state == SLN_ALERT_STATE__DONE) {
     /* TODO: emit event for alert */

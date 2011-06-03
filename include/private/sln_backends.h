@@ -31,42 +31,20 @@ sln_backend_initialize(void);
 void
 sln_backend_terminate(void);
 
-#if defined(WANT_OPENSSL_THREADED)
-
 selene_error_t*
-sln_ot_initilize();
+sln_parser_initilize();
 
 void
-sln_ot_terminate();
+sln_parser_terminate();
 
 selene_error_t*
-sln_ot_create(selene_t *s);
+sln_parser_create(selene_t *s);
 
 selene_error_t*
-sln_ot_start(selene_t *s);
+sln_parser_start(selene_t *s);
 
 selene_error_t*
-sln_ot_destroy(selene_t *s);
-#endif
+sln_parser_destroy(selene_t *s);
 
-
-#if defined(WANT_NATIVE)
-
-selene_error_t*
-sln_native_initilize();
-
-void
-sln_native_terminate();
-
-selene_error_t*
-sln_native_create(selene_t *s);
-
-selene_error_t*
-sln_native_start(selene_t *s);
-
-selene_error_t*
-sln_native_destroy(selene_t *s);
-#endif
-  
 #endif
 

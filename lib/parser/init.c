@@ -16,27 +16,27 @@
  */
 
 #include "sln_brigades.h"
-#include "native.h"
+#include "parser.h"
 #include "handshake_messages.h"
 
 selene_error_t*
-sln_native_initilize()
+sln_parser_initilize()
 {
   return SELENE_SUCCESS;
 }
 
 void
-sln_native_terminate()
+sln_parser_terminate()
 {
 }
 
 selene_error_t*
-sln_native_create(selene_t *s)
+sln_parser_create(selene_t *s)
 {
-  sln_native_baton_t *baton;
+  sln_parser_baton_t *baton;
   SLN_ASSERT_CONTEXT(s);
 
-  baton = (sln_native_baton_t*) sln_calloc(s, sizeof(*baton));
+  baton = (sln_parser_baton_t*) sln_calloc(s, sizeof(*baton));
   s->backend_baton = baton;
   sln_brigade_create(s->alloc, &baton->in_ccs);
   sln_brigade_create(s->alloc, &baton->in_alert);
@@ -49,29 +49,29 @@ sln_native_create(selene_t *s)
 }
 
 selene_error_t*
-sln_native_start(selene_t *s)
+sln_parser_start(selene_t *s)
 {
-  sln_native_baton_t *baton;
+  sln_parser_baton_t *baton;
   SLN_ASSERT_CONTEXT(s);
 
   baton = s->backend_baton;
 
   if (s->mode == SLN_MODE_CLIENT) {
-    baton->handshake = SLN_NATIVE_HANDSHAKE_CLIENT_SEND_HELLO;
+    baton->handshake = SLN_HANDSHAKE_CLIENT_SEND_HELLO;
   }
   else {
-    baton->handshake = SLN_NATIVE_HANDSHAKE_SERVER_WAIT_CLIENT_HELLO;
+    baton->handshake = SLN_HANDSHAKE_SERVER_WAIT_CLIENT_HELLO;
   }
 
-  slnDbg(s, "starting native client, handshake state %d", baton->handshake);
+  slnDbg(s, "starting client, handshake state %d", baton->handshake);
 
-  return sln_native_state_machine(s, baton);
+  return sln_state_machine(s, baton);
 }
 
 selene_error_t*
-sln_native_destroy(selene_t *s)
+sln_parser_destroy(selene_t *s)
 {
-  sln_native_baton_t *baton;
+  sln_parser_baton_t *baton;
   SLN_ASSERT_CONTEXT(s);
 
   baton = s->backend_baton;

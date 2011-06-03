@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef _NATIVE_H_
-#define _NATIVE_H_
+#ifndef _PARSER_H_
+#define _PARSER_H_
 
 #include "selene.h"
 #include "selene_error.h"
@@ -48,27 +48,27 @@
  */
 
 typedef enum {
-  SLN_NATIVE_HANDSHAKE__UNUSED0 = 0,
-  SLN_NATIVE_HANDSHAKE_CLIENT_SEND_HELLO = 1,
-  SLN_NATIVE_HANDSHAKE_CLIENT_WAIT_SERVER_HELLO_DONE = 2,
-  SLN_NATIVE_HANDSHAKE_CLIENT_SEND_FINISHED = 3,
-  SLN_NATIVE_HANDSHAKE_CLIENT_WAIT_SERVER_FINISHED = 4,
-  SLN_NATIVE_HANDSHAKE_CLIENT_APPDATA = 5,
-  SLN_NATIVE_HANDSHAKE_SERVER_WAIT_CLIENT_HELLO = 6,
-  SLN_NATIVE_HANDSHAKE_SERVER_SEND_SERVER_HELLO_DONE = 7,
-  SLN_NATIVE_HANDSHAKE_SERVER_WAIT_CLIENT_FINISHED = 8,
-  SLN_NATIVE_HANDSHAKE_SERVER_SEND_FINISHED = 9,
-  SLN_NATIVE_HANDSHAKE_SERVER_APPDATA = 10,
-  SLN_NATIVE_HANDSHAKE__MAX = 11
-} sln_native_handshake_e;
+  SLN_HANDSHAKE__UNUSED0 = 0,
+  SLN_HANDSHAKE_CLIENT_SEND_HELLO = 1,
+  SLN_HANDSHAKE_CLIENT_WAIT_SERVER_HELLO_DONE = 2,
+  SLN_HANDSHAKE_CLIENT_SEND_FINISHED = 3,
+  SLN_HANDSHAKE_CLIENT_WAIT_SERVER_FINISHED = 4,
+  SLN_HANDSHAKE_CLIENT_APPDATA = 5,
+  SLN_HANDSHAKE_SERVER_WAIT_CLIENT_HELLO = 6,
+  SLN_HANDSHAKE_SERVER_SEND_SERVER_HELLO_DONE = 7,
+  SLN_HANDSHAKE_SERVER_WAIT_CLIENT_FINISHED = 8,
+  SLN_HANDSHAKE_SERVER_SEND_FINISHED = 9,
+  SLN_HANDSHAKE_SERVER_APPDATA = 10,
+  SLN_HANDSHAKE__MAX = 11
+} sln_handshake_e;
 
-typedef enum sln_native_connstate_e {
-  SLN_NATIVE_CONNSTATE_HANDSHAKE,
-} sln_native_connstate_e;
+typedef enum sln_connstate_e {
+  SLN_CONNSTATE_HANDSHAKE,
+} sln_connstate_e;
 
 typedef struct {
-  sln_native_connstate_e connstate;
-  sln_native_handshake_e handshake;
+  sln_connstate_e connstate;
+  sln_handshake_e handshake;
   int ready_for_appdata;
   int got_first_packet;
   sln_brigade_t *in_handshake;
@@ -77,25 +77,25 @@ typedef struct {
   sln_brigade_t *in_application;
   uint8_t peer_version_major;
   uint8_t peer_version_minor;
-} sln_native_baton_t;
+} sln_parser_baton_t;
 
 
 selene_error_t*
-sln_native_state_machine(selene_t *s, sln_native_baton_t *baton);
+sln_state_machine(selene_t *s, sln_parser_baton_t *baton);
 
 /**
  * TLS Protocol methods
  */
-selene_error_t* sln_native_io_tls_read(selene_t *s, sln_native_baton_t *baton);
+selene_error_t* sln_io_tls_read(selene_t *s, sln_parser_baton_t *baton);
 
-selene_error_t* sln_native_io_alert_read(selene_t *s, sln_native_baton_t *baton);
+selene_error_t* sln_io_alert_read(selene_t *s, sln_parser_baton_t *baton);
 
 
 /**
  * Client Writing Methods
  */
 selene_error_t*
-sln_native_io_handshake_client_hello(selene_t *s, sln_native_baton_t *baton);
+sln_io_handshake_client_hello(selene_t *s, sln_parser_baton_t *baton);
 
 /**
  * Client Reading Methods
@@ -110,26 +110,26 @@ sln_native_io_handshake_client_hello(selene_t *s, sln_native_baton_t *baton);
  * Server Reading Methods
  */
 selene_error_t*
-sln_native_io_handshake_read(selene_t *s, sln_native_baton_t *baton);
+sln_io_handshake_read(selene_t *s, sln_parser_baton_t *baton);
 
 
 typedef enum {
-  SLN_NATIVE_CONTENT_TYPE__UNUSED0 = 0,
-  SLN_NATIVE_CONTENT_TYPE_CHANGE_CIPHER_SPEC = 1,
-  SLN_NATIVE_CONTENT_TYPE_ALERT = 2,
-  SLN_NATIVE_CONTENT_TYPE_HANDSHAKE = 3,
-  SLN_NATIVE_CONTENT_TYPE_APPLICATION = 4,
-  SLN_NATIVE_CONTENT_TYPE__MAX = 5
-} sln_native_content_type_e;
+  SLN_CONTENT_TYPE__UNUSED0 = 0,
+  SLN_CONTENT_TYPE_CHANGE_CIPHER_SPEC = 1,
+  SLN_CONTENT_TYPE_ALERT = 2,
+  SLN_CONTENT_TYPE_HANDSHAKE = 3,
+  SLN_CONTENT_TYPE_APPLICATION = 4,
+  SLN_CONTENT_TYPE__MAX = 5
+} sln_content_type_e;
 
-typedef struct sln_native_msg_tls_t {
-  sln_native_content_type_e content_type;
+typedef struct sln_msg_tls_t {
+  sln_content_type_e content_type;
   uint8_t version_major;
   uint8_t version_minor;
   int length;
-} sln_native_msg_tls_t;
+} sln_msg_tls_t;
 
 selene_error_t*
-sln_tls_unparse_header(selene_t *s, sln_native_msg_tls_t *tls, sln_bucket_t **b);
+sln_tls_unparse_header(selene_t *s, sln_msg_tls_t *tls, sln_bucket_t **b);
 
 #endif

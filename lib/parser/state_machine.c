@@ -16,10 +16,10 @@
  */
 
 #include "sln_brigades.h"
-#include "native.h"
+#include "parser.h"
 
 selene_error_t*
-sln_native_state_machine(selene_t *s, sln_native_baton_t *baton)
+sln_state_machine(selene_t *s, sln_parser_baton_t *baton)
 {
   selene_error_t* err = SELENE_SUCCESS;
 
@@ -27,70 +27,70 @@ enter_state_machine:
   slnDbg(s, "enter handshake_state_machine=%d", baton->handshake);
 
   if (!SLN_BRIGADE_EMPTY(s->bb.in_enc)) {
-    err = sln_native_io_tls_read(s, baton);
+    err = sln_io_tls_read(s, baton);
     if (err) {
       return err;
     }
   }
 
   if (!SLN_BRIGADE_EMPTY(baton->in_alert)) {
-    err = sln_native_io_alert_read(s, baton);
+    err = sln_io_alert_read(s, baton);
     if (err) {
       return err;
     }
   }
 
   if (baton->ready_for_appdata && !SLN_BRIGADE_EMPTY(s->bb.in_cleartext)) {
-    //err = sln_native_io_tls_write_appdata(s, baton);
+    //err = sln_io_tls_write_appdata(s, baton);
     if (err) {
       return err;
     }
   }
 
   /* TODO: other connection states */
-  if (baton->connstate == SLN_NATIVE_CONNSTATE_HANDSHAKE) {
+  if (baton->connstate == SLN_CONNSTATE_HANDSHAKE) {
     switch (baton->handshake) {
-      case SLN_NATIVE_HANDSHAKE_CLIENT_SEND_HELLO:
-        err = sln_native_io_handshake_client_hello(s, baton);
+      case SLN_HANDSHAKE_CLIENT_SEND_HELLO:
+        err = sln_io_handshake_client_hello(s, baton);
         if (err) {
           return err;
         }
-        baton->handshake = SLN_NATIVE_HANDSHAKE_CLIENT_WAIT_SERVER_HELLO_DONE;
+        baton->handshake = SLN_HANDSHAKE_CLIENT_WAIT_SERVER_HELLO_DONE;
         break;
-      case SLN_NATIVE_HANDSHAKE_CLIENT_WAIT_SERVER_HELLO_DONE:
+      case SLN_HANDSHAKE_CLIENT_WAIT_SERVER_HELLO_DONE:
         break;
-      case SLN_NATIVE_HANDSHAKE_CLIENT_SEND_FINISHED:
+      case SLN_HANDSHAKE_CLIENT_SEND_FINISHED:
         break;
-      case SLN_NATIVE_HANDSHAKE_CLIENT_WAIT_SERVER_FINISHED:
+      case SLN_HANDSHAKE_CLIENT_WAIT_SERVER_FINISHED:
         break;
-      case SLN_NATIVE_HANDSHAKE_CLIENT_APPDATA:
+      case SLN_HANDSHAKE_CLIENT_APPDATA:
         break;
 
       /***
        * Start Server Methods.
        */
-      case SLN_NATIVE_HANDSHAKE_SERVER_WAIT_CLIENT_HELLO:
+      case SLN_HANDSHAKE_SERVER_WAIT_CLIENT_HELLO:
         if (!SLN_BRIGADE_EMPTY(baton->in_handshake)) {
-          err = sln_native_io_handshake_read(s, baton);
+          err = sln_io_handshake_read(s, baton);
           if (err) {
             return err;
           }
-          if (baton->handshake != SLN_NATIVE_HANDSHAKE_SERVER_WAIT_CLIENT_HELLO) {
+          if (baton->handshake != SLN_HANDSHAKE_SERVER_WAIT_CLIENT_HELLO) {
             goto enter_state_machine;
           }
         }
         break;
-      case SLN_NATIVE_HANDSHAKE_SERVER_SEND_SERVER_HELLO_DONE:
+      case SLN_HANDSHAKE_SERVER_SEND_SERVER_HELLO_DONE:
         break;
-      case SLN_NATIVE_HANDSHAKE_SERVER_WAIT_CLIENT_FINISHED:
+      case SLN_HANDSHAKE_SERVER_WAIT_CLIENT_FINISHED:
         break;
-      case SLN_NATIVE_HANDSHAKE_SERVER_SEND_FINISHED:
+      case SLN_HANDSHAKE_SERVER_SEND_FINISHED:
         break;
-      case SLN_NATIVE_HANDSHAKE_SERVER_APPDATA:
+      case SLN_HANDSHAKE_SERVER_APPDATA:
         break;
 
-      case SLN_NATIVE_HANDSHAKE__UNUSED0:
-      case SLN_NATIVE_HANDSHAKE__MAX:
+      case SLN_HANDSHAKE__UNUSED0:
+      case SLN_HANDSHAKE__MAX:
         /* TODO: better handle this */
         abort();
         break;

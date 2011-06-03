@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include "native.h"
+#include "parser.h"
 #include "sln_tok.h"
 #include "alert_messages.h"
 #include <string.h>
@@ -51,7 +51,7 @@ typedef enum tls_record_state_e {
 typedef struct rtls_baton_t {
   selene_t *s;
   tls_record_state_e state;
-  sln_native_baton_t *baton;
+  sln_parser_baton_t *baton;
   tls_ct_e content_type;
   uint8_t version_major;
   uint8_t version_minor;
@@ -73,7 +73,7 @@ static selene_error_t*
 read_tls(sln_tok_value_t *v, void *baton_)
 {
   rtls_baton_t *rtls = (rtls_baton_t*)baton_;
-  sln_native_baton_t *baton = rtls->baton;
+  sln_parser_baton_t *baton = rtls->baton;
 
   switch (rtls->state) {
     case TLS_RS__INIT:
@@ -160,7 +160,7 @@ read_tls(sln_tok_value_t *v, void *baton_)
 }
 
 selene_error_t*
-sln_native_io_tls_read(selene_t *s, sln_native_baton_t *baton)
+sln_io_tls_read(selene_t *s, sln_parser_baton_t *baton)
 {
   rtls_baton_t rtls;
   selene_error_t* err;
@@ -174,7 +174,7 @@ sln_native_io_tls_read(selene_t *s, sln_native_baton_t *baton)
 
   if (err) {
     /* TODO: logging here? */
-    sln_native_io_alert_fatal(s, SLN_ALERT_DESC_INTERNAL_ERROR);
+    sln_io_alert_fatal(s, SLN_ALERT_DESC_INTERNAL_ERROR);
     return err;
   }
 
