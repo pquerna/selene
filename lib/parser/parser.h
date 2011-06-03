@@ -24,6 +24,11 @@
 #include "sln_types.h"
 #include "sln_assert.h"
 
+typedef struct sln_parser_baton_t sln_parser_baton_t;
+
+
+#include "handshake_messages.h"
+
 /**
  * RFC 4346 handshake states:
  *
@@ -66,7 +71,7 @@ typedef enum sln_connstate_e {
   SLN_CONNSTATE_HANDSHAKE,
 } sln_connstate_e;
 
-typedef struct {
+struct sln_parser_baton_t {
   sln_connstate_e connstate;
   sln_handshake_e handshake;
   int ready_for_appdata;
@@ -77,7 +82,11 @@ typedef struct {
   sln_brigade_t *in_application;
   uint8_t peer_version_major;
   uint8_t peer_version_minor;
-} sln_parser_baton_t;
+
+  union {
+    sln_msg_client_hello_t *client_hello;
+  } msg;
+};
 
 
 selene_error_t*

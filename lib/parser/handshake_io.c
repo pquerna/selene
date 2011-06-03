@@ -174,15 +174,25 @@ sln_io_handshake_read(selene_t *s, sln_parser_baton_t *baton)
 
   if (hs.current_msg_baton != NULL && hs.current_msg_destroy != NULL) {
     hs.current_msg_destroy(&hs, hs.current_msg_baton);
-    selene_publish(s, SELENE__EVENT_HS_GOT_CLIENT_HELLO);
   }
 
   return SELENE_SUCCESS;
 }
 
 selene_error_t*
-sln_handshake_handle_client_hello(selene_t *ctxt, selene_event_e event, void *baton_)
+sln_handshake_handle_client_hello(selene_t *s, selene_event_e event, void *baton_)
 {
-  /* TODO: fetch current message, */
+  sln_parser_baton_t *baton = s->backend_baton;
+  sln_msg_client_hello_t *ch = baton->msg.client_hello;
+
+  if (ch->version_major <= 3) {
+    /* TODO: validate minimum version */
+    return SELENE_SUCCESS;
+  }
+
+  /* TODO: validate other parameters / extensions */
+
+  /* TODO: respond to the client hello */
+
   return SELENE_SUCCESS;
 }

@@ -153,6 +153,7 @@ sln_handshake_parse_client_hello_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, v
 {
   ch_baton_t *chb = sln_calloc(hs->s, sizeof(ch_baton_t));
   chb->state = SLN_HS_CLIENT_HELLO_VERSION;
+  hs->baton->msg.client_hello = &chb->ch;
   v->next = TOK_COPY_BYTES;
   v->wantlen = 2;
   *baton = (void*)chb;
@@ -181,8 +182,8 @@ sln_handshake_parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, vo
     {
       ch->utc_unix_time = v->v.bytes[0];
       chb->state = SLN_HS_CLIENT_HELLO_RANDOM;
-      v->next = TOK_DONE;
-      v->wantlen = 0;
+      v->next = TOK_COPY_BYTES;
+      v->wantlen = 4;
       break;
     }
 
@@ -199,6 +200,7 @@ sln_handshake_parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, vo
       /* TODO: finish */
       v->next = TOK_DONE;
       v->wantlen = 0;
+      selene_publish(hs->s, SELENE__EVENT_HS_GOT_CLIENT_HELLO);
       break;
   }
 
