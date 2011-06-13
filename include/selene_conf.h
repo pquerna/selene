@@ -117,13 +117,12 @@ selene_conf_crypto_device(selene_conf_t *cont, const char* name);
 
 /* Set the Certificate chain for the server to use.  If you
  * need a chain certificate, just append it to your
- * certifcate. (server only) */
+ * certifcate. (server only)
+ *
+ * The private key will be associated with this chain.
+ */
 SELENE_API(selene_error_t*)
-selene_conf_cert_chain(selene_conf_t *conf, const char *certificate);
-
-/* Set the private key (server only) */
-SELENE_API(selene_error_t*)
-selene_conf_key(selene_conf_t *conf, const char *key);
+selene_conf_cert_chain_add(selene_conf_t *conf, const char *certificates, const char* private_key);
 
 /**
  * Add a CA certificate to the list of all trusted certificates.
@@ -135,7 +134,7 @@ selene_conf_key(selene_conf_t *conf, const char *key);
  * configured.
  */
 SELENE_API(selene_error_t*)
-selene_conf_ca_trusted_add(selene_conf_t *conf, const char *certificate);
+selene_conf_ca_trusted_cert_add(selene_conf_t *conf, const char *certificate);
 
 #ifdef __cplusplus
 }
