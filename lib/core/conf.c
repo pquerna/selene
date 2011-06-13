@@ -73,6 +73,7 @@ selene_conf_create(selene_conf_t **p_conf)
 void
 selene_conf_destroy(selene_conf_t *conf)
 {
+  X509_STORE_free(conf->trusted_cert_store);
   free(conf);
 }
 
