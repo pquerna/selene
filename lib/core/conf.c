@@ -70,12 +70,6 @@ selene_conf_create(selene_conf_t **p_conf)
 void
 selene_conf_destroy(selene_conf_t *conf)
 {
-  /* TODO: is it worth ref counting this object? Maybe in debug mode only? */
-  if (conf->sni != NULL) {
-    free((void*)conf->sni);
-    conf->sni = NULL;
-  }
-
   free(conf);
 }
 
@@ -147,24 +141,5 @@ selene_conf_protocols(selene_conf_t *conf, int protocols)
 {
   /* TODO: assert on inalid protocols */
   conf->protocols = protocols;
-  return SELENE_SUCCESS;
-}
-
-selene_error_t *
-selene_conf_name_indication(selene_conf_t *conf, const char *hostname)
-{
-  /* TODO: this might not make sense as a selene_conf (?) */
-
-  if (conf->sni != NULL) {
-    free((void*)conf->sni);
-  }
-
-  if (hostname) {
-    conf->sni = strdup(hostname);
-  }
-  else {
-    conf->sni = NULL;
-  }
-
   return SELENE_SUCCESS;
 }

@@ -329,14 +329,16 @@ int main(int argc, char* argv[])
 
   SERR(selene_conf_use_reasonable_defaults(conf));
 
-  SERR(selene_conf_name_indication(conf, host));
-
   err = selene_client_create(conf, &s);
   if (err != SELENE_SUCCESS) {
     fprintf(stderr, "Failed to create client instance: (%d) %s [%s:%d]\n",
             err->err, err->msg, err->file, err->line);
     exit(EXIT_FAILURE);
   }
+
+  SERR(selene_client_name_indication(s, host));
+
+  SERR(selene_client_next_protocol_add(s, "http/1.1"));
 
   selene_subscribe(s, SELENE_EVENT_LOG_MSG, have_logline, NULL);
 

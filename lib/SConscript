@@ -18,6 +18,7 @@
 Import('venv')
 
 sources = Split("""
+core/client.c
 core/conf.c
 core/error.c
 core/event.c

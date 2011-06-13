@@ -58,11 +58,12 @@ SELENE_API(void) selene_destroy(selene_t *ctxt);
  */
 SELENE_API(selene_error_t*) selene_start(selene_t *ctxt);
 
-/* (client only) Set Server name indication must be called before selene_start. */
+/* (client only) Set Server name indication extension. Must be called before selene_start. */
 SELENE_API(selene_error_t*)
 selene_client_name_indication(selene_t *ctxt, const char* sni);
 
-/* (client only) Add a protocol to the next protocol negotiation list, like 'spdy/2' or 'http/1.1'. */
+/* (client only) Add a protocol to the next protocol negotiation list, like 
+ *  'spdy/2' or 'http/1.1'. Must be called before selene_start. */
 SELENE_API(selene_error_t*)
 selene_client_next_protocol_add(selene_t *ctxt, const char* protocol);
 

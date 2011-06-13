@@ -17,32 +17,29 @@
 
 #include "selene.h"
 #include "sln_types.h"
-#include <string.h>
 
-void* sln_alloc(selene_t *s, size_t len)
+selene_error_t *
+selene_client_name_indication(selene_t *s, const char *hostname)
 {
-  return s->conf->alloc->malloc(s->conf->alloc->baton, len);
+  /* TODO: this might not make sense as a selene_conf (?) */
+
+  if (s->client_sni != NULL) {
+    sln_free(s, (void*)s->client_sni);
+  }
+
+  if (hostname) {
+    s->client_sni = sln_strdup(s, hostname);
+  }
+  else {
+    s->client_sni = NULL;
+  }
+
+  return SELENE_SUCCESS;
 }
 
-void* sln_calloc(selene_t *s, size_t len)
+selene_error_t *
+selene_client_next_protocol_add(selene_t *s, const char *protocol)
 {
-  return s->conf->alloc->calloc(s->conf->alloc->baton, len);
-}
-
-void sln_free(selene_t *s, void *ptr)
-{
-  s->conf->alloc->free(s->conf->alloc->baton, ptr);
-}
-
-char *sln_strdup(selene_t *s, const char *in)
-{
-  /* LAME: why am i doing this */
-  char *dest;
-
-  size_t len = strlen(in) + 1;
-
-  dest = sln_alloc(s, len);
-  memcpy(dest, in, len);
-
-  return dest;
+  /* TODO: NPN */
+  return SELENE_SUCCESS;
 }

@@ -152,11 +152,14 @@ struct selene_t {
 
   sln_backend_t backend;
   void *backend_baton;
+
+  const char *client_sni;
 };
 
 void* sln_alloc(selene_t *s, size_t len);
 void* sln_calloc(selene_t *s, size_t len);
 void sln_free(selene_t *s, void *ptr);
+char *sln_strdup(selene_t *s, const char *in);
 
 #define SLN_ERR_CLIENT_ONLY(s) do { \
   if (s->conf.mode != SLN_MODE_CLIENT) { \

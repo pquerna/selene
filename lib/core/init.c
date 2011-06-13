@@ -109,11 +109,17 @@ selene_destroy(selene_t *s)
 
   s->backend.destroy(s);
 
+  if (s->client_sni != NULL) {
+    sln_free(s, (void*)s->client_sni);
+    s->client_sni = NULL;
+  }
+
   sln_free(s, s);
 
   sln_terminate();
 
 }
+
 
 selene_error_t*
 selene_start(selene_t *s)
