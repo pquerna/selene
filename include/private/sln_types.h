@@ -23,6 +23,9 @@
 #include "sln_log.h"
 #include "sln_ring.h"
 
+#include <openssl/pem.h>
+#include <openssl/x509.h>
+
 /* TODO: public header? */
 typedef enum {
   SLN_STATE__UNUSED0 = 0,
@@ -126,7 +129,7 @@ struct selene_conf_t {
   selene_alloc_t *alloc;
   int protocols;
   selene_cipher_suite_list_t ciphers;
-  const char *sni;
+  X509_STORE* trusted_cert_store;
 };
 
 typedef struct {

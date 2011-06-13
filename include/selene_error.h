@@ -62,6 +62,9 @@ typedef int selene_status_t;
 /** The I/O operation in question failed. */
 #define SELENE_EIO      -4
 
+/* Unable to allocate memory */
+#define SELENE_ENOMEM -5
+
 /** An exception object. */
 typedef struct {
   /** The underlying status code. */
