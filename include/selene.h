@@ -47,16 +47,24 @@ SELENE_API(selene_error_t*) selene_client_create(selene_conf_t *conf, selene_t *
 SELENE_API(selene_error_t*) selene_server_create(selene_conf_t *conf, selene_t **ctxt);
 
 /**
+ * Destroys a SSL/TLS Context of any type.  After this
+ * call, ctxt points to invalid memory and should not be used.
+ */
+SELENE_API(void) selene_destroy(selene_t *ctxt);
+
+/**
  * Starts processing, call after you have Subscribed to events,
  * and set any options on a created context.
  */
 SELENE_API(selene_error_t*) selene_start(selene_t *ctxt);
 
-/**
- * Destroys a SSL/TLS Context of any type.  After this
- * call, ctxt points to invalid memory and should not be used.
- */
-SELENE_API(void) selene_destroy(selene_t *ctxt);
+/* (client only) Set Server name indication must be called before selene_start. */
+SELENE_API(selene_error_t*)
+selene_client_name_indication(selene_t *ctxt, const char* sni);
+
+/* (client only) Add a protocol to the next protocol negotiation list, like 'spdy/2' or 'http/1.1'. */
+SELENE_API(selene_error_t*)
+selene_client_next_protocol_add(selene_t *ctxt, const char* protocol);
 
 
 /* Possible Event Types */

@@ -115,19 +115,27 @@ SELENE_API(selene_error_t*)
 selene_conf_crypto_device(selene_conf_t *cont, const char* name);
 #endif
 
-/* Set Server name indication (client only) */
-SELENE_API(selene_error_t*)
-selene_conf_name_indication(selene_conf_t *conf, const char* sni);
-
-/* Set the Certificate for the server to use.  If you
+/* Set the Certificate chain for the server to use.  If you
  * need a chain certificate, just append it to your
  * certifcate. (server only) */
 SELENE_API(selene_error_t*)
-selene_conf_cert(selene_conf_t *conf, const char *certificate);
+selene_conf_cert_chain(selene_conf_t *conf, const char *certificate);
 
 /* Set the private key (server only) */
 SELENE_API(selene_error_t*)
 selene_conf_key(selene_conf_t *conf, const char *key);
+
+/**
+ * Add a CA certificate to the list of all trusted certificates.
+ * Currently, once added, it cannot be removed from the conf_t.
+ *
+ * For the client, these certificates will be used to validate the server certificate.
+ *
+ * For the server, these certificates will be used validate client certificates, if
+ * configured.
+ */
+SELENE_API(selene_error_t*)
+selene_conf_ca_trusted_add(selene_conf_t *conf, const char *certificate);
 
 #ifdef __cplusplus
 }
