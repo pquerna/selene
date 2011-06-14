@@ -18,6 +18,7 @@
 #include "selene.h"
 #include "sln_types.h"
 
+#include "selene_trusted_ca_certificates.h"
 #include <string.h>
 
 /* All Certificate related configuration APIs */

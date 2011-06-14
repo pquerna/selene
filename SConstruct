@@ -35,6 +35,8 @@ env = Environment(options=opts,
                   ENV = os.environ.copy(),
                   tools=['default'])
 
+env.SConscript('site_scons/ca_builder.py', exports="env")
+
 if 'coverage' in COMMAND_LINE_TARGETS:
   env['profile'] = 'gcov'
   env['build_type'] = 'static'
