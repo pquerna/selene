@@ -1,22 +1,22 @@
+If you want to work on any of these or something else, just let selene-dev@googlegroups.com know.
+
 Current TODO:
 
-* Parse all handshake message types 
-
-* Finish handshake state machine 
-  (send correct replies to everything we get) 
-
-* Add Certificate Store interface (Search for cert by 
-  CN for SNI, CA  chains, etc) (some framing in place)
+* Add Certificate Store interface
+ * Search for cert by:
+  * CN, subjectAltName, dnsName, etc
+  * fingerprint
 
 * Build extractor / easy way to get the trusted certificate list from chrome into a header file.
-   (should be able to be invoked as a build target, ie, 'scons update-trusted-certs' and download
-    the latest CAs from some place on the internet, and then rewrite a sln_trusted_certs.h)
-
-* Implement ChangeCiphers.....  (complicated, needs MAC over Handshake Messges for TLS 1.2)
+ * Should be able to be invoked as a build target, ie, 'scons update-trusted-certs'
+ * Download the latest CAs from some place on the internet, and then rewrite a sln_trusted_certs.h
 
 * Alert message handling (parsing is done)
+ * If Fatal, cleanup to mark the selene_t as dead, return a selene_error_t from all API surfaces.
 
-* Implement aes-sha and rc4-sha for app data encrytion.
+* Parse all handshake message types
 
-* fix bugs 
+* Finish handshake state machine (send correct replies to everything we get)
+ * Implement ChangeCiphers.....  (complicated, needs MAC over Handshake Messges for TLS 1.2)
+
 
