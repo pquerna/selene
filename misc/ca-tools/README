@@ -1,0 +1,6 @@
+The code here is from the Debian/Fedora ca-certificates projects.
+   <http://pkgs.fedoraproject.org/gitweb/?p=ca-certificates.git;a=summary>
+
+The code is covered by its original licenses.
+
+We use the outputed certificate files to build our headers.

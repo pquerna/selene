@@ -1,0 +1,5 @@
+# One blacklist entry per line, corresponding to the label in certdata.txt.
+
+# MD5 Collision Proof of Concept CA
+"MD5 Collisions Forged Rogue CA 25c3"
+
