@@ -16,6 +16,7 @@
  */
 
 #include "common.h"
+#include <openssl/rand.h>
 
 
 void
@@ -32,4 +33,10 @@ sln_parser_tls_max_supported_version(selene_t *s, uint8_t *major, uint8_t *minor
   /* TODO: TLS 1.2 */
   *major = 3;
   *minor = 1;
+}
+
+void
+sln_parser_rand_bytes_secure(char *bytes, size_t len)
+{
+  RAND_bytes((unsigned char *)bytes, len);
 }

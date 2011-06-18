@@ -24,8 +24,6 @@
 #include <time.h>
 #include <string.h>
 
-#include <openssl/rand.h>
-
 /* RFC 4346, Section 7.4. Handshake Protocol
  *
  * enum {
@@ -49,9 +47,7 @@ sln_io_handshake_client_hello(selene_t *s, sln_parser_baton_t *baton)
 
   ch.utc_unix_time = time(NULL);
 
-  /* TODO: make sln method for this */
-  RAND_bytes((unsigned char *)&ch.random_bytes[0], sizeof(ch.random_bytes));
-//  memset(&ch.random_bytes[0], 0xFF, sizeof(ch.random_bytes));
+  sln_parser_rand_bytes_secure(&ch.random_bytes[0], sizeof(ch.random_bytes));
 
   ch.session_id_len = 0;
   ch.ciphers = &s->conf->ciphers;
