@@ -150,7 +150,63 @@ static void handshake_io_client_hello_sni(void **state)
   selene_conf_destroy(conf);
 }
 
+/**
+ * Packet Capture from apache 2.3 sending a server hello, no TLS protocol wrapper,
+ * RC4-SHA1 as the selected cipher, and SNI as the only extension.
+ */
+char apache_server_hello_sni[] = {
+  0x02, 0x00, 0x00,
+  0x4c, 0x03, 0x01, 0x4d, 0xfd, 0x06, 0x2f, 0x6f,
+  0x42, 0xf9, 0x7d, 0xee, 0x2e, 0x3a, 0xbc, 0xce,
+  0xc1, 0x6a, 0x34, 0xe6, 0xa1, 0xde, 0xec, 0x47,
+  0x84, 0xa9, 0xf3, 0x5f, 0xae, 0x99, 0x02, 0xfb,
+  0x34, 0x1a, 0x0a, 0x20, 0xdd, 0x0e, 0x54, 0x37,
+  0x37, 0x97, 0x5a, 0x0f, 0x81, 0xe1, 0x2b, 0x7c,
+  0xbe, 0x43, 0x8b, 0x9f, 0x4d, 0xcc, 0xf4, 0x26,
+  0xf5, 0x85, 0x3d, 0x60, 0xc7, 0xff, 0xd8, 0xb8,
+  0x2e, 0x71, 0x83, 0x4c, 0x00, 0x05, 0x01, 0x00,
+  0x04, 0x00, 0x00, 0x00, 0x00
+};
+
+static void handshake_io_server_hello_sni(void **state)
+{
+  selene_error_t *err;
+  sln_parser_baton_t *baton;
+  selene_conf_t *conf = NULL;
+  selene_t *s = NULL;
+  sln_bucket_t *e1;
+  size_t maxlen = sizeof(apache_server_hello_sni);
+  size_t i;
+
+  selene_conf_create(&conf);
+  SLN_ERR(selene_conf_use_reasonable_defaults(conf));
+  SLN_ERR(selene_client_create(conf, &s));
+  SLN_ASSERT_CONTEXT(s);
+
+  baton = (sln_parser_baton_t *)s->backend_baton;
+
+  for (i = maxlen; i <= maxlen; i++) {
+    SLN_ERR(sln_bucket_create_copy_bytes(sln_test_alloc, &e1,
+                                         apache_server_hello_sni,
+                                         i));
+    SLN_BRIGADE_INSERT_TAIL(baton->in_handshake, e1);
+    err  = sln_io_handshake_read(s, baton);
+    if (err) {
+      SLN_ASSERT(err->err == SELENE_EINVAL);
+    }
+    else {
+      /* TODO: more asserts */
+    }
+    sln_brigade_clear(baton->in_handshake);
+  }
+
+  selene_destroy(s);
+  selene_conf_destroy(conf);
+}
+
+
 SLN_TESTS_START(handshake_io)
   SLN_TESTS_ENTRY(handshake_io_client_hello)
   SLN_TESTS_ENTRY(handshake_io_client_hello_sni)
+  SLN_TESTS_ENTRY(handshake_io_server_hello_sni)
 SLN_TESTS_END()

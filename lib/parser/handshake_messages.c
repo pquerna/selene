@@ -68,11 +68,13 @@ sln_handshake_unparse_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sln_
     /* TODO: npn support */
   }
 
+/*
+  TODO: ocsp support
   if (ch->have_ocsp_stapling) {
     num_extensions++;
-    /* TODO: ocsp support */
     abort();
   }
+*/
 
   len += num_extensions * 4;
   len += extlen;
@@ -145,6 +147,35 @@ sln_handshake_unparse_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sln_
 
   return SELENE_SUCCESS;
 }
+
+/* TODO: all other cipher suites */
+static selene_cipher_suite_e
+bytes_to_cipher_suite(uint8_t first, uint8_t second)
+{
+  selene_cipher_suite_e suite = SELENE_CS__UNUSED0;
+  switch (first) {
+    case 0x00:
+      switch (second) {
+        case 0x05:
+          suite = SELENE_CS_RSA_WITH_RC4_128_SHA;
+          break;
+        case 0x2F:
+          suite = SELENE_CS_RSA_WITH_AES_128_CBC_SHA;
+          break;
+        case 0x35:
+          suite = SELENE_CS_RSA_WITH_AES_256_CBC_SHA;
+          break;
+        default:
+          break;
+      }
+      break;
+    default:
+      break;
+  }
+
+  return suite;
+}
+
 
 typedef struct ch_baton_t {
   sln_handshake_client_hello_state_e state;
@@ -254,30 +285,8 @@ sln_handshake_parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, vo
 
     case SLN_HS_CLIENT_HELLO_CIPHER_SUITES:
     {
-      selene_cipher_suite_e suite = SELENE_CS__UNUSED0;
+      selene_cipher_suite_e suite = bytes_to_cipher_suite(v->v.bytes[0], v->v.bytes[1]);
       chb->cipher_suites_num--;
-
-      /* TODO: all other cipher suites */
-      /* TODO: centralize */
-      switch (v->v.bytes[0]) {
-        case 0x00:
-          switch (v->v.bytes[1]) {
-            case 0x05:
-              suite = SELENE_CS_RSA_WITH_RC4_128_SHA;
-              break;
-            case 0x2F:
-              suite = SELENE_CS_RSA_WITH_AES_128_CBC_SHA;
-              break;
-            case 0x35:
-              suite = SELENE_CS_RSA_WITH_AES_256_CBC_SHA;
-              break;
-            default:
-              break;
-          }
-          break;
-        default:
-          break;
-      }
 
       if (suite != SELENE_CS__UNUSED0) {
         selene_cipher_suite_list_add(ch->ciphers, suite);
@@ -526,23 +535,75 @@ sln_handshake_parse_server_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, vo
 
     case SLN_HS_SERVER_HELLO_UTC:
     {
-      sh->utc_unix_time = v->v.bytes[0];
+      memcpy(&sh->utc_unix_time, &v->v.bytes[0], 4);
       shb->state = SLN_HS_SERVER_HELLO_RANDOM;
       v->next = TOK_COPY_BYTES;
-      v->wantlen = 4;
+      v->wantlen = 28;
       break;
     }
 
     case SLN_HS_SERVER_HELLO_RANDOM:
+    {
+      memcpy(&sh->random_bytes[0], &v->v.bytes[0], 28);
+      shb->state = SLN_HS_SERVER_HELLO_SESSION_LENGTH;
+      v->next = TOK_COPY_BYTES;
+      v->wantlen = 1;
+      break;
+    }
+
     case SLN_HS_SERVER_HELLO_SESSION_LENGTH:
+    {
+      sh->session_id_len = v->v.bytes[0];
+      if (sh->session_id_len > 32) {
+        /* TODO: session id errors */
+      }
+
+      if (sh->session_id_len == 0) {
+        shb->state = SLN_HS_SERVER_HELLO_CIPHER_SUITE;
+        v->next = TOK_COPY_BYTES;
+        v->wantlen = 2;
+      }
+      else {
+        shb->state = SLN_HS_SERVER_HELLO_CIPHER_SUITE;
+        v->next = TOK_COPY_BYTES;
+        v->wantlen = sh->session_id_len;
+      }
+      break;
+    }
+
     case SLN_HS_SERVER_HELLO_SESSION_ID:
+    {
+      memcpy(&sh->session_id[0], &v->v.bytes[0], sh->session_id_len);
+      shb->state = SLN_HS_SERVER_HELLO_CIPHER_SUITE;
+      v->next = TOK_COPY_BYTES;
+      v->wantlen = 2;
+      break;
+    }
+
     case SLN_HS_SERVER_HELLO_CIPHER_SUITE:
+    {
+      selene_cipher_suite_e suite = bytes_to_cipher_suite(v->v.bytes[0], v->v.bytes[1]);
+
+      if (suite != SELENE_CS__UNUSED0) {
+        /* TODO: save, validate its in our list of acceptable suites */
+      }
+      else {
+        /* TODO: abort connection, we weren't able to agree on a cipher suite */
+      }
+
+      shb->state = SLN_HS_SERVER_HELLO_COMPRESSION;
+      v->next = TOK_COPY_BYTES;
+      v->wantlen = 1;
+      break;
+    }
+
     case SLN_HS_SERVER_HELLO_COMPRESSION:
       /* TODO: finish */
       v->next = TOK_DONE;
       v->wantlen = 0;
       selene_publish(hs->s, SELENE__EVENT_HS_GOT_SERVER_HELLO);
       break;
+    /* TODO: extensions */
   }
 
   return SELENE_SUCCESS;
