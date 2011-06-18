@@ -68,9 +68,10 @@ typedef enum sln_handshake_client_hello_state_e {
   SLN_HS_CLIENT_HELLO_SESSION_ID,
   SLN_HS_CLIENT_HELLO_CIPHER_SUITES_LENGTH,
   SLN_HS_CLIENT_HELLO_CIPHER_SUITES,
+  SLN_HS_CLIENT_HELLO_COMPRESSION_LENGTH,
   SLN_HS_CLIENT_HELLO_COMPRESSION,
-  SLN_HS_CLIENT_HELLO_EXT_LENGTH,
-  SLN_HS_CLIENT_HELLO_EXT_TYPE,
+  SLN_HS_CLIENT_HELLO_EXT_DEF,
+  SLN_HS_CLIENT_HELLO_EXT_SKIP, /* skipping an unknown extension*/
   SLN_HS_CLIENT_HELLO_EXT_SNI_LENGTH,
   SLN_HS_CLIENT_HELLO_EXT_SNI_VALUE,
 } sln_handshake_client_hello_state_e;
@@ -92,6 +93,7 @@ typedef struct sln_hs_baton_t sln_hs_baton_t;
 
 typedef selene_error_t* (sln_hs_msg_step_cb)(sln_hs_baton_t* hs, sln_tok_value_t *v, void *baton);
 typedef void (sln_hs_msg_destroy_cb)(sln_hs_baton_t* hs, void *baton);
+typedef selene_error_t* (sln_hs_msg_finish_cb)(sln_hs_baton_t* hs, void *baton);
 
 struct sln_hs_baton_t {
   selene_t *s;
@@ -99,8 +101,11 @@ struct sln_hs_baton_t {
   sln_parser_baton_t *baton;
   uint8_t message_type;
   uint32_t length;
+  int remaining;
   void *current_msg_baton;
   sln_hs_msg_step_cb* current_msg_step;
+  /* called when the entire lenght of a message is consumed */
+  sln_hs_msg_finish_cb* current_msg_finish;
   sln_hs_msg_destroy_cb* current_msg_destroy;
 };
 
@@ -113,6 +118,9 @@ sln_handshake_parse_client_hello_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, v
 
 selene_error_t*
 sln_handshake_parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton);
+
+selene_error_t*
+sln_handshake_parse_client_hello_finish(sln_hs_baton_t *hs, void *baton);
 
 void
 sln_handshake_parse_client_hello_destroy(sln_hs_baton_t *hs, void *baton);

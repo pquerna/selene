@@ -149,7 +149,8 @@ sln_handshake_unparse_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sln_
 typedef struct ch_baton_t {
   sln_handshake_client_hello_state_e state;
   sln_msg_client_hello_t ch;
-  int cipherSuitesNum;
+  int cipher_suites_num;
+  int compression_num;
 } ch_baton_t;
 
 selene_error_t*
@@ -243,8 +244,8 @@ sln_handshake_parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, vo
       }
 
       /* TODO: max number of cipher suites? */
-      chb->cipherSuitesNum = cipher_suites_len / 2;
-      slnDbg(s, "got cipher suites length: %d numCiphers: %d", cipher_suites_len, chb->cipherSuitesNum);
+      chb->cipher_suites_num = cipher_suites_len / 2;
+      slnDbg(s, "got cipher suites length: %d numCiphers: %d", cipher_suites_len, chb->cipher_suites_num);
       if (ch->ciphers == NULL) {
         err = selene_cipher_suite_list_create(&ch->ciphers);
       }
@@ -254,7 +255,7 @@ sln_handshake_parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, vo
     case SLN_HS_CLIENT_HELLO_CIPHER_SUITES:
     {
       selene_cipher_suite_e suite = SELENE_CS__UNUSED0;
-      chb->cipherSuitesNum--;
+      chb->cipher_suites_num--;
 
       /* TODO: all other cipher suites */
       /* TODO: centralize */
@@ -282,8 +283,8 @@ sln_handshake_parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, vo
         selene_cipher_suite_list_add(ch->ciphers, suite);
       }
 
-      if (chb->cipherSuitesNum <= 0) {
-        chb->state = SLN_HS_CLIENT_HELLO_COMPRESSION;
+      if (chb->cipher_suites_num <= 0) {
+        chb->state = SLN_HS_CLIENT_HELLO_COMPRESSION_LENGTH;
         v->next = TOK_COPY_BYTES;
         v->wantlen = 1;
       }
@@ -295,19 +296,85 @@ sln_handshake_parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, vo
       break;
     }
 
+    case SLN_HS_CLIENT_HELLO_COMPRESSION_LENGTH:
+    {
+      /* TODO: validate max compression */
+      chb->compression_num = v->v.bytes[0];
+      chb->state = SLN_HS_CLIENT_HELLO_COMPRESSION;
+      v->next = TOK_COPY_BYTES;
+      v->wantlen = 1;
+      break;
+    }
+
     case SLN_HS_CLIENT_HELLO_COMPRESSION:
-    case SLN_HS_CLIENT_HELLO_EXT_LENGTH:
-    case SLN_HS_CLIENT_HELLO_EXT_TYPE:
+      /* TODO: support non-NULL compression, for now we just skip over this */
+      chb->compression_num--;
+      slnDbg(s, "compression type: %u\n", (unsigned int)v->v.bytes[0]);
+      if (chb->compression_num <= 0) {
+        chb->state = SLN_HS_CLIENT_HELLO_EXT_DEF;
+        v->next = TOK_COPY_BYTES;
+        v->wantlen = 4;
+      }
+      else {
+        chb->state = SLN_HS_CLIENT_HELLO_COMPRESSION;
+        v->next = TOK_COPY_BYTES;
+        v->wantlen = 1;
+      }
+      break;
+    case SLN_HS_CLIENT_HELLO_EXT_DEF:
+    {
+      /* Extensions Registry:
+       *   <http://www.iana.org/assignments/tls-extensiontype-values/tls-extensiontype-values.xml>
+      */
+      uint16_t ext_len = (((unsigned char)v->v.bytes[0]) << 8 |  ((unsigned char)v->v.bytes[1]));
+      uint16_t ext_type = (((unsigned char)v->v.bytes[2]) << 8 |  ((unsigned char)v->v.bytes[3]));
+      slnDbg(s, "extension: %u len: %u\n", ext_type, ext_len);
+      if (ext_type == 0) {
+        /* SNI */
+        chb->state = SLN_HS_CLIENT_HELLO_EXT_SNI_LENGTH;
+        v->next = TOK_COPY_BYTES;
+        v->wantlen = 2;
+      }
+      else {
+        chb->state = SLN_HS_CLIENT_HELLO_EXT_SKIP;
+        v->next = TOK_SKIP;
+        v->wantlen = ext_len - 4;
+      }
+      break;
+    }
+
+    case SLN_HS_CLIENT_HELLO_EXT_SKIP:
+    {
+      chb->state = SLN_HS_CLIENT_HELLO_EXT_DEF;
+      v->next = TOK_COPY_BYTES;
+      v->wantlen = 4;
+      break;
+    }
+
     case SLN_HS_CLIENT_HELLO_EXT_SNI_LENGTH:
+    {
+      uint16_t sni_len = (((unsigned char)v->v.bytes[0]) << 8 |  ((unsigned char)v->v.bytes[1]));
+      chb->state = SLN_HS_CLIENT_HELLO_EXT_SNI_VALUE;
+      v->next = TOK_COPY_BRIGADE;
+      v->wantlen = sni_len;
+      break;
+    }
+
     case SLN_HS_CLIENT_HELLO_EXT_SNI_VALUE:
-      /* TODO: finish */
-      v->next = TOK_DONE;
-      v->wantlen = 0;
-      selene_publish(hs->s, SELENE__EVENT_HS_GOT_CLIENT_HELLO);
+      /* TODO: flatten SNI name */
+      chb->state = SLN_HS_CLIENT_HELLO_EXT_DEF;
+      v->next = TOK_COPY_BYTES;
+      v->wantlen = 4;
       break;
   }
 
   return err;
+}
+
+selene_error_t*
+sln_handshake_parse_client_hello_finish(sln_hs_baton_t *hs, void *baton)
+{
+  return selene_publish(hs->s, SELENE__EVENT_HS_GOT_CLIENT_HELLO);
 }
 
 void

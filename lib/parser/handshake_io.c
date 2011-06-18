@@ -94,6 +94,7 @@ setup_mt_parser(sln_tok_value_t *v, sln_hs_baton_t *hs)
     case SLN_HS_MT_CLIENT_HELLO:
       hs->state = SLN_HS_MESSAGE_PARSER;
       hs->current_msg_step = sln_handshake_parse_client_hello_step;
+      hs->current_msg_finish = sln_handshake_parse_client_hello_finish;
       hs->current_msg_destroy = sln_handshake_parse_client_hello_destroy;
       return sln_handshake_parse_client_hello_setup(hs, v, &hs->current_msg_baton);
       break;
@@ -146,10 +147,31 @@ read_handshake_parser(sln_tok_value_t *v, void *baton_)
       break;
     case SLN_HS_LENGTH:
       hs->length = (((unsigned char)v->v.bytes[0]) << 16 | ((unsigned char)v->v.bytes[1]) << 8 |  ((unsigned char)v->v.bytes[2]));
+      hs->remaining = hs->length;
       err = setup_mt_parser(v, hs);
+      hs->remaining -= v->wantlen;
       break;
     case SLN_HS_MESSAGE_PARSER:
       err = hs->current_msg_step(hs, v, hs->current_msg_baton);
+
+      hs->remaining -= v->wantlen;
+      //slnDbg(s, "remaining: %d want: %u\n", hs->remaining, v->wantlen);
+      if (hs->remaining < 0) {
+
+        if (hs->current_msg_baton != NULL && hs->current_msg_finish != NULL) {
+          err = hs->current_msg_finish(hs, hs->current_msg_baton);
+        }
+
+        if (hs->current_msg_baton != NULL && hs->current_msg_destroy != NULL) {
+          hs->current_msg_destroy(hs, hs->current_msg_baton);
+        }
+
+        hs->current_msg_baton = NULL;
+
+        hs->state = SLN_HS_MESSAGE_TYPE;
+        v->next = TOK_COPY_BYTES;
+        v->wantlen = 1;
+      }
       break;
     default:
       hs->state = SLN_HS__DONE;
@@ -169,6 +191,7 @@ sln_io_handshake_read(selene_t *s, sln_parser_baton_t *baton)
   hs.state = SLN_HS__INIT;
   hs.current_msg_baton = NULL;
   hs.current_msg_step = NULL;
+  hs.current_msg_finish = NULL;
   hs.current_msg_destroy = NULL;
 
   sln_tok_parser(baton->in_handshake, read_handshake_parser, &hs);
