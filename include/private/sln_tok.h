@@ -26,6 +26,7 @@ typedef enum sln_tok_value_e {
   TOK_INIT,
   TOK_COPY_BYTES,
   TOK_COPY_BRIGADE,
+  TOK_SKIP,
   TOK_DONE,
   TOK__MAX
 } sln_tok_value_e;

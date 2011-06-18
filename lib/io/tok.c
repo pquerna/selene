@@ -53,6 +53,13 @@ sln_tok_parser(sln_brigade_t *bb, sln_tok_cb cb, void *baton)
         keepgoing = 0;
         break;
 
+      case TOK_SKIP:
+        if (tvalue.wantlen > sln_brigade_size(bb)) {
+          keepgoing = 0;
+          break;
+        }
+        break;
+
       case TOK_COPY_BYTES:
         SLN_ASSERT(tvalue.wantlen < SLN_TOK_VALUE_MAX_BYTE_COPY_LEN);
 
