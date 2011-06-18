@@ -29,6 +29,7 @@ sln_handshake_unparse_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sln_
   int num_extensions = 0;
   size_t extlen = 0;
   size_t len = 0;
+  int dlen;
 
   /* header size */
   len += 4;
@@ -79,7 +80,7 @@ sln_handshake_unparse_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sln_
   sln_bucket_create_empty(s->alloc, &b, len);
 
   b->data[0] = SLN_HS_MSG_TYPE_CLIENT_HELLO;
-  int dlen = len - 4;
+  dlen = len - 4;
   b->data[1] = dlen >> 16;
   b->data[2] = dlen >> 8;
   b->data[3] = dlen;
@@ -137,6 +138,8 @@ sln_handshake_unparse_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sln_
   /* Compression... no */
   b->data[off] = 0;
   off += 1;
+
+  assert(off == len);
 
   *p_b = b;
 
@@ -306,6 +309,8 @@ sln_handshake_unparse_server_hello(selene_t *s, sln_msg_server_hello_t *sh, sln_
   b->data[off] = 0;
 
   off += 1;
+
+  assert(off == len);
 
   *p_b = b;
 
