@@ -55,7 +55,7 @@ static char openssl_client_hello_basic[] = {
   0x23, 0x00, 0x00
 };
 
-static void handshake_io_slowly(void **state)
+static void handshake_io_client_hello(void **state)
 {
   selene_error_t *err;
   sln_parser_baton_t *baton;
@@ -92,5 +92,5 @@ static void handshake_io_slowly(void **state)
 }
 
 SLN_TESTS_START(handshake_io)
-  SLN_TESTS_ENTRY(handshake_io_slowly)
+  SLN_TESTS_ENTRY(handshake_io_client_hello)
 SLN_TESTS_END()
