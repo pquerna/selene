@@ -170,6 +170,7 @@ sln_handshake_parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, vo
   selene_error_t *err = SELENE_SUCCESS;
   ch_baton_t *chb = (ch_baton_t*)baton;
   sln_msg_client_hello_t *ch = &chb->ch;
+  selene_t *s = hs->s;
 
   switch (chb->state) {
     case SLN_HS_CLIENT_HELLO_VERSION:
@@ -207,6 +208,7 @@ sln_handshake_parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, vo
       if (ch->session_id_len > 32) {
         /* TODO: session id errors*/
       }
+      slnDbg(s, "got session length: %d", ch->session_id_len);
 
       if (ch->session_id_len == 0) {
         chb->state = SLN_HS_CLIENT_HELLO_CIPHER_SUITES_LENGTH;
@@ -242,6 +244,7 @@ sln_handshake_parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, vo
 
       /* TODO: max number of cipher suites? */
       chb->cipherSuitesNum = cipher_suites_len / 2;
+      slnDbg(s, "got cipher suites length: %d numCiphers: %d", cipher_suites_len, chb->cipherSuitesNum);
       if (ch->ciphers == NULL) {
         err = selene_cipher_suite_list_create(&ch->ciphers);
       }
@@ -289,6 +292,7 @@ sln_handshake_parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, vo
         v->next = TOK_COPY_BYTES;
         v->wantlen = 2;
       }
+      break;
     }
 
     case SLN_HS_CLIENT_HELLO_COMPRESSION:
