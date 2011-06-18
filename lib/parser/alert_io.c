@@ -18,6 +18,7 @@
 #include "parser.h"
 #include "alert_messages.h"
 #include "sln_tok.h"
+#include "common.h"
 
 static selene_error_t *
 sln_io_alert(selene_t *s, sln_alert_level_e level, sln_alert_description_e desc)
