@@ -213,7 +213,7 @@ sln_handshake_parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, vo
 
       if (ch->session_id_len == 0) {
         chb->state = SLN_HS_CLIENT_HELLO_CIPHER_SUITES_LENGTH;
-        v->next = TOK_COPY_BYTES;
+        v->next = TOK_UINT16;
         v->wantlen = 2;
       }
       else {
@@ -228,14 +228,14 @@ sln_handshake_parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, vo
     {
       memcpy(&ch->session_id[0], &v->v.bytes[0], ch->session_id_len);
       chb->state = SLN_HS_CLIENT_HELLO_CIPHER_SUITES_LENGTH;
-      v->next = TOK_COPY_BYTES;
+      v->next = TOK_UINT16;
       v->wantlen = 1;
       break;
     }
 
     case SLN_HS_CLIENT_HELLO_CIPHER_SUITES_LENGTH:
     {
-      uint16_t cipher_suites_len = (((unsigned char)v->v.bytes[0]) << 8 |  ((unsigned char)v->v.bytes[1]));
+      uint16_t cipher_suites_len = v->v.uint16;
       chb->state = SLN_HS_CLIENT_HELLO_CIPHER_SUITES;
       v->next = TOK_COPY_BYTES;
       v->wantlen = 2;
@@ -332,7 +332,7 @@ sln_handshake_parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, vo
       if (ext_type == 0) {
         /* SNI */
         chb->state = SLN_HS_CLIENT_HELLO_EXT_SNI_LENGTH;
-        v->next = TOK_COPY_BYTES;
+        v->next = TOK_UINT16;
         v->wantlen = 2;
       }
       else {
@@ -353,7 +353,7 @@ sln_handshake_parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, vo
 
     case SLN_HS_CLIENT_HELLO_EXT_SNI_LENGTH:
     {
-      uint16_t sni_len = (((unsigned char)v->v.bytes[0]) << 8 |  ((unsigned char)v->v.bytes[1]));
+      uint16_t sni_len = v->v.uint16;
       chb->state = SLN_HS_CLIENT_HELLO_EXT_SNI_VALUE;
       v->next = TOK_COPY_BRIGADE;
       v->wantlen = sni_len;

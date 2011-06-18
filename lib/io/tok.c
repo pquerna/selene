@@ -60,6 +60,21 @@ sln_tok_parser(sln_brigade_t *bb, sln_tok_cb cb, void *baton)
         }
         break;
 
+      case TOK_UINT16:
+        SLN_ASSERT(tvalue.wantlen == 2);
+
+        err = sln_brigade_pread_bytes(bb, offset, tvalue.wantlen, &tvalue.v.bytes[0], &rlen);
+        if (err) {
+          keepgoing = 0;
+          break;
+        }
+
+        if (rlen != tvalue.wantlen) {
+          keepgoing = 0;
+        }
+
+        tvalue.v.uint16 = (((unsigned char)tvalue.v.bytes[0]) << 8 | ((unsigned char)tvalue.v.bytes[1]));
+        break;
       case TOK_COPY_BYTES:
         SLN_ASSERT(tvalue.wantlen < SLN_TOK_VALUE_MAX_BYTE_COPY_LEN);
 
