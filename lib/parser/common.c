@@ -20,11 +20,11 @@
 
 
 void
-sln_parser_tls_set_current_version(selene_t *s, sln_msg_tls_t *tls)
+sln_parser_tls_set_current_version(selene_t *s, uint8_t *major, uint8_t *minor)
 {
   /* TODO: client neg version */
-  tls->version_major = 3;
-  tls->version_minor = 1;
+  *major = 3;
+  *minor = 1;
 }
 
 void

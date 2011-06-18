@@ -119,5 +119,19 @@ sln_handshake_parse_client_hello_destroy(sln_hs_baton_t *hs, void *baton);
 
 selene_error_t* sln_handshake_handle_client_hello(selene_t *ctxt, selene_event_e event, void *baton_);
 
-#endif
 
+typedef struct sln_msg_server_hello_t {
+  uint8_t version_major;
+  uint8_t version_minor;
+  uint32_t utc_unix_time;
+  char random_bytes[28];
+  uint8_t session_id_len;
+  char session_id[32];
+  selene_cipher_suite_e cipher;
+  /* TODO: extensions and compression */
+} sln_msg_server_hello_t;
+
+selene_error_t*
+sln_handshake_unparse_server_hello(selene_t *s, sln_msg_server_hello_t *sh, sln_bucket_t **p_b);
+
+#endif

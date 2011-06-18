@@ -219,3 +219,95 @@ sln_handshake_parse_client_hello_destroy(sln_hs_baton_t *hs, void *baton)
 
   sln_free(hs->s, chb);
 }
+
+
+selene_error_t*
+sln_handshake_unparse_server_hello(selene_t *s, sln_msg_server_hello_t *sh, sln_bucket_t **p_b)
+{
+  sln_bucket_t *b = NULL;
+  size_t len;
+  size_t off;
+  int dlen;
+
+  /* header size */
+  len += 4;
+
+  /* protocol version */
+  len += 2;
+
+  /* utc_unix_time */
+  len += 4;
+
+  /* random_bytes */
+  len += 28;
+
+  /* session id length */
+  len += 1;
+  len += sh->session_id_len;
+
+  /* cipherSuite */
+  len += 2;
+
+  /* compressionMethod */
+  len += 1;
+
+  /* TODO: extensions */
+  sln_bucket_create_empty(s->alloc, &b, len);
+
+  b->data[0] = SLN_HS_MSG_TYPE_SERVER_HELLO;
+  dlen = len - 4;
+  b->data[1] = dlen >> 16;
+  b->data[2] = dlen >> 8;
+  b->data[3] = dlen;
+  off = 4;
+
+  b->data[off] = sh->version_major;
+  b->data[off+1] = sh->version_minor;
+  off += 2;
+
+  b->data[off] = sh->utc_unix_time >> 24;
+  b->data[off+1] = sh->utc_unix_time >> 16;
+  b->data[off+2] = sh->utc_unix_time >> 8;
+  b->data[off+3] = sh->utc_unix_time;
+  off += 4;
+
+  memcpy(b->data + off, &sh->random_bytes[0], sizeof(sh->random_bytes));
+  off += sizeof(sh->random_bytes);
+
+  b->data[off] = sh->session_id_len;
+  off += 1;
+
+  if (sh->session_id_len != 0) {
+    memcpy(b->data + off, &sh->session_id[0], sh->session_id_len);
+    off += sh->session_id_len;
+  }
+
+  switch (sh->cipher) {
+    /* TODO: move a better utility place */
+    case SELENE_CS_RSA_WITH_RC4_128_SHA:
+      b->data[off] = 0x00;
+      b->data[off+1] = 0x05;
+      break;
+    case SELENE_CS_RSA_WITH_AES_128_CBC_SHA:
+      b->data[off] = 0x00;
+      b->data[off+1] = 0x2F;
+      break;
+    case SELENE_CS_RSA_WITH_AES_256_CBC_SHA:
+      b->data[off] = 0x00;
+      b->data[off+1] = 0x35;
+      break;
+    default:
+      /* TODO: handle this */
+      abort();
+      break;
+  }
+  off += 2;
+
+  b->data[off] = 0;
+
+  off += 1;
+
+  *p_b = b;
+
+  return SELENE_SUCCESS;
+}
