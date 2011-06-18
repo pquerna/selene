@@ -120,6 +120,16 @@ sln_handshake_parse_client_hello_destroy(sln_hs_baton_t *hs, void *baton);
 selene_error_t* sln_handshake_handle_client_hello(selene_t *ctxt, selene_event_e event, void *baton_);
 
 
+typedef enum sln_handshake_server_hello_state_e {
+  SLN_HS_SERVER_HELLO_VERSION,
+  SLN_HS_SERVER_HELLO_UTC,
+  SLN_HS_SERVER_HELLO_RANDOM,
+  SLN_HS_SERVER_HELLO_SESSION_LENGTH,
+  SLN_HS_SERVER_HELLO_SESSION_ID,
+  SLN_HS_SERVER_HELLO_CIPHER_SUITE,
+  SLN_HS_SERVER_HELLO_COMPRESSION,
+} sln_handshake_server_hello_state_e;
+
 typedef struct sln_msg_server_hello_t {
   uint8_t version_major;
   uint8_t version_minor;
@@ -133,5 +143,17 @@ typedef struct sln_msg_server_hello_t {
 
 selene_error_t*
 sln_handshake_unparse_server_hello(selene_t *s, sln_msg_server_hello_t *sh, sln_bucket_t **p_b);
+
+selene_error_t*
+sln_handshake_parse_server_hello_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, void **baton);
+
+selene_error_t*
+sln_handshake_parse_server_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton);
+
+void
+sln_handshake_parse_server_hello_destroy(sln_hs_baton_t *hs, void *baton);
+
+selene_error_t* sln_handshake_handle_server_hello(selene_t *ctxt, selene_event_e event, void *baton_);
+
 
 #endif

@@ -316,3 +316,71 @@ sln_handshake_unparse_server_hello(selene_t *s, sln_msg_server_hello_t *sh, sln_
 
   return SELENE_SUCCESS;
 }
+
+
+typedef struct sh_baton_t {
+  sln_handshake_server_hello_state_e state;
+  sln_msg_server_hello_t sh;
+} sh_baton_t;
+
+selene_error_t*
+sln_handshake_parse_server_hello_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, void **baton)
+{
+  sh_baton_t *shb = sln_calloc(hs->s, sizeof(sh_baton_t));
+  shb->state = SLN_HS_SERVER_HELLO_VERSION;
+  hs->baton->msg.server_hello = &shb->sh;
+  v->next = TOK_COPY_BYTES;
+  v->wantlen = 2;
+  *baton = (void*)shb;
+  return SELENE_SUCCESS;
+}
+
+selene_error_t*
+sln_handshake_parse_server_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
+{
+  sh_baton_t *shb = (sh_baton_t*)baton;
+  sln_msg_server_hello_t *sh = &shb->sh;
+
+  switch (shb->state) {
+    case SLN_HS_CLIENT_HELLO_VERSION:
+    {
+      sh->version_major = v->v.bytes[0];
+      sh->version_minor = v->v.bytes[1];
+
+      shb->state = SLN_HS_SERVER_HELLO_UTC;
+      v->next = TOK_COPY_BYTES;
+      v->wantlen = 4;
+      break;
+    }
+
+    case SLN_HS_SERVER_HELLO_UTC:
+    {
+      sh->utc_unix_time = v->v.bytes[0];
+      shb->state = SLN_HS_SERVER_HELLO_RANDOM;
+      v->next = TOK_COPY_BYTES;
+      v->wantlen = 4;
+      break;
+    }
+
+    case SLN_HS_SERVER_HELLO_RANDOM:
+    case SLN_HS_SERVER_HELLO_SESSION_LENGTH:
+    case SLN_HS_SERVER_HELLO_SESSION_ID:
+    case SLN_HS_SERVER_HELLO_CIPHER_SUITE:
+    case SLN_HS_SERVER_HELLO_COMPRESSION:
+      /* TODO: finish */
+      v->next = TOK_DONE;
+      v->wantlen = 0;
+      selene_publish(hs->s, SELENE__EVENT_HS_GOT_SERVER_HELLO);
+      break;
+  }
+
+  return SELENE_SUCCESS;
+}
+
+void
+sln_handshake_parse_server_hello_destroy(sln_hs_baton_t *hs, void *baton)
+{
+  sh_baton_t *shb = (sh_baton_t*)baton;
+
+  sln_free(hs->s, shb);
+}
