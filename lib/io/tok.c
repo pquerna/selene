@@ -42,7 +42,6 @@ sln_tok_parser(sln_brigade_t *bb, sln_tok_cb cb, void *baton)
     err = cb(&tvalue, baton);
 
     if (err) {
-      keepgoing = 0;
       break;
     }
 
