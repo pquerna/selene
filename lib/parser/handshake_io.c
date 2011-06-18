@@ -19,6 +19,7 @@
 #include "sln_tok.h"
 #include "parser.h"
 #include "handshake_messages.h"
+#include "common.h"
 
 #include <time.h>
 #include <string.h>
@@ -44,8 +45,8 @@ sln_io_handshake_client_hello(selene_t *s, sln_parser_baton_t *baton)
   sln_bucket_t *btls = NULL;
   sln_bucket_t *bhs = NULL;
 
-  ch.version_major = 3;
-  ch.version_minor = 1;
+  sln_parser_tls_max_supported_version(s, &ch.version_major, &ch.version_minor);
+
   ch.utc_unix_time = time(NULL);
 
   /* TODO: make sln method for this */
@@ -60,12 +61,10 @@ sln_io_handshake_client_hello(selene_t *s, sln_parser_baton_t *baton)
   SELENE_ERR(sln_handshake_unparse_client_hello(s, &ch, &bhs));
 
   tls.content_type = SLN_CONTENT_TYPE_HANDSHAKE;
-  tls.version_major = 3;
-  tls.version_minor = 1;
+  sln_parser_tls_set_current_version(s, &tls);
   tls.length = bhs->size;
 
   SELENE_ERR(sln_tls_unparse_header(s, &tls, &btls));
-
 
   SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, btls);
 

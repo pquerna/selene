@@ -33,8 +33,7 @@ sln_io_alert(selene_t *s, sln_alert_level_e level, sln_alert_description_e desc)
   SELENE_ERR(sln_alert_unparse(s, &alert, &balert));
 
   tls.content_type = SLN_CONTENT_TYPE_ALERT;
-  tls.version_major = 3;
-  tls.version_minor = 1;
+  sln_parser_tls_set_current_version(s, &tls);
   tls.length = balert->size;
 
   SELENE_ERR(sln_tls_unparse_header(s, &tls, &btls));
