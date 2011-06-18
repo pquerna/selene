@@ -30,7 +30,8 @@ typedef enum sln_tok_value_e {
   TOK__MAX
 } sln_tok_value_e;
 
-#define SLN_TOK_VALUE_MAX_BYTE_COPY_LEN 16
+/* TODO: benchmark */
+#define SLN_TOK_VALUE_MAX_BYTE_COPY_LEN 32
 
 typedef struct sln_tok_value_t {
   sln_tok_value_e current;

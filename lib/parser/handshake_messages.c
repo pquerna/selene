@@ -149,6 +149,7 @@ sln_handshake_unparse_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sln_
 typedef struct ch_baton_t {
   sln_handshake_client_hello_state_e state;
   sln_msg_client_hello_t ch;
+  int cipherSuitesNum;
 } ch_baton_t;
 
 selene_error_t*
@@ -166,6 +167,7 @@ sln_handshake_parse_client_hello_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, v
 selene_error_t*
 sln_handshake_parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
 {
+  selene_error_t *err = SELENE_SUCCESS;
   ch_baton_t *chb = (ch_baton_t*)baton;
   sln_msg_client_hello_t *ch = &chb->ch;
 
@@ -183,18 +185,112 @@ sln_handshake_parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, vo
 
     case SLN_HS_CLIENT_HELLO_UTC:
     {
-      ch->utc_unix_time = v->v.bytes[0];
+      memcpy(&ch->utc_unix_time, &v->v.bytes[0], 4);
       chb->state = SLN_HS_CLIENT_HELLO_RANDOM;
       v->next = TOK_COPY_BYTES;
-      v->wantlen = 4;
+      v->wantlen = 28;
       break;
     }
 
     case SLN_HS_CLIENT_HELLO_RANDOM:
+    {
+      memcpy(&ch->random_bytes[0], &v->v.bytes[0], 28);
+      chb->state = SLN_HS_CLIENT_HELLO_SESSION_LENGTH;
+      v->next = TOK_COPY_BYTES;
+      v->wantlen = 1;
+      break;
+    }
+
     case SLN_HS_CLIENT_HELLO_SESSION_LENGTH:
+    {
+      ch->session_id_len = v->v.bytes[0];
+      if (ch->session_id_len > 32) {
+        /* TODO: session id errors*/
+      }
+
+      if (ch->session_id_len == 0) {
+        chb->state = SLN_HS_CLIENT_HELLO_CIPHER_SUITES_LENGTH;
+        v->next = TOK_COPY_BYTES;
+        v->wantlen = 2;
+      }
+      else {
+        chb->state = SLN_HS_CLIENT_HELLO_SESSION_ID;
+        v->next = TOK_COPY_BYTES;
+        v->wantlen = ch->session_id_len;
+      }
+      break;
+    }
+
     case SLN_HS_CLIENT_HELLO_SESSION_ID:
+    {
+      memcpy(&ch->session_id[0], &v->v.bytes[0], ch->session_id_len);
+      chb->state = SLN_HS_CLIENT_HELLO_CIPHER_SUITES_LENGTH;
+      v->next = TOK_COPY_BYTES;
+      v->wantlen = 1;
+      break;
+    }
+
     case SLN_HS_CLIENT_HELLO_CIPHER_SUITES_LENGTH:
+    {
+      uint16_t cipher_suites_len = (((unsigned char)v->v.bytes[0]) << 8 |  ((unsigned char)v->v.bytes[1]));
+      chb->state = SLN_HS_CLIENT_HELLO_CIPHER_SUITES;
+      v->next = TOK_COPY_BYTES;
+      v->wantlen = 2;
+      if (cipher_suites_len % 2 == 1) {
+        /* TODO: fatal error */
+      }
+
+      /* TODO: max number of cipher suites? */
+      chb->cipherSuitesNum = cipher_suites_len / 2;
+      if (ch->ciphers == NULL) {
+        err = selene_cipher_suite_list_create(&ch->ciphers);
+      }
+      break;
+    }
+
     case SLN_HS_CLIENT_HELLO_CIPHER_SUITES:
+    {
+      selene_cipher_suite_e suite = SELENE_CS__UNUSED0;
+      chb->cipherSuitesNum--;
+
+      /* TODO: all other cipher suites */
+      /* TODO: centralize */
+      switch (v->v.bytes[0]) {
+        case 0x00:
+          switch (v->v.bytes[1]) {
+            case 0x05:
+              suite = SELENE_CS_RSA_WITH_RC4_128_SHA;
+              break;
+            case 0x2F:
+              suite = SELENE_CS_RSA_WITH_AES_128_CBC_SHA;
+              break;
+            case 0x35:
+              suite = SELENE_CS_RSA_WITH_AES_256_CBC_SHA;
+              break;
+            default:
+              break;
+          }
+          break;
+        default:
+          break;
+      }
+
+      if (suite != SELENE_CS__UNUSED0) {
+        selene_cipher_suite_list_add(ch->ciphers, suite);
+      }
+
+      if (chb->cipherSuitesNum <= 0) {
+        chb->state = SLN_HS_CLIENT_HELLO_COMPRESSION;
+        v->next = TOK_COPY_BYTES;
+        v->wantlen = 1;
+      }
+      else {
+        chb->state = SLN_HS_CLIENT_HELLO_CIPHER_SUITES;
+        v->next = TOK_COPY_BYTES;
+        v->wantlen = 2;
+      }
+    }
+
     case SLN_HS_CLIENT_HELLO_COMPRESSION:
     case SLN_HS_CLIENT_HELLO_EXT_LENGTH:
     case SLN_HS_CLIENT_HELLO_EXT_TYPE:
@@ -207,7 +303,7 @@ sln_handshake_parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, vo
       break;
   }
 
-  return SELENE_SUCCESS;
+  return err;
 }
 
 void
@@ -218,6 +314,10 @@ sln_handshake_parse_client_hello_destroy(sln_hs_baton_t *hs, void *baton)
   if (chb->ch.server_name != NULL) {
     /* TODO: centralize */
     sln_free(hs->s, (char*)chb->ch.server_name);
+  }
+
+  if (chb->ch.ciphers != NULL) {
+    selene_cipher_suite_list_destroy(chb->ch.ciphers);
   }
 
   sln_free(hs->s, chb);
