@@ -174,15 +174,18 @@ sln_brigade_copy_into(sln_brigade_t *source_bb, size_t want_offset, size_t want_
   selene_error_t* err;
   sln_bucket_t *e;
   size_t rlen = 0;
+  size_t tocopy;
 
-  err = sln_bucket_create_empty(into_bb->alloc, &e, want_length);
+  tocopy = sln_min(want_length, sln_brigade_size(source_bb) - want_offset);
+
+  err = sln_bucket_create_empty(into_bb->alloc, &e, tocopy);
 
   if (err) {
     return err;
   }
 
   /* TODO: this is maybe not the most efficient method... but fuck it, optimize it later right?*/
-  err = sln_brigade_pread_bytes(source_bb, want_offset, want_length, e->data, &rlen);
+  err = sln_brigade_pread_bytes(source_bb, want_offset, tocopy, e->data, &rlen);
 
   if (err) {
     sln_bucket_destroy(e);

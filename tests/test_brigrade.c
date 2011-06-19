@@ -190,6 +190,14 @@ static void brigade_copy_into(void **state)
   sln_brigade_destroy(dest);
 
   SLN_ERR(sln_brigade_create(sln_test_alloc, &dest));
+  SLN_ERR(sln_brigade_copy_into(source, 0, 20, dest));
+  assert_int_equal(sln_brigade_size(dest), 10);
+  SLN_ERR(sln_brigade_pread_bytes(dest, 0, 10, &buf[0], &len));
+  assert_memory_equal(buf, "AAAAAAAAAA", 2);
+  sln_brigade_clear(dest);
+  sln_brigade_destroy(dest);
+
+  SLN_ERR(sln_brigade_create(sln_test_alloc, &dest));
   SLN_ERR(sln_brigade_copy_into(source, 2, 4, dest));
   assert_int_equal(sln_brigade_size(dest), 4);
   SLN_ERR(sln_brigade_pread_bytes(dest, 0, 4, &buf[0], &len));
