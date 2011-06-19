@@ -2,6 +2,10 @@ If you want to work on any of these or something else, just let selene-dev@googl
 
 Current TODO:
 
+* Grep the source code for TODO; There are a ton.
+
+* Improve debug logging.  If we had bug reports, I couldn't fix the from debug logs right now.
+
 * Add Certificate Store interface
  * Search for cert by:
   * CN, subjectAltName, dnsName, etc
