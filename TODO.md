@@ -27,6 +27,13 @@ Current TODO:
  * client_key_exchange(16)
  * finished(20)
 
+* Implement next protocol negotiation <http://tools.ietf.org/html/draft-agl-tls-nextprotoneg-02>:
+ * see NextProtos <http://golang.org/src/pkg/crypto/tls/common.go?s=2940:4315#L97>
+   since the RFC does not provide information about the format of this data.
+ * Client Hello send empty extension_data
+ * Server Hello respond with available protocols
+ * Protocol selection event / completion callback
+
 * Finish handshake state machine (send correct replies to everything we get)
  * Implement ChangeCiphers
  * Plugable Backend Wrappers for, initially using OpenSSL:
