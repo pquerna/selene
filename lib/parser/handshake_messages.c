@@ -176,6 +176,25 @@ bytes_to_cipher_suite(uint8_t first, uint8_t second)
   return suite;
 }
 
+static selene_compression_method_e
+bytes_to_comp_method(uint8_t in)
+{
+  selene_compression_method_e comp = SELENE_COMP_NULL;
+
+  switch (in) {
+    case 0:
+      comp = SELENE_COMP_NULL;
+      break;
+    case 1:
+      comp = SELENE_COMP_DEFLATE;
+      break;
+    default:
+      /* TODO: fatal error? */
+      break;
+  }
+
+  return comp;
+}
 
 typedef struct ch_baton_t {
   sln_handshake_client_hello_state_e state;
@@ -578,6 +597,7 @@ sln_handshake_parse_server_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, vo
 {
   sh_baton_t *shb = (sh_baton_t*)baton;
   sln_msg_server_hello_t *sh = &shb->sh;
+  selene_t *s = hs->s;
 
   switch (shb->state) {
     case SLN_HS_CLIENT_HELLO_VERSION:
@@ -622,7 +642,7 @@ sln_handshake_parse_server_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, vo
         v->wantlen = 2;
       }
       else {
-        shb->state = SLN_HS_SERVER_HELLO_CIPHER_SUITE;
+        shb->state = SLN_HS_SERVER_HELLO_SESSION_ID;
         v->next = TOK_COPY_BYTES;
         v->wantlen = sh->session_id_len;
       }
@@ -640,10 +660,11 @@ sln_handshake_parse_server_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, vo
 
     case SLN_HS_SERVER_HELLO_CIPHER_SUITE:
     {
-      selene_cipher_suite_e suite = bytes_to_cipher_suite(v->v.bytes[0], v->v.bytes[1]);
+      selene_cipher_suite_e cipher = bytes_to_cipher_suite(v->v.bytes[0], v->v.bytes[1]);
 
-      if (suite != SELENE_CS__UNUSED0) {
+      if (cipher != SELENE_CS__UNUSED0) {
         /* TODO: save, validate its in our list of acceptable suites */
+        sh->cipher = cipher;
       }
       else {
         /* TODO: abort connection, we weren't able to agree on a cipher suite */
@@ -656,15 +677,57 @@ sln_handshake_parse_server_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, vo
     }
 
     case SLN_HS_SERVER_HELLO_COMPRESSION:
-      /* TODO: finish */
-      v->next = TOK_DONE;
-      v->wantlen = 0;
-      selene_publish(hs->s, SELENE__EVENT_HS_GOT_SERVER_HELLO);
+    {
+      sh->comp = bytes_to_comp_method(v->v.bytes[0]);
+      /* TODO: fatal alert on invalid comp method (?) */
+      shb->state = SLN_HS_SERVER_HELLO_EXT_DEF;
+      v->next = TOK_COPY_BYTES;
+      v->wantlen = 4;
       break;
-    /* TODO: extensions */
+    }
+
+    case SLN_HS_SERVER_HELLO_EXT_DEF:
+    {
+      /* Extensions Registry:
+       *   <http://www.iana.org/assignments/tls-extensiontype-values/tls-extensiontype-values.xml>
+      */
+      uint16_t ext_len = (((unsigned char)v->v.bytes[0]) << 8 |  ((unsigned char)v->v.bytes[1]));
+      uint16_t ext_type = (((unsigned char)v->v.bytes[2]) << 8 |  ((unsigned char)v->v.bytes[3]));
+
+      slnDbg(s, "server extension: %u len: %u\n", ext_type, ext_len);
+
+      if (ext_type == 0) {
+        /* SNI  was supported by the server, but we don't care here, so we just skip it */
+        shb->state = SLN_HS_SERVER_HELLO_EXT_SKIP;
+        v->next = TOK_SKIP;
+        v->wantlen = ext_len - 4;
+      }
+      else {
+        shb->state = SLN_HS_SERVER_HELLO_EXT_SKIP;
+        v->next = TOK_SKIP;
+        v->wantlen = ext_len - 4;
+      }
+      break;
+    }
+
+    case SLN_HS_SERVER_HELLO_EXT_SKIP:
+    {
+      shb->state = SLN_HS_SERVER_HELLO_EXT_DEF;
+      v->next = TOK_COPY_BYTES;
+      v->wantlen = 4;
+      break;
+    }
+
+    /* TODO: support more extensions, NPN */
   }
 
   return SELENE_SUCCESS;
+}
+
+selene_error_t*
+sln_handshake_parse_server_hello_finish(sln_hs_baton_t *hs, void *baton)
+{
+  return selene_publish(hs->s, SELENE__EVENT_HS_GOT_SERVER_HELLO);
 }
 
 void

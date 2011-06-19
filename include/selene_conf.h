@@ -66,6 +66,13 @@ SELENE_API(selene_error_t*)
 selene_conf_use_reasonable_defaults(selene_conf_t *conf);
 
 typedef enum {
+  SELENE_COMP__UNUSED0 = 0,
+  SELENE_COMP_NULL = 1,
+  SELENE_COMP_DEFLATE = 2,
+  SELENE_COMP__MAX = 3
+} selene_compression_method_e;
+
+typedef enum {
   SELENE_CS__UNUSED0 = 0,
   SELENE_CS_RSA_WITH_RC4_128_SHA = 1,
   SELENE_CS_RSA_WITH_AES_128_CBC_SHA = 2,

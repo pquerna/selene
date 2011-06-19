@@ -139,6 +139,8 @@ typedef enum sln_handshake_server_hello_state_e {
   SLN_HS_SERVER_HELLO_SESSION_ID,
   SLN_HS_SERVER_HELLO_CIPHER_SUITE,
   SLN_HS_SERVER_HELLO_COMPRESSION,
+  SLN_HS_SERVER_HELLO_EXT_DEF,
+  SLN_HS_SERVER_HELLO_EXT_SKIP,
 } sln_handshake_server_hello_state_e;
 
 typedef struct sln_msg_server_hello_t {
@@ -149,6 +151,7 @@ typedef struct sln_msg_server_hello_t {
   uint8_t session_id_len;
   char session_id[32];
   selene_cipher_suite_e cipher;
+  selene_compression_method_e comp;
   /* TODO: extensions and compression */
 } sln_msg_server_hello_t;
 
@@ -160,6 +163,9 @@ sln_handshake_parse_server_hello_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, v
 
 selene_error_t*
 sln_handshake_parse_server_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton);
+
+selene_error_t*
+sln_handshake_parse_server_hello_finish(sln_hs_baton_t *hs, void *baton);
 
 void
 sln_handshake_parse_server_hello_destroy(sln_hs_baton_t *hs, void *baton);
