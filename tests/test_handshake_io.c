@@ -154,7 +154,7 @@ static void handshake_io_client_hello_sni(void **state)
  * Packet Capture from apache 2.3 sending a server hello, no TLS protocol wrapper,
  * RC4-SHA1 as the selected cipher, and SNI as the only extension.
  */
-char apache_server_hello_sni[] = {
+static char apache_server_hello_sni[] = {
   /* content-type server hello */
   0x02,
   /* length  of hs message */
