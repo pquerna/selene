@@ -73,7 +73,10 @@ typedef enum sln_handshake_client_hello_state_e {
   SLN_HS_CLIENT_HELLO_EXT_DEF,
   SLN_HS_CLIENT_HELLO_EXT_SKIP, /* skipping an unknown extension*/
   SLN_HS_CLIENT_HELLO_EXT_SNI_LENGTH,
-  SLN_HS_CLIENT_HELLO_EXT_SNI_VALUE,
+  SLN_HS_CLIENT_HELLO_EXT_SNI_NUM_NAMES,
+  SLN_HS_CLIENT_HELLO_EXT_SNI_NAME_TYPE,
+  SLN_HS_CLIENT_HELLO_EXT_SNI_NAME_LENGTH,
+  SLN_HS_CLIENT_HELLO_EXT_SNI_NAME_VALUE,
 } sln_handshake_client_hello_state_e;
 
 typedef struct sln_msg_client_hello_t {
@@ -84,7 +87,7 @@ typedef struct sln_msg_client_hello_t {
   uint8_t session_id_len;
   char session_id[32];
   selene_cipher_suite_list_t *ciphers;
-  const char *server_name;
+  char *server_name;
   int have_npn;
   int have_ocsp_stapling;
 } sln_msg_client_hello_t;

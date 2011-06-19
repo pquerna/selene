@@ -182,6 +182,8 @@ typedef struct ch_baton_t {
   sln_msg_client_hello_t ch;
   int cipher_suites_num;
   int compression_num;
+  int sni_num;
+  uint16_t sni_name_len;
 } ch_baton_t;
 
 selene_error_t*
@@ -330,6 +332,7 @@ sln_handshake_parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, vo
         v->wantlen = 1;
       }
       break;
+
     case SLN_HS_CLIENT_HELLO_EXT_DEF:
     {
       /* Extensions Registry:
@@ -362,19 +365,74 @@ sln_handshake_parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, vo
 
     case SLN_HS_CLIENT_HELLO_EXT_SNI_LENGTH:
     {
-      uint16_t sni_len = v->v.uint16;
-      chb->state = SLN_HS_CLIENT_HELLO_EXT_SNI_VALUE;
-      v->next = TOK_COPY_BRIGADE;
-      v->wantlen = sni_len;
+      /* TODO: is this variable actually ever needed? */
+      /* uint16_t sni_len = v->v.uint16; */
+      chb->state = SLN_HS_CLIENT_HELLO_EXT_SNI_NUM_NAMES;
+      v->next = TOK_UINT16;
+      v->wantlen = 2;
       break;
     }
 
-    case SLN_HS_CLIENT_HELLO_EXT_SNI_VALUE:
-      /* TODO: flatten SNI name */
-      chb->state = SLN_HS_CLIENT_HELLO_EXT_DEF;
+    case SLN_HS_CLIENT_HELLO_EXT_SNI_NUM_NAMES:
+    {
+      chb->sni_num = v->v.uint16;
+      chb->state = SLN_HS_CLIENT_HELLO_EXT_SNI_NAME_TYPE;
       v->next = TOK_COPY_BYTES;
-      v->wantlen = 4;
+      v->wantlen = 1;
       break;
+    }
+
+    case SLN_HS_CLIENT_HELLO_EXT_SNI_NAME_TYPE:
+    {
+      /* TODO: alert on unknown name type? */
+      chb->state = SLN_HS_CLIENT_HELLO_EXT_SNI_NAME_LENGTH;
+      v->next = TOK_UINT16;
+      v->wantlen = 2;
+      break;
+    }
+
+    case SLN_HS_CLIENT_HELLO_EXT_SNI_NAME_LENGTH:
+    {
+      chb->sni_name_len = v->v.uint16;
+      chb->state = SLN_HS_CLIENT_HELLO_EXT_SNI_NAME_VALUE;
+      v->next = TOK_COPY_BRIGADE;
+      v->wantlen = chb->sni_name_len;
+      break;
+    }
+
+    case SLN_HS_CLIENT_HELLO_EXT_SNI_NAME_VALUE:
+    {
+      size_t l = sln_brigade_size(v->v.bb);
+
+      if (l != chb->sni_name_len) {
+        /* short read. */
+        v->next = TOK_DONE;
+        v->wantlen = 0;
+        break;
+      }
+
+      if (ch->server_name != NULL) {
+        sln_free(s, (char*)ch->server_name);
+      }
+
+      ch->server_name = sln_alloc(s, l + 1);
+      sln_brigade_flatten(v->v.bb, ch->server_name, &l);
+      ch->server_name[l] = '\0';
+
+      chb->sni_num--;
+
+      if (chb->sni_num <= 0) {
+        chb->state = SLN_HS_CLIENT_HELLO_EXT_DEF;
+        v->next = TOK_COPY_BYTES;
+        v->wantlen = 4;
+      }
+      else {
+        chb->state = SLN_HS_CLIENT_HELLO_EXT_SNI_NUM_NAMES;
+        v->next = TOK_COPY_BYTES;
+        v->wantlen = 1;
+      }
+      break;
+    }
   }
 
   return err;
