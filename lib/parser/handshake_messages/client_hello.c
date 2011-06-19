@@ -54,6 +54,9 @@ sln_handshake_unparse_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sln_
   /* Compression Length (no support right now) */
   len += 1;
 
+  /* NULL compression method */
+  len += 1;
+
   if (ch->server_name != NULL) {
 /*
     num_extensions++;
@@ -74,7 +77,7 @@ sln_handshake_unparse_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sln_
     abort();
   }
 */
-
+  len += 2;
   len += num_extensions * 4;
   len += extlen;
 
@@ -137,8 +140,17 @@ sln_handshake_unparse_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sln_
   }
 
   /* Compression... no */
+  b->data[off] = 1;
+  off += 1;
+
+  /* NULL compression method */
   b->data[off] = 0;
   off += 1;
+
+  /* no extensions */
+  b->data[off] = 0;
+  b->data[off+1] = 0;
+  off += 2;
 
   assert(off == len);
 
