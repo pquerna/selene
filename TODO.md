@@ -34,6 +34,12 @@ Current TODO:
  * Server Hello respond with available protocols
  * Protocol selection event / completion callback
 
+* OCSP API
+ * Make it internal or just say you are up a creek?
+ * General Validation API
+  * Callback? Connect to server X? Send this payload? Pump me the reply?
+ * Think about server-OCSP-stapling (is stapling going to be DOA in the real world anyways?)
+
 * Finish handshake state machine (send correct replies to everything we get)
  * Implement ChangeCiphers
  * Plugable Backend Wrappers for, initially using OpenSSL:
