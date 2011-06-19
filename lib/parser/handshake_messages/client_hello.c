@@ -28,6 +28,8 @@ sln_handshake_unparse_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sln_
   int num_extensions = 0;
   size_t extlen = 0;
   size_t len = 0;
+  size_t snilen = 0;
+  size_t sninamelen = 0;
   int dlen;
 
   /* header size */
@@ -58,15 +60,19 @@ sln_handshake_unparse_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sln_
   len += 1;
 
   if (ch->server_name != NULL) {
-/*
     num_extensions++;
-    extlen += 2;
-    extlen += strlen(ch->server_name);
-*/
+    /* We only support a single dnsName in the SNI..
+     * SNI spec allows you to send multple hostnames of different types....
+     * super-sigh at unneeded complication.
+     */
+    snilen = 5;
+    sninamelen = strlen(ch->server_name);
+    snilen += sninamelen;
+    extlen += snilen;
   }
 
   if (ch->have_npn) {
-    num_extensions++;
+    // num_extensions++;
     /* TODO: npn support */
   }
 
@@ -77,8 +83,12 @@ sln_handshake_unparse_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sln_
     abort();
   }
 */
+
+  /* len of extensions */
   len += 2;
-  len += num_extensions * 4;
+
+  /* actual extensions */
+  extlen += 4 * num_extensions;
   len += extlen;
 
   sln_bucket_create_empty(s->alloc, &b, len);
@@ -147,10 +157,39 @@ sln_handshake_unparse_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sln_
   b->data[off] = 0;
   off += 1;
 
-  /* no extensions */
-  b->data[off] = 0;
-  b->data[off+1] = 0;
+  b->data[off] = extlen >> 8;
+  b->data[off+1] = extlen;
   off += 2;
+
+  if (ch->server_name != NULL) {
+    /* type 0 */
+    b->data[off] = 0;
+    b->data[off+1] = 0;
+    off += 2;
+
+    /* whole extension length */
+    b->data[off] = snilen >> 8;
+    b->data[off+1] = snilen;
+    off += 2;
+
+    /* len of list */
+    b->data[off] = snilen >> 8;
+    b->data[off+1] = snilen;
+    off += 2;
+
+    /* number of entries */
+    b->data[off] = 0;
+    b->data[off+1] = 1;
+    off += 2;
+
+    /* dnsName type */
+    b->data[off] = 0;
+    off += 1;
+
+    /* actual string! */
+    memcpy(&b->data[off], ch->server_name, sninamelen);
+    off += sninamelen;
+  }
 
   assert(off == len);
 
