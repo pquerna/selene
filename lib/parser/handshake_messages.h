@@ -60,6 +60,38 @@ typedef enum sln_handshake_state_e {
   SLN_HS__MAX,
 } sln_handshake_state_e;
 
+typedef struct sln_hs_baton_t sln_hs_baton_t;
+
+typedef selene_error_t* (sln_hs_msg_step_cb)(sln_hs_baton_t* hs, sln_tok_value_t *v, void *baton);
+typedef void (sln_hs_msg_destroy_cb)(sln_hs_baton_t* hs, void *baton);
+typedef selene_error_t* (sln_hs_msg_finish_cb)(sln_hs_baton_t* hs, void *baton);
+
+struct sln_hs_baton_t {
+  selene_t *s;
+  sln_handshake_state_e state;
+  sln_parser_baton_t *baton;
+  uint8_t message_type;
+  uint32_t length;
+  int remaining;
+  void *current_msg_baton;
+  sln_hs_msg_step_cb* current_msg_step;
+  /* called when the entire lenght of a message is consumed */
+  sln_hs_msg_finish_cb* current_msg_finish;
+  sln_hs_msg_destroy_cb* current_msg_destroy;
+};
+
+
+/* utility methods */
+
+selene_cipher_suite_e
+sln_parser_hs_bytes_to_cipher_suite(uint8_t first, uint8_t second);
+
+selene_compression_method_e
+sln_parser_hs_bytes_to_comp_method(uint8_t in);
+
+
+/* Client Hello Message Methods */
+
 typedef enum sln_handshake_client_hello_state_e {
   SLN_HS_CLIENT_HELLO_VERSION,
   SLN_HS_CLIENT_HELLO_UTC,
@@ -92,27 +124,6 @@ typedef struct sln_msg_client_hello_t {
   int have_ocsp_stapling;
 } sln_msg_client_hello_t;
 
-typedef struct sln_hs_baton_t sln_hs_baton_t;
-
-typedef selene_error_t* (sln_hs_msg_step_cb)(sln_hs_baton_t* hs, sln_tok_value_t *v, void *baton);
-typedef void (sln_hs_msg_destroy_cb)(sln_hs_baton_t* hs, void *baton);
-typedef selene_error_t* (sln_hs_msg_finish_cb)(sln_hs_baton_t* hs, void *baton);
-
-struct sln_hs_baton_t {
-  selene_t *s;
-  sln_handshake_state_e state;
-  sln_parser_baton_t *baton;
-  uint8_t message_type;
-  uint32_t length;
-  int remaining;
-  void *current_msg_baton;
-  sln_hs_msg_step_cb* current_msg_step;
-  /* called when the entire lenght of a message is consumed */
-  sln_hs_msg_finish_cb* current_msg_finish;
-  sln_hs_msg_destroy_cb* current_msg_destroy;
-};
-
-
 selene_error_t*
 sln_handshake_unparse_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sln_bucket_t **b);
 
@@ -130,6 +141,8 @@ sln_handshake_parse_client_hello_destroy(sln_hs_baton_t *hs, void *baton);
 
 selene_error_t* sln_handshake_handle_client_hello(selene_t *ctxt, selene_event_e event, void *baton_);
 
+
+/* Server Hello Message Methods */
 
 typedef enum sln_handshake_server_hello_state_e {
   SLN_HS_SERVER_HELLO_VERSION,
@@ -172,12 +185,31 @@ sln_handshake_parse_server_hello_destroy(sln_hs_baton_t *hs, void *baton);
 
 selene_error_t* sln_handshake_handle_server_hello(selene_t *ctxt, selene_event_e event, void *baton_);
 
-/* utility methods */
 
-selene_cipher_suite_e
-sln_parser_hs_bytes_to_cipher_suite(uint8_t first, uint8_t second);
+/* Certificate Message Methods */
 
-selene_compression_method_e
-sln_parser_hs_bytes_to_comp_method(uint8_t in);
+typedef enum sln_handshake_certificate_state_e {
+  SLN_HS_CERTIFICATE_LENGTH,
+} sln_handshake_certificate_state_e;
+
+typedef struct sln_msg_certificate_t {
+  /* TODO: impl */
+  int foo;
+} sln_msg_certificate_t;
+
+selene_error_t*
+sln_handshake_unparse_certificate(selene_t *s, sln_msg_certificate_t *cert, sln_bucket_t **p_b);
+
+selene_error_t*
+sln_handshake_parse_certificate_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, void **baton);
+
+selene_error_t*
+sln_handshake_parse_certificate_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton);
+
+selene_error_t*
+sln_handshake_parse_certificate_finish(sln_hs_baton_t *hs, void *baton);
+
+void
+sln_handshake_parse_certificate_destroy(sln_hs_baton_t *hs, void *baton);
 
 #endif

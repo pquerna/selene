@@ -83,8 +83,9 @@ typedef enum {
   SELENE_EVENT_TLS_GOT_HTTP = 7,
   /* INTERNAL: When we recieved a properly formed client hello */
   SELENE__EVENT_HS_GOT_CLIENT_HELLO = 8,
-  SELENE__EVENT_HS_GOT_SERVER_HELLO = 8,
-  SELENE_EVENT__MAX = 9,
+  SELENE__EVENT_HS_GOT_SERVER_HELLO = 9,
+  SELENE__EVENT_HS_GOT_CERTIFICATE = 10,
+  SELENE_EVENT__MAX = 11,
 } selene_event_e;
 
 typedef enum {
