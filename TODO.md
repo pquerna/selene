@@ -13,6 +13,7 @@ Current TODO:
 
 * Alert message handling (parsing is done)
  * If Fatal, cleanup to mark the selene_t as dead, return a selene_error_t from all API surfaces.
+	* Several TODOs throughout the parse about sending fatal alerts / shutting down the connection, this needs work.
 
 * Parse all handshake message types
 
