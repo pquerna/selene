@@ -172,5 +172,12 @@ sln_handshake_parse_server_hello_destroy(sln_hs_baton_t *hs, void *baton);
 
 selene_error_t* sln_handshake_handle_server_hello(selene_t *ctxt, selene_event_e event, void *baton_);
 
+/* utility methods */
+
+selene_cipher_suite_e
+sln_parser_hs_bytes_to_cipher_suite(uint8_t first, uint8_t second);
+
+selene_compression_method_e
+sln_parser_hs_bytes_to_comp_method(uint8_t in);
 
 #endif
