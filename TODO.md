@@ -13,11 +13,25 @@ Current TODO:
 
 * Alert message handling (parsing is done)
  * If Fatal, cleanup to mark the selene_t as dead, return a selene_error_t from all API surfaces.
-	* Several TODOs throughout the parse about sending fatal alerts / shutting down the connection, this needs work.
+ * Several TODOs throughout the parse about sending fatal alerts / shutting down the connection, this needs work.
 
-* Parse all handshake message types
+* Parse all handshake message types (see lib/parser/handshake_messages.c):
+ * hello_request(0) [ignore]
+ * client_hello(1) [done]
+ * server_hello(2) [done]
+ * certificate(11) [WIP]
+ * server_key_exchange(12)
+ * certificate_request(13)
+ * server_hello_done(14)
+ * certificate_verify(15)
+ * client_key_exchange(16)
+ * finished(20)
 
 * Finish handshake state machine (send correct replies to everything we get)
- * Implement ChangeCiphers.....  (complicated, needs MAC over Handshake Messges for TLS 1.2)
+ * Implement ChangeCiphers
+ * Plugable Backend Wrappers for, initially using OpenSSL:
+  * Ciphers: AES, RC4
+  * RSA
+  * SHA1, SHA256, MD5
 
-
+* TLS-PSK support
