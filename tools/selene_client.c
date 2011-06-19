@@ -307,7 +307,6 @@ int main(int argc, char* argv[])
       i++;
     }
     else {
-      selene_destroy(s);
       fprintf(stderr, "Invalid args\n");
       usage();
       exit(EXIT_FAILURE);
