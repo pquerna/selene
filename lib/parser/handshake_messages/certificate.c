@@ -32,20 +32,8 @@ typedef struct cert_baton_t {
   sln_msg_certificate_t cert;
 } cert_baton_t;
 
-selene_error_t*
-sln_handshake_parse_certificate_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, void **baton)
-{
-  cert_baton_t *certb = sln_calloc(hs->s, sizeof(cert_baton_t));
-  certb->state = SLN_HS_CERTIFICATE_LENGTH;
-  hs->baton->msg.certificate = &certb->cert;
-  v->next = TOK_COPY_BYTES;
-  v->wantlen = 3;
-  *baton = (void*)certb;
-  return SELENE_SUCCESS;
-}
-
-selene_error_t*
-sln_handshake_parse_certificate_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
+static selene_error_t*
+parse_certificate_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
 {
   cert_baton_t *certb = (cert_baton_t*)baton;
   sln_msg_certificate_t *cert = &certb->cert;
@@ -60,16 +48,31 @@ sln_handshake_parse_certificate_step(sln_hs_baton_t *hs, sln_tok_value_t *v, voi
   return SELENE_SUCCESS;
 }
 
-selene_error_t*
-sln_handshake_parse_certificate_finish(sln_hs_baton_t *hs, void *baton)
+static selene_error_t*
+parse_certificate_finish(sln_hs_baton_t *hs, void *baton)
 {
   return selene_publish(hs->s, SELENE__EVENT_HS_GOT_CERTIFICATE);
 }
 
-void
-sln_handshake_parse_certificate_destroy(sln_hs_baton_t *hs, void *baton)
+static void
+parse_certificate_destroy(sln_hs_baton_t *hs, void *baton)
 {
   cert_baton_t *certb = (cert_baton_t*)baton;
 
   sln_free(hs->s, certb);
+}
+
+selene_error_t*
+sln_handshake_parse_certificate_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, void **baton)
+{
+  cert_baton_t *certb = sln_calloc(hs->s, sizeof(cert_baton_t));
+  certb->state = SLN_HS_CERTIFICATE_LENGTH;
+  hs->baton->msg.certificate = &certb->cert;
+  hs->current_msg_step = parse_certificate_step;
+  hs->current_msg_finish = parse_certificate_finish;
+  hs->current_msg_destroy = parse_certificate_destroy;
+  v->next = TOK_COPY_BYTES;
+  v->wantlen = 3;
+  *baton = (void*)certb;
+  return SELENE_SUCCESS;
 }

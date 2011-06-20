@@ -131,15 +131,7 @@ selene_error_t*
 sln_handshake_parse_client_hello_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, void **baton);
 
 selene_error_t*
-sln_handshake_parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton);
-
-selene_error_t*
-sln_handshake_parse_client_hello_finish(sln_hs_baton_t *hs, void *baton);
-
-void
-sln_handshake_parse_client_hello_destroy(sln_hs_baton_t *hs, void *baton);
-
-selene_error_t* sln_handshake_handle_client_hello(selene_t *ctxt, selene_event_e event, void *baton_);
+sln_handshake_handle_client_hello(selene_t *ctxt, selene_event_e event, void *baton_);
 
 
 /* Server Hello Message Methods */
@@ -175,15 +167,7 @@ selene_error_t*
 sln_handshake_parse_server_hello_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, void **baton);
 
 selene_error_t*
-sln_handshake_parse_server_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton);
-
-selene_error_t*
-sln_handshake_parse_server_hello_finish(sln_hs_baton_t *hs, void *baton);
-
-void
-sln_handshake_parse_server_hello_destroy(sln_hs_baton_t *hs, void *baton);
-
-selene_error_t* sln_handshake_handle_server_hello(selene_t *ctxt, selene_event_e event, void *baton_);
+sln_handshake_handle_server_hello(selene_t *ctxt, selene_event_e event, void *baton_);
 
 
 /* Certificate Message Methods */
@@ -202,14 +186,4 @@ sln_handshake_unparse_certificate(selene_t *s, sln_msg_certificate_t *cert, sln_
 
 selene_error_t*
 sln_handshake_parse_certificate_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, void **baton);
-
-selene_error_t*
-sln_handshake_parse_certificate_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton);
-
-selene_error_t*
-sln_handshake_parse_certificate_finish(sln_hs_baton_t *hs, void *baton);
-
-void
-sln_handshake_parse_certificate_destroy(sln_hs_baton_t *hs, void *baton);
-
 #endif

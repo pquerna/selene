@@ -118,20 +118,8 @@ typedef struct sh_baton_t {
   sln_msg_server_hello_t sh;
 } sh_baton_t;
 
-selene_error_t*
-sln_handshake_parse_server_hello_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, void **baton)
-{
-  sh_baton_t *shb = sln_calloc(hs->s, sizeof(sh_baton_t));
-  shb->state = SLN_HS_SERVER_HELLO_VERSION;
-  hs->baton->msg.server_hello = &shb->sh;
-  v->next = TOK_COPY_BYTES;
-  v->wantlen = 2;
-  *baton = (void*)shb;
-  return SELENE_SUCCESS;
-}
-
-selene_error_t*
-sln_handshake_parse_server_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
+static selene_error_t*
+parse_server_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
 {
   sh_baton_t *shb = (sh_baton_t*)baton;
   sln_msg_server_hello_t *sh = &shb->sh;
@@ -262,16 +250,31 @@ sln_handshake_parse_server_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, vo
   return SELENE_SUCCESS;
 }
 
-selene_error_t*
-sln_handshake_parse_server_hello_finish(sln_hs_baton_t *hs, void *baton)
+static selene_error_t*
+parse_server_hello_finish(sln_hs_baton_t *hs, void *baton)
 {
   return selene_publish(hs->s, SELENE__EVENT_HS_GOT_SERVER_HELLO);
 }
 
-void
-sln_handshake_parse_server_hello_destroy(sln_hs_baton_t *hs, void *baton)
+static void
+parse_server_hello_destroy(sln_hs_baton_t *hs, void *baton)
 {
   sh_baton_t *shb = (sh_baton_t*)baton;
 
   sln_free(hs->s, shb);
+}
+
+selene_error_t*
+sln_handshake_parse_server_hello_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, void **baton)
+{
+  sh_baton_t *shb = sln_calloc(hs->s, sizeof(sh_baton_t));
+  shb->state = SLN_HS_SERVER_HELLO_VERSION;
+  hs->baton->msg.server_hello = &shb->sh;
+  hs->current_msg_step = parse_server_hello_step;
+  hs->current_msg_finish = parse_server_hello_finish;
+  hs->current_msg_destroy = parse_server_hello_destroy;
+  v->next = TOK_COPY_BYTES;
+  v->wantlen = 2;
+  *baton = (void*)shb;
+  return SELENE_SUCCESS;
 }

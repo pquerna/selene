@@ -93,9 +93,6 @@ setup_mt_parser(sln_tok_value_t *v, sln_hs_baton_t *hs)
   switch (hs->message_type) {
     case SLN_HS_MT_CLIENT_HELLO:
       hs->state = SLN_HS_MESSAGE_PARSER;
-      hs->current_msg_step = sln_handshake_parse_client_hello_step;
-      hs->current_msg_finish = sln_handshake_parse_client_hello_finish;
-      hs->current_msg_destroy = sln_handshake_parse_client_hello_destroy;
       return sln_handshake_parse_client_hello_setup(hs, v, &hs->current_msg_baton);
       break;
     case SLN_HS_MT_HELLO_REQUEST:
@@ -103,16 +100,10 @@ setup_mt_parser(sln_tok_value_t *v, sln_hs_baton_t *hs)
       break;
     case SLN_HS_MT_SERVER_HELLO:
       hs->state = SLN_HS_MESSAGE_PARSER;
-      hs->current_msg_step = sln_handshake_parse_server_hello_step;
-      hs->current_msg_finish = sln_handshake_parse_server_hello_finish;
-      hs->current_msg_destroy = sln_handshake_parse_server_hello_destroy;
       return sln_handshake_parse_server_hello_setup(hs, v, &hs->current_msg_baton);
       break;
     case SLN_HS_MT_CERTIFICATE:
       hs->state = SLN_HS_MESSAGE_PARSER;
-      hs->current_msg_step = sln_handshake_parse_certificate_step;
-      hs->current_msg_finish = sln_handshake_parse_certificate_finish;
-      hs->current_msg_destroy = sln_handshake_parse_certificate_destroy;
       return sln_handshake_parse_certificate_setup(hs, v, &hs->current_msg_baton);
       break;
     case SLN_HS_MT_SERVER_KEY_EXCHANGE:
