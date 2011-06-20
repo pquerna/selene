@@ -126,7 +126,7 @@ parse_server_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
   selene_t *s = hs->s;
 
   switch (shb->state) {
-    case SLN_HS_CLIENT_HELLO_VERSION:
+    case SLN_HS_SERVER_HELLO_VERSION:
     {
       sh->version_major = v->v.bytes[0];
       sh->version_minor = v->v.bytes[1];
