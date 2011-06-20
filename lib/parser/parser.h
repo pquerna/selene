@@ -141,6 +141,6 @@ typedef struct sln_msg_tls_t {
 } sln_msg_tls_t;
 
 selene_error_t*
-sln_tls_unparse_header(selene_t *s, sln_msg_tls_t *tls, sln_bucket_t **b);
+sln_tls_serialize_header(selene_t *s, sln_msg_tls_t *tls, sln_bucket_t **b);
 
 #endif

@@ -19,7 +19,7 @@
 #include "alert_messages.h"
 
 selene_error_t*
-sln_alert_unparse(selene_t *s, sln_msg_alert_t *alert, sln_bucket_t **p_b)
+sln_alert_serialize(selene_t *s, sln_msg_alert_t *alert, sln_bucket_t **p_b)
 {
   sln_bucket_t *b = NULL;
   size_t len = 2;

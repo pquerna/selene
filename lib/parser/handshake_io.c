@@ -54,13 +54,13 @@ sln_io_handshake_client_hello(selene_t *s, sln_parser_baton_t *baton)
   ch.server_name = sln_strdup(s, s->client_sni);
   ch.have_npn = 0;
   ch.have_ocsp_stapling = 0;
-  SELENE_ERR(sln_handshake_unparse_client_hello(s, &ch, &bhs));
+  SELENE_ERR(sln_handshake_serialize_client_hello(s, &ch, &bhs));
 
   tls.content_type = SLN_CONTENT_TYPE_HANDSHAKE;
   sln_parser_tls_set_current_version(s, &tls.version_major, &tls.version_minor);
   tls.length = bhs->size;
 
-  SELENE_ERR(sln_tls_unparse_header(s, &tls, &btls));
+  SELENE_ERR(sln_tls_serialize_header(s, &tls, &btls));
 
   SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, btls);
 
@@ -230,14 +230,14 @@ sln_handshake_handle_client_hello(selene_t *s, selene_event_e event, void *baton
     sh.session_id_len = 0;
     /* TODO: select from client suggested ciphers in the order of our own cipher list. */
     sh.cipher = SELENE_CS_RSA_WITH_RC4_128_SHA;
-    SELENE_ERR(sln_handshake_unparse_server_hello(s, &sh, &bhs));
+    SELENE_ERR(sln_handshake_serialize_server_hello(s, &sh, &bhs));
 
     /* TODO: create certificate message for non-PSK ciphers */
     tls.content_type = SLN_CONTENT_TYPE_HANDSHAKE;
     sln_parser_tls_set_current_version(s, &tls.version_major, &tls.version_minor);
     tls.length = bhs->size;
 
-    SELENE_ERR(sln_tls_unparse_header(s, &tls, &btls));
+    SELENE_ERR(sln_tls_serialize_header(s, &tls, &btls));
 
     SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, btls);
 

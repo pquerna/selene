@@ -122,7 +122,7 @@ static void alert_to_self(void **state)
 
   baton = (sln_parser_baton_t *)s->backend_baton;
 
-  err = sln_alert_unparse(s, &alert, &balert);
+  err = sln_alert_serialize(s, &alert, &balert);
   SLN_ASSERT(err == SELENE_SUCCESS);
   SLN_BRIGADE_INSERT_TAIL(baton->in_handshake, balert);
 

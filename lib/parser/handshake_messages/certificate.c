@@ -20,7 +20,7 @@
 #include <string.h>
 
 selene_error_t*
-sln_handshake_unparse_certificate(selene_t *s, sln_msg_certificate_t *cert, sln_bucket_t **p_b)
+sln_handshake_serialize_certificate(selene_t *s, sln_msg_certificate_t *cert, sln_bucket_t **p_b)
 {
   /* TODO: impl */
   return SELENE_SUCCESS;

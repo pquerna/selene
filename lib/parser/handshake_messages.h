@@ -125,7 +125,7 @@ typedef struct sln_msg_client_hello_t {
 } sln_msg_client_hello_t;
 
 selene_error_t*
-sln_handshake_unparse_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sln_bucket_t **b);
+sln_handshake_serialize_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sln_bucket_t **b);
 
 selene_error_t*
 sln_handshake_parse_client_hello_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, void **baton);
@@ -161,7 +161,7 @@ typedef struct sln_msg_server_hello_t {
 } sln_msg_server_hello_t;
 
 selene_error_t*
-sln_handshake_unparse_server_hello(selene_t *s, sln_msg_server_hello_t *sh, sln_bucket_t **p_b);
+sln_handshake_serialize_server_hello(selene_t *s, sln_msg_server_hello_t *sh, sln_bucket_t **p_b);
 
 selene_error_t*
 sln_handshake_parse_server_hello_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, void **baton);
@@ -182,8 +182,9 @@ typedef struct sln_msg_certificate_t {
 } sln_msg_certificate_t;
 
 selene_error_t*
-sln_handshake_unparse_certificate(selene_t *s, sln_msg_certificate_t *cert, sln_bucket_t **p_b);
+sln_handshake_serialize_certificate(selene_t *s, sln_msg_certificate_t *cert, sln_bucket_t **p_b);
 
 selene_error_t*
 sln_handshake_parse_certificate_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, void **baton);
+
 #endif

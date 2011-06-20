@@ -20,7 +20,7 @@
 #include <string.h>
 
 selene_error_t*
-sln_handshake_unparse_server_hello(selene_t *s, sln_msg_server_hello_t *sh, sln_bucket_t **p_b)
+sln_handshake_serialize_server_hello(selene_t *s, sln_msg_server_hello_t *sh, sln_bucket_t **p_b)
 {
   sln_bucket_t *b = NULL;
   size_t len = 0;
