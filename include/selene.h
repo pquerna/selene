@@ -19,19 +19,20 @@
  * @file selene.h
  */
 
+#include <stdlib.h> /* for size_t */
+#include <sys/socket.h> /* for iovec */
+
+#include "selene_visibility.h"
+#include "selene_version.h"
+#include "selene_error.h"
+#include "selene_conf.h"
+
 #ifndef _selene_h_
 #define _selene_h_
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-
-#include <stdlib.h>
-#include <sys/socket.h>
-#include "selene_visibility.h"
-#include "selene_version.h"
-#include "selene_error.h"
-#include "selene_conf.h"
 
 /** Opaque context of an SSL/TLS Session */
 typedef struct selene_t selene_t;

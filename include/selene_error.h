@@ -24,11 +24,11 @@
  * @file selene_error.h
  */
 
-#ifndef _selene_error_h_
-#define _selene_error_h_
-
 #include <stdint.h>
 #include "selene_visibility.h"
+
+#ifndef _selene_error_h_
+#define _selene_error_h_
 
 #ifdef __cplusplus
 extern "C" {

@@ -19,15 +19,15 @@
  * @file selene_conf.h
  */
 
+#include "selene_visibility.h"
+#include "selene_error.h"
+
 #ifndef _selene_conf_h_
 #define _selene_conf_h_
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-
-#include "selene_visibility.h"
-#include "selene_error.h"
 
 /** Opaque context for configuring many SSL/TLS sessions. */
 typedef struct selene_conf_t selene_conf_t;
