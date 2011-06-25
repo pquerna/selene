@@ -172,19 +172,19 @@ sln_handshake_serialize_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sl
     b->data[off+1] = snilen;
     off += 2;
 
-    /* len of list */
-    b->data[off] = snilen >> 8;
-    b->data[off+1] = snilen;
-    off += 2;
-
-    /* number of entries */
-    b->data[off] = 0;
-    b->data[off+1] = 1;
+    /* Size of whole list */
+    b->data[off] = (sninamelen + 3) >> 8;
+    b->data[off+1] = (sninamelen + 3);
     off += 2;
 
     /* dnsName type */
     b->data[off] = 0;
     off += 1;
+
+    /* Size of the current entry */
+    b->data[off] = (sninamelen) >> 8;
+    b->data[off+1] = (sninamelen);
+    off += 2;
 
     /* actual string! */
     memcpy(&b->data[off], ch->server_name, sninamelen);
