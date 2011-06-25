@@ -48,6 +48,16 @@ sln_parser_create(selene_t *s)
   return SELENE_SUCCESS;
 }
 
+static selene_error_t*
+have_io(selene_t *s, selene_event_e event, void *baton_)
+{
+  sln_parser_baton_t *baton;
+  SLN_ASSERT_CONTEXT(s);
+
+  baton = s->backend_baton;
+  return sln_state_machine(s, baton);
+}
+
 selene_error_t*
 sln_parser_start(selene_t *s)
 {
@@ -64,6 +74,9 @@ sln_parser_start(selene_t *s)
   }
 
   slnDbg(s, "starting client, handshake state %d", baton->handshake);
+
+  SELENE_ERR(selene_subscribe(s, SELENE_EVENT_IO_IN_ENC, have_io, NULL));
+  SELENE_ERR(selene_subscribe(s, SELENE_EVENT_IO_IN_CLEAR, have_io, NULL));
 
   return sln_state_machine(s, baton);
 }
