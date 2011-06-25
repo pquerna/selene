@@ -26,7 +26,14 @@ sln_state_machine(selene_t *s, sln_parser_baton_t *baton)
 enter_state_machine:
   slnDbg(s, "enter handshake_state_machine=%d", baton->handshake);
 
+  if (baton->connstate == SLN_CONNSTATE_ALERT_FATAL) {
+    /* TODO: better error */
+    slnDbg(s, "connection previously aborted");
+    return baton->fatal_err;
+  }
+
   if (!SLN_BRIGADE_EMPTY(s->bb.in_enc)) {
+    slnDbg(s, "input tls brigade has content");
     err = sln_io_tls_read(s, baton);
     if (err) {
       return err;
@@ -34,8 +41,10 @@ enter_state_machine:
   }
 
   if (!SLN_BRIGADE_EMPTY(baton->in_alert)) {
+    slnDbg(s, "input alert brigade has content");
     err = sln_io_alert_read(s, baton);
     if (err) {
+      slnDbg(s, "got a tls alert error");
       return err;
     }
   }
@@ -56,8 +65,20 @@ enter_state_machine:
           return err;
         }
         baton->handshake = SLN_HANDSHAKE_CLIENT_WAIT_SERVER_HELLO_DONE;
+        goto enter_state_machine;
         break;
       case SLN_HANDSHAKE_CLIENT_WAIT_SERVER_HELLO_DONE:
+        slnDbg(s, "trying server hello done");
+        if (!SLN_BRIGADE_EMPTY(baton->in_handshake)) {
+          slnDbg(s, "input handshake brigade has content");
+          err = sln_io_handshake_read(s, baton);
+          if (err) {
+            return err;
+          }
+          if (baton->handshake != SLN_HANDSHAKE_CLIENT_WAIT_SERVER_HELLO_DONE) {
+            goto enter_state_machine;
+          }
+        }
         break;
       case SLN_HANDSHAKE_CLIENT_SEND_FINISHED:
         break;
