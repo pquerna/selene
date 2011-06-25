@@ -38,6 +38,8 @@ Current TODO:
  * Server Hello respond with available protocols
  * Protocol selection event / completion callback
 
+* Implement SessionTickets <http://www.rfc-editor.org/rfc/rfc5077.txt>
+
 * OCSP API
  * Make it internal or just say you are up a creek?
  * General Validation API
