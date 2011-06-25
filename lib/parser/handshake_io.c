@@ -90,6 +90,10 @@ is_valid_message_type(uint8_t input) {
 static selene_error_t*
 setup_mt_parser(sln_tok_value_t *v, sln_hs_baton_t *hs)
 {
+  selene_t *s = hs->s;
+
+  slnDbg(s, "GOT MESSAGE TYPE SETUP: %d", hs->message_type);
+
   switch (hs->message_type) {
     case SLN_HS_MT_CLIENT_HELLO:
       hs->state = SLN_HS_MESSAGE_PARSER;
@@ -126,6 +130,9 @@ read_handshake_parser(sln_tok_value_t *v, void *baton_)
 {
   selene_error_t* err = SELENE_SUCCESS;
   sln_hs_baton_t *hs = (sln_hs_baton_t*)baton_;
+  selene_t *s = hs->s;
+
+  slnDbg(s, "IN HANDSHAKE PARSER, STATE: %d", hs->state);
 
   switch (hs->state) {
     case SLN_HS__INIT:
