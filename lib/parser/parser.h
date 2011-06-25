@@ -69,6 +69,7 @@ typedef enum {
 
 typedef enum sln_connstate_e {
   SLN_CONNSTATE_HANDSHAKE,
+  SLN_CONNSTATE_ALERT_FATAL,
 } sln_connstate_e;
 
 struct sln_parser_baton_t {
@@ -80,6 +81,7 @@ struct sln_parser_baton_t {
   sln_brigade_t *in_alert;
   sln_brigade_t *in_ccs;
   sln_brigade_t *in_application;
+  selene_error_t *fatal_err;
   uint8_t peer_version_major;
   uint8_t peer_version_minor;
 
