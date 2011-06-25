@@ -140,12 +140,12 @@ read_handshake_parser(sln_tok_value_t *v, void *baton_)
       }
       else {
         hs->state = SLN_HS_LENGTH;
-        v->next = TOK_COPY_BYTES;
+        v->next = TOK_UINT24;
         v->wantlen = 3;
       }
       break;
     case SLN_HS_LENGTH:
-      hs->length = (((unsigned char)v->v.bytes[0]) << 16 | ((unsigned char)v->v.bytes[1]) << 8 |  ((unsigned char)v->v.bytes[2]));
+      hs->length = v->v.uint24;
       hs->remaining = hs->length;
       err = setup_mt_parser(v, hs);
       hs->remaining -= v->wantlen;
