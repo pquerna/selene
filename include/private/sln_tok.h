@@ -28,6 +28,7 @@ typedef enum sln_tok_value_e {
   TOK_COPY_BRIGADE,
   TOK_SKIP,
   TOK_UINT16,
+  TOK_UINT24,
   TOK_DONE,
   TOK__MAX
 } sln_tok_value_e;
@@ -43,6 +44,7 @@ typedef struct sln_tok_value_t {
     char bytes[SLN_TOK_VALUE_MAX_BYTE_COPY_LEN];
     sln_brigade_t *bb;
     uint16_t uint16;
+    uint32_t uint24;
   } v;
 } sln_tok_value_t;
 
