@@ -45,6 +45,7 @@
         __FILE__, __LINE__, \
         # exp ); \
       selene_error_clear(SERR__err); \
+      exit(EXIT_FAILURE); \
       return EXIT_FAILURE; \
     } \
   } while (0);
