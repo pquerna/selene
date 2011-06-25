@@ -154,7 +154,7 @@ selene_publish(selene_t *s, selene_event_e event)
 
   SLN_RING_FOREACH(b, &(events)->list, sln_eventcb_t, link)
   {
-    b->cb(s, event, b->baton);
+    SELENE_ERR(b->cb(s, event, b->baton));
   }
 
   return SELENE_SUCCESS;
