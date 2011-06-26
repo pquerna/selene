@@ -29,23 +29,69 @@ sln_handshake_serialize_certificate(selene_t *s, sln_msg_certificate_t *cert, sl
 
 typedef struct cert_baton_t {
   sln_handshake_certificate_state_e state;
+  int certleft;
   sln_msg_certificate_t cert;
 } cert_baton_t;
 
 static selene_error_t*
 parse_certificate_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
 {
+  selene_error_t *err = SELENE_SUCCESS;
   cert_baton_t *certb = (cert_baton_t*)baton;
   sln_msg_certificate_t *cert = &certb->cert;
   selene_t *s = hs->s;
 
   switch (certb->state) {
-    /* TODO: impl */
+    case SLN_HS_CERTIFICATE_LENGTH:
+      certb->certleft = v->v.uint24;
+      certb->state = SLN_HS_CERTIFICATE_ENTRY_LENGTH;
+      v->next = TOK_UINT24;
+      v->wantlen = 3;
+      slnDbg(s, "got total len: %d", certb->certleft);
+      break;
+    case SLN_HS_CERTIFICATE_ENTRY_LENGTH:
+      certb->state = SLN_HS_CERTIFICATE_ENTRY_DATA;
+      v->next = TOK_COPY_BRIGADE;
+      v->wantlen = v->v.uint24;
+      slnDbg(s, "cert want len: %d", (int)v->wantlen);
+      certb->certleft -= v->v.uint24;
+      slnDbg(s, "got total len left: %d", certb->certleft);
+      break;
+    case SLN_HS_CERTIFICATE_ENTRY_DATA:
+    {
+      slnDbg(s, "got cert data in brigade!");
+      /* TODO: use a BIO here to avoid alloc */
+      size_t l = sln_brigade_size(v->v.bb);
+      const unsigned char *buf = sln_alloc(s, l);
+      const unsigned char *p = buf;
+      err = sln_brigade_flatten(v->v.bb, (char*)buf, &l);
+
+      if (err) {
+        sln_free(s, (void*)buf);
+        break;
+      }
+
+      /* TODO: certlist */
+      cert->cert = d2i_X509(NULL, &p, l);
+      /* TODO: error handling */
+      if (cert->cert != NULL) {
+        slnDbg(s, "cert name: %s", cert->cert->name);
+      }
+      sln_free(s, (void*)buf);
+
+      if (certb->certleft <= 0) {
+        v->next = TOK_DONE;
+        v->wantlen = 0;
+        break;
+      }
+      break;
+    }
+
     default:
       break;
   }
 
-  return SELENE_SUCCESS;
+  return err;
 }
 
 static selene_error_t*
@@ -66,12 +112,13 @@ selene_error_t*
 sln_handshake_parse_certificate_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, void **baton)
 {
   cert_baton_t *certb = sln_calloc(hs->s, sizeof(cert_baton_t));
+  slnDbg(hs->s, "sln_handshake_parse_certificate_setup");
   certb->state = SLN_HS_CERTIFICATE_LENGTH;
   hs->baton->msg.certificate = &certb->cert;
   hs->current_msg_step = parse_certificate_step;
   hs->current_msg_finish = parse_certificate_finish;
   hs->current_msg_destroy = parse_certificate_destroy;
-  v->next = TOK_COPY_BYTES;
+  v->next = TOK_UINT24;
   v->wantlen = 3;
   *baton = (void*)certb;
   return SELENE_SUCCESS;

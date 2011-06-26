@@ -103,10 +103,12 @@ setup_mt_parser(sln_tok_value_t *v, sln_hs_baton_t *hs)
       /* TODO: fatal alert (?) */
       break;
     case SLN_HS_MT_SERVER_HELLO:
+      slnDbg(s, "parsing server hello..");
       hs->state = SLN_HS_MESSAGE_PARSER;
       return sln_handshake_parse_server_hello_setup(hs, v, &hs->current_msg_baton);
       break;
     case SLN_HS_MT_CERTIFICATE:
+      slnDbg(s, "parsing the certificate...");
       hs->state = SLN_HS_MESSAGE_PARSER;
       return sln_handshake_parse_certificate_setup(hs, v, &hs->current_msg_baton);
       break;
@@ -146,6 +148,7 @@ read_handshake_parser(sln_tok_value_t *v, void *baton_)
         err = selene_error_createf(SELENE_EINVAL, "Invalid handshake message type: %u", hs->message_type);
       }
       else {
+        hs->current_msg_consume += 1;
         hs->state = SLN_HS_LENGTH;
         v->next = TOK_UINT24;
         v->wantlen = 3;
@@ -153,6 +156,7 @@ read_handshake_parser(sln_tok_value_t *v, void *baton_)
       break;
     case SLN_HS_LENGTH:
       hs->length = v->v.uint24;
+      hs->current_msg_consume += 3 + hs->length;
       hs->remaining = hs->length;
       err = setup_mt_parser(v, hs);
       hs->remaining -= v->wantlen;
@@ -174,9 +178,9 @@ read_handshake_parser(sln_tok_value_t *v, void *baton_)
 
         hs->current_msg_baton = NULL;
 
-        hs->state = SLN_HS_MESSAGE_TYPE;
-        v->next = TOK_COPY_BYTES;
-        v->wantlen = 1;
+        hs->state = SLN_HS__DONE;
+        v->next = TOK_DONE;
+        v->wantlen = 0;
       }
       break;
     default:
@@ -191,22 +195,32 @@ selene_error_t*
 sln_io_handshake_read(selene_t *s, sln_parser_baton_t *baton)
 {
   sln_hs_baton_t hs;
+  selene_error_t *err = SELENE_SUCCESS;
+  do {
+    hs.s = s;
+    hs.baton = baton;
+    hs.state = SLN_HS__INIT;
+    hs.current_msg_baton = NULL;
+    hs.current_msg_step = NULL;
+    hs.current_msg_finish = NULL;
+    hs.current_msg_destroy = NULL;
+    hs.current_msg_consume = 0;
 
-  hs.s = s;
-  hs.baton = baton;
-  hs.state = SLN_HS__INIT;
-  hs.current_msg_baton = NULL;
-  hs.current_msg_step = NULL;
-  hs.current_msg_finish = NULL;
-  hs.current_msg_destroy = NULL;
+    err = sln_tok_parser(baton->in_handshake, read_handshake_parser, &hs);
 
-  sln_tok_parser(baton->in_handshake, read_handshake_parser, &hs);
+    if (hs.current_msg_baton != NULL && hs.current_msg_destroy != NULL) {
+      hs.current_msg_destroy(&hs, hs.current_msg_baton);
+    }
 
-  if (hs.current_msg_baton != NULL && hs.current_msg_destroy != NULL) {
-    hs.current_msg_destroy(&hs, hs.current_msg_baton);
-  }
+    if (hs.state == SLN_HS__DONE) {
+      slnDbg(s, "handshake chomping: %d", (int)hs.current_msg_consume);
+      sln_brigade_chomp(baton->in_handshake, hs.current_msg_consume);
+    }
+  } while (err == SELENE_SUCCESS &&
+           hs.state == SLN_HS__DONE &&
+           !SLN_BRIGADE_EMPTY(baton->in_handshake));
 
-  return SELENE_SUCCESS;
+  return err;
 }
 
 selene_error_t*

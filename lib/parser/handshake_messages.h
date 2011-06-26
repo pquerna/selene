@@ -78,6 +78,7 @@ struct sln_hs_baton_t {
   /* called when the entire lenght of a message is consumed */
   sln_hs_msg_finish_cb* current_msg_finish;
   sln_hs_msg_destroy_cb* current_msg_destroy;
+  size_t current_msg_consume;
 };
 
 
@@ -174,11 +175,13 @@ sln_handshake_handle_server_hello(selene_t *ctxt, selene_event_e event, void *ba
 
 typedef enum sln_handshake_certificate_state_e {
   SLN_HS_CERTIFICATE_LENGTH,
+  SLN_HS_CERTIFICATE_ENTRY_LENGTH,
+  SLN_HS_CERTIFICATE_ENTRY_DATA
 } sln_handshake_certificate_state_e;
 
 typedef struct sln_msg_certificate_t {
-  /* TODO: impl */
-  int foo;
+  /* TODO: cert lists */
+  X509 *cert;
 } sln_msg_certificate_t;
 
 selene_error_t*
