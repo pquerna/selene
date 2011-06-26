@@ -84,6 +84,9 @@ parse_certificate_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
         v->wantlen = 0;
         break;
       }
+      certb->state = SLN_HS_CERTIFICATE_ENTRY_LENGTH;
+      v->next = TOK_UINT24;
+      v->wantlen = 3;
       break;
     }
 
