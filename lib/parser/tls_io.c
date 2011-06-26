@@ -56,6 +56,7 @@ typedef struct rtls_baton_t {
   uint8_t version_major;
   uint8_t version_minor;
   uint16_t length;
+  size_t consume;
 } rtls_baton_t;
 
 static int
@@ -95,6 +96,7 @@ read_tls(sln_tok_value_t *v, void *baton_)
       break;
     case TLS_RS_CONTENT_TYPE:
       rtls->content_type = v->v.bytes[0];
+      rtls->consume += 1;
       if (!is_valid_content_type(rtls->content_type)) {
         /* TODO: accept this ONLY for the very first TLS message we recieve */
         if (baton->got_first_packet == 0 && (rtls->content_type == 'G' || rtls->content_type == 'P')) {
@@ -116,6 +118,7 @@ read_tls(sln_tok_value_t *v, void *baton_)
     case TLS_RS_VERSION:
       rtls->version_major = v->v.bytes[0];
       rtls->version_minor = v->v.bytes[1];
+      rtls->consume += 2;
       rtls->state = TLS_RS_LENGTH;
       v->next = TOK_COPY_BYTES;
       v->wantlen = 2;
@@ -123,11 +126,13 @@ read_tls(sln_tok_value_t *v, void *baton_)
     case TLS_RS_LENGTH:
       rtls->length = (((unsigned char)v->v.bytes[0]) << 8 |  ((unsigned char)v->v.bytes[1]));
       rtls->state = TLS_RS_MESSAGE;
+      rtls->consume += 2;
       v->next = TOK_COPY_BRIGADE;
       v->wantlen = rtls->length;
       break;
     case TLS_RS_MESSAGE:
       /* TODO: efficient slicing of brigades instead of copying data here */
+      rtls->consume += sln_brigade_size(v->v.bb);
       switch (rtls->content_type) {
         case TLS_CT_CHANGE_CIPHER_SPEC:
           SLN_BRIGADE_CONCAT(baton->in_ccs, v->v.bb);
@@ -165,24 +170,33 @@ sln_io_tls_read(selene_t *s, sln_parser_baton_t *baton)
   rtls_baton_t rtls;
   selene_error_t* err;
 
-  memset(&rtls, 0, sizeof(rtls));
-  rtls.s = s;
-  rtls.baton = baton;
-  rtls.state = TLS_RS__INIT;
+  do {
+    slnDbg(s, "tls read pending: %d", (int)sln_brigade_size(s->bb.in_enc));
+    memset(&rtls, 0, sizeof(rtls));
+    rtls.s = s;
+    rtls.baton = baton;
+    rtls.state = TLS_RS__INIT;
 
-  err = sln_tok_parser(s->bb.in_enc, read_tls, &rtls);
+    err = sln_tok_parser(s->bb.in_enc, read_tls, &rtls);
 
-  if (err) {
-    /* TODO: logging here? */
-    sln_io_alert_fatal(s, SLN_ALERT_DESC_INTERNAL_ERROR);
-    return err;
-  }
+    if (err) {
+      /* TODO: logging here? */
+      sln_io_alert_fatal(s, SLN_ALERT_DESC_INTERNAL_ERROR);
+      return err;
+    }
 
-  if (rtls.state == TLS_RS__DONE) {
-    //fprintf(stderr, "done, and legnth of handshake brigade: %d\n", (int)sln_brigade_size(baton->in_handshake));
-    baton->peer_version_major = rtls.version_major;
-    baton->peer_version_minor = rtls.version_minor;
-  }
+    if (rtls.state == TLS_RS__DONE) {
+      /* Consumed a whole TLS packet, otherwise we got part way done */
+      sln_brigade_chomp(s->bb.in_enc, rtls.consume);
+      slnDbg(s, "tls read chomping: %d", (int)rtls.consume);
+
+      /* TODO: only on first packet (?)  SSLv2 Hello?? */
+      baton->peer_version_major = rtls.version_major;
+      baton->peer_version_minor = rtls.version_minor;
+    }
+  } while (err == SELENE_SUCCESS &&
+           rtls.state == TLS_RS__DONE &&
+           !SLN_BRIGADE_EMPTY(s->bb.in_enc));
 
   return SELENE_SUCCESS;
 }
