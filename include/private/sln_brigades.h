@@ -60,6 +60,12 @@ selene_error_t*
 sln_brigade_flatten(sln_brigade_t *bb, char *c, size_t *len);
 
 /**
+ * Chomp cuts off the front of a brigade.
+ */
+selene_error_t*
+sln_brigade_chomp(sln_brigade_t *bb, size_t len);
+
+/**
  * Duplicate a section of a brigade, into the tail of another brigade.
  */
 selene_error_t*

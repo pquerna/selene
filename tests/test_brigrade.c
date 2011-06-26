@@ -208,6 +208,51 @@ static void brigade_copy_into(void **state)
   sln_brigade_destroy(source);
 }
 
+static void brigade_chomp(void **state)
+{
+  sln_brigade_t *bb;
+  sln_bucket_t *e1;
+  char buf[20];
+  size_t len = 0;
+
+  SLN_ERR(sln_brigade_create(sln_test_alloc, &bb));
+  SLN_ERR(sln_bucket_create_empty(sln_test_alloc, &e1, 10));
+  SLN_BRIGADE_INSERT_TAIL(bb, e1);
+  memset(e1->data, 'A', e1->size);
+  assert_int_equal(sln_brigade_size(bb), 10);
+  SLN_ERR(sln_brigade_chomp(bb, 1));
+  assert_int_equal(sln_brigade_size(bb), 9);
+  SLN_ERR(sln_brigade_chomp(bb, 8));
+  assert_int_equal(sln_brigade_size(bb), 1);
+  sln_brigade_destroy(bb);
+
+  SLN_ERR(sln_brigade_create(sln_test_alloc, &bb));
+  SLN_ERR(sln_bucket_create_empty(sln_test_alloc, &e1, 10));
+  SLN_BRIGADE_INSERT_TAIL(bb, e1);
+  memset(e1->data, 'A', e1->size);
+  SLN_ERR(sln_bucket_create_empty(sln_test_alloc, &e1, 10));
+  SLN_BRIGADE_INSERT_TAIL(bb, e1);
+  memset(e1->data, 'B', e1->size);
+  assert_int_equal(sln_brigade_size(bb), 20);
+
+  SLN_ERR(sln_brigade_chomp(bb, 8));
+  assert_int_equal(sln_brigade_size(bb), 12);
+  SLN_ERR(sln_brigade_pread_bytes(bb, 0, 4, &buf[0], &len));
+  assert_memory_equal(buf, "AABB", 4);
+
+
+  SLN_ERR(sln_brigade_chomp(bb, 2));
+  assert_int_equal(sln_brigade_size(bb), 10);
+  SLN_ERR(sln_brigade_pread_bytes(bb, 0, 4, &buf[0], &len));
+  assert_memory_equal(buf, "BBBB", 4);
+
+  SLN_ERR(sln_brigade_chomp(bb, 2));
+  SLN_ERR(sln_brigade_pread_bytes(bb, 0, 8, &buf[0], &len));
+  assert_memory_equal(buf, "BBBBBBBB", 8);
+  assert_int_equal(sln_brigade_size(bb), 8);
+  sln_brigade_destroy(bb);
+}
+
 SLN_TESTS_START(brigade)
   SLN_TESTS_ENTRY(brigade_operations)
   SLN_TESTS_ENTRY(brigade_flatten)
@@ -215,4 +260,5 @@ SLN_TESTS_START(brigade)
   SLN_TESTS_ENTRY(brigade_pread_simple)
   SLN_TESTS_ENTRY(brigade_pread_more_buckets)
   SLN_TESTS_ENTRY(brigade_copy_into)
+  SLN_TESTS_ENTRY(brigade_chomp)
 SLN_TESTS_END()

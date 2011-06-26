@@ -196,3 +196,41 @@ sln_brigade_copy_into(sln_brigade_t *source_bb, size_t want_offset, size_t want_
 
   return SELENE_SUCCESS;
 }
+
+selene_error_t*
+sln_brigade_chomp(sln_brigade_t *bb, size_t len)
+{
+  size_t actual = 0;
+  sln_bucket_t *b;
+  sln_bucket_t *iter;
+
+  SLN_RING_FOREACH_SAFE(b, iter, &(bb)->list, sln_bucket_t, link)
+  {
+    size_t data_len = b->size;
+
+    /* If we would overflow. */
+    if (data_len + actual > len) {
+      data_len = len - actual;
+    }
+
+    actual += data_len;
+
+    if (b->size != data_len) {
+      sln_bucket_t *tmpe;
+
+      SELENE_ERR(sln_bucket_create_copy_bytes(bb->alloc, &tmpe, (b->data + data_len), b->size - data_len));
+
+      SLN_BRIGADE_INSERT_HEAD(bb, tmpe);
+    }
+
+    sln_bucket_destroy(b);
+
+    /* This could probably be actual == *len, but be safe from stray
+     * photons. */
+    if (actual >= len) {
+        break;
+    }
+  }
+
+  return SELENE_SUCCESS;
+}
