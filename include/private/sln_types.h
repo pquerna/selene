@@ -16,15 +16,16 @@
  */
 
 
-#ifndef _sln_types_h_
-#define _sln_types_h_
-
 #include "selene.h"
 #include "sln_log.h"
 #include "sln_ring.h"
+#include "selene_cert.h"
 
 #include <openssl/pem.h>
 #include <openssl/x509.h>
+
+#ifndef _sln_types_h_
+#define _sln_types_h_
 
 /* TODO: public header? */
 typedef enum {
@@ -131,6 +132,22 @@ struct selene_conf_t {
   selene_cipher_suite_list_t ciphers;
   X509_STORE* trusted_cert_store;
 };
+
+struct selene_cert_t {
+  selene_t *s;
+  X509 *cert;
+  int depth;
+  /* Cache extracted information out of the certificate. */
+  const char *cache_fingerprint_sha1;
+  const char *cache_fingerprint_md5;
+  int cache_not_before;
+  int cache_not_after;
+  selene_cert_name_t *cache_subject;
+  selene_cert_name_t *cache_issuer;
+  int cache_alt_names_len;
+  char **cache_alt_names;
+};
+
 
 typedef struct {
   sln_brigade_t *in_enc;

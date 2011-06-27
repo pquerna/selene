@@ -53,7 +53,9 @@ SELENE_API(int) selene_cert_not_after(const selene_cert_t *cert);
 
 /* TODO: array of subjectAltName ?*/
 /* TODO: this is a crap API */
-SELENE_API(void) selene_cert_alt_names(const selene_cert_t *cert, int *arrayLen, const char **arr);
+SELENE_API(int) selene_cert_alt_names_count(const selene_cert_t *cert);
+
+SELENE_API(const char*) selene_cert_alt_names_entry(const selene_cert_t *cert, int offset);
 
 SELENE_API(selene_cert_name_t*) selene_cert_issuer(const selene_cert_t *cert);
 
