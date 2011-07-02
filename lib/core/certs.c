@@ -18,6 +18,48 @@
 #include "selene.h"
 #include "selene_cert.h"
 #include "sln_types.h"
+#include "sln_certs.h"
+
+/**
+ * This whole interface is derived on the code in Serf's SSL Buckets:
+ *   <http://code.google.com/p/serf/source/browse/trunk/buckets/ssl_buckets.c>
+ */
+
+/* Copyright 2002-2004 Justin Erenkrantz and Greg Stein
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * ----
+ *
+ * For the OpenSSL thread-safety locking code:
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Originally developed by Aaron Bannert and Justin Erenkrantz, eBuilt.
+ */
 
 selene_error_t*
 sln_cert_create(selene_t *s, X509 *x509, int depth, selene_cert_t **p_cert)
@@ -107,17 +149,73 @@ selene_cert_depth(const selene_cert_t *cert)
   return cert->depth;
 }
 
+static void
+hash_to_fingerprint_hex(selene_t *s, unsigned char *md, unsigned int md_size, char **out)
+{
+  int i;
+  const char hex[] = "0123456789ABCDEF";
+  char fingerprint[EVP_MAX_MD_SIZE * 3];
+
+  for (i=0; i<md_size; i++) {
+    fingerprint[3*i] = hex[(md[i] & 0xf0) >> 4];
+    fingerprint[(3*i)+1] = hex[(md[i] & 0x0f)];
+    fingerprint[(3*i)+2] = ':';
+  }
+
+  if (md_size > 0) {
+    fingerprint[(3*(md_size-1))+2] = '\0';
+  }
+  else {
+    fingerprint[0] = '\0';
+  }
+
+  *out = sln_strdup(s, fingerprint);
+}
+
+
+static void
+generate_fingerprint_sha1(const selene_cert_t *cert)
+{
+  unsigned int md_size;
+  unsigned char md[EVP_MAX_MD_SIZE];
+
+  if (X509_digest(cert->cert, EVP_sha1(), md, &md_size)) {
+    hash_to_fingerprint_hex(cert->s, md, md_size, (char **)&cert->cache_fingerprint_sha1);
+  }
+}
+
 const char*
 selene_cert_fingerprint_sha1(const selene_cert_t *cert)
 {
+  if (cert->cache_fingerprint_sha1 == NULL) {
+    generate_fingerprint_sha1(cert);
+  }
+
   return cert->cache_fingerprint_sha1;
+}
+
+
+static void
+generate_fingerprint_md5(const selene_cert_t *cert)
+{
+  unsigned int md_size;
+  unsigned char md[EVP_MAX_MD_SIZE];
+
+  if (X509_digest(cert->cert, EVP_md5(), md, &md_size)) {
+    hash_to_fingerprint_hex(cert->s, md, md_size, (char **)&cert->cache_fingerprint_md5);
+  }
 }
 
 const char*
 selene_cert_fingerprint_md5(const selene_cert_t *cert)
 {
+  if (cert->cache_fingerprint_md5 == NULL) {
+    generate_fingerprint_md5(cert);
+  }
+
   return cert->cache_fingerprint_md5;
 }
+
 
 int
 selene_cert_not_before(const selene_cert_t *cert)

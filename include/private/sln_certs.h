@@ -15,51 +15,16 @@
  * limitations under the License.
  */
 
+#ifndef _sln_certs_h_
+#define _sln_certs_h_
+
 #include "selene.h"
-#include "sln_tests.h"
-#include <stdio.h>
+#include "sln_types.h"
 
-static void*
-malloc_cb(void *baton, size_t len) {
-  return malloc(len);
-}
+selene_error_t*
+sln_cert_create(selene_t *s, X509 *x509, int depth, selene_cert_t **p_cert);
 
-static void*
-calloc_cb(void *baton, size_t len) {
-  return calloc(1, len);
-}
+void
+sln_cert_destroy(selene_cert_t *cert);
 
-static void
-free_cb(void *baton, void *ptr) {
-  free(ptr);
-}
-
-static selene_alloc_t test_alloc = {
-  NULL,
-  malloc_cb,
-  calloc_cb,
-  free_cb
-};
-
-selene_alloc_t* sln_test_alloc = &test_alloc;
-
-#define RUNT(module) do { \
-    int rv = sln_tests_ ## module (); \
-    if (rv != 0) { \
-      return rv; \
-    } \
-  } while (0);
-
-int main(int argc, char* argv[]) {
-  RUNT(logging);
-  RUNT(init);
-  RUNT(brigade);
-  RUNT(buckets);
-  RUNT(events);
-  RUNT(certs);
-  RUNT(tok);
-  RUNT(tls_io);
-  RUNT(handshake_io);
-  RUNT(alert_io);
-  return 0;
-}
+#endif

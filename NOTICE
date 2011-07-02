@@ -16,3 +16,6 @@ used by the Apache Portable Runtime:
     This product includes software developed by
     The Apache Software Foundation (http://www.apache.org/).
 
+The Certificate interface includes code from the Serf Project:
+    This product includes software developed by
+    The Apache Software Foundation (http://www.apache.org/).
