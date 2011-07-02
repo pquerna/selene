@@ -21,6 +21,9 @@
 #include "selene.h"
 #include "sln_types.h"
 
+time_t
+sln_asn1_time_to_timestamp(ASN1_TIME *as);
+
 selene_error_t*
 sln_cert_create(selene_t *s, X509 *x509, int depth, selene_cert_t **p_cert);
 
