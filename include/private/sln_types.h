@@ -140,8 +140,8 @@ struct selene_cert_t {
   /* Cache extracted information out of the certificate. */
   const char *cache_fingerprint_sha1;
   const char *cache_fingerprint_md5;
-  int cache_not_before;
-  int cache_not_after;
+  const char *cache_not_before;
+  const char *cache_not_after;
   selene_cert_name_t *cache_subject;
   selene_cert_name_t *cache_issuer;
   int cache_alt_names_len;

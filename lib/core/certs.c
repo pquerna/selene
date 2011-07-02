@@ -19,7 +19,7 @@
 #include "selene_cert.h"
 #include "sln_types.h"
 #include "sln_certs.h"
-
+#include <string.h>
 /**
  * This whole interface is derived on the code in Serf's SSL Buckets:
  *   <http://code.google.com/p/serf/source/browse/trunk/buckets/ssl_buckets.c>
@@ -217,17 +217,58 @@ selene_cert_fingerprint_md5(selene_cert_t *cert)
 }
 
 
-int
+void
+generate_expires(selene_cert_t *cert)
+{
+  BIO *bio;
+  /* set expiry dates */
+  bio = BIO_new(BIO_s_mem());
+
+  if (bio) {
+    ASN1_TIME *notBefore, *notAfter;
+    char buf[256];
+
+    memset(buf, 0, sizeof (buf));
+
+    notBefore = X509_get_notBefore(cert->cert);
+    if (ASN1_TIME_print(bio, notBefore)) {
+      BIO_read(bio, buf, 255);
+      cert->cache_not_before = sln_strdup(cert->s, buf);
+     }
+
+     memset (buf, 0, sizeof (buf));
+
+     notAfter = X509_get_notAfter(cert->cert);
+     if (ASN1_TIME_print(bio, notAfter)) {
+       BIO_read(bio, buf, 255);
+       cert->cache_not_after = sln_strdup(cert->s, buf);
+    }
+
+  }
+
+  BIO_free(bio);
+}
+
+const char*
 selene_cert_not_before(selene_cert_t *cert)
 {
+  if (cert->cache_not_before == NULL) {
+    generate_expires(cert);
+  }
+
   return cert->cache_not_before;
 }
 
-int
+const char*
 selene_cert_not_after(selene_cert_t *cert)
 {
+  if (cert->cache_not_after == NULL) {
+    generate_expires(cert);
+  }
+
   return cert->cache_not_after;
 }
+
 
 int
 selene_cert_alt_names_count(selene_cert_t *cert)
@@ -304,6 +345,7 @@ convert_X509_NAME_to_selene_name(selene_cert_t *cert, X509_NAME *org, selene_cer
   if (ret != -1) {
     name->countryName = sln_strdup(cert->s, buf);
   }
+
 }
 
 

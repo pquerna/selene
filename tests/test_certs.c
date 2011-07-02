@@ -301,9 +301,25 @@ cert_issuer(void **state)
   destroy_cert(state, s, conf, cert);
 }
 
+static void
+cert_validtime(void **state)
+{
+  selene_t *s;
+  selene_conf_t *conf;
+  selene_cert_t *cert;
+
+  init_cert(state, &s, &conf, &cert);
+
+  assert_string_equal("Dec 30 00:00:00 2009 GMT", selene_cert_not_before(cert));
+  assert_string_equal("Dec 30 23:59:59 2011 GMT", selene_cert_not_after(cert));
+
+  destroy_cert(state, s, conf, cert);
+}
+
 SLN_TESTS_START(certs)
   SLN_TESTS_ENTRY(cert_depth)
   SLN_TESTS_ENTRY(cert_fingerprints)
   SLN_TESTS_ENTRY(cert_subject)
   SLN_TESTS_ENTRY(cert_issuer)
+  SLN_TESTS_ENTRY(cert_validtime)
 SLN_TESTS_END()
