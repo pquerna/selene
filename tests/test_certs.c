@@ -214,6 +214,8 @@ static void
 destroy_cert(void **state, selene_t *s, selene_conf_t *conf, selene_cert_t *cert)
 {
   sln_cert_destroy(cert);
+  selene_destroy(s);
+  selene_conf_destroy(conf);
 }
 
 static void
