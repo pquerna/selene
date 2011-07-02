@@ -41,25 +41,25 @@ typedef struct selene_cert_name_t {
   const char *countryName;
 } selene_cert_name_t;
 
-SELENE_API(int) selene_cert_depth(const selene_cert_t *cert);
+SELENE_API(int) selene_cert_depth(selene_cert_t *cert);
 
-SELENE_API(const char*) selene_cert_fingerprint_sha1(const selene_cert_t *cert);
+SELENE_API(const char*) selene_cert_fingerprint_sha1(selene_cert_t *cert);
 
-SELENE_API(const char*) selene_cert_fingerprint_md5(const selene_cert_t *cert);
+SELENE_API(const char*) selene_cert_fingerprint_md5(selene_cert_t *cert);
 
-SELENE_API(int) selene_cert_not_before(const selene_cert_t *cert);
+SELENE_API(int) selene_cert_not_before(selene_cert_t *cert);
 
-SELENE_API(int) selene_cert_not_after(const selene_cert_t *cert);
+SELENE_API(int) selene_cert_not_after(selene_cert_t *cert);
 
 /* TODO: array of subjectAltName ?*/
 /* TODO: this is a crap API */
-SELENE_API(int) selene_cert_alt_names_count(const selene_cert_t *cert);
+SELENE_API(int) selene_cert_alt_names_count(selene_cert_t *cert);
 
-SELENE_API(const char*) selene_cert_alt_names_entry(const selene_cert_t *cert, int offset);
+SELENE_API(const char*) selene_cert_alt_names_entry(selene_cert_t *cert, int offset);
 
-SELENE_API(selene_cert_name_t*) selene_cert_issuer(const selene_cert_t *cert);
+SELENE_API(selene_cert_name_t*) selene_cert_issuer(selene_cert_t *cert);
 
-SELENE_API(selene_cert_name_t*) selene_cert_subject(const selene_cert_t *cert);
+SELENE_API(selene_cert_name_t*) selene_cert_subject(selene_cert_t *cert);
 
 
 #ifdef __cplusplus

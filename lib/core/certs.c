@@ -144,7 +144,7 @@ sln_cert_destroy(selene_cert_t *cert)
 }
 
 int
-selene_cert_depth(const selene_cert_t *cert)
+selene_cert_depth(selene_cert_t *cert)
 {
   return cert->depth;
 }
@@ -174,7 +174,7 @@ hash_to_fingerprint_hex(selene_t *s, unsigned char *md, unsigned int md_size, ch
 
 
 static void
-generate_fingerprint_sha1(const selene_cert_t *cert)
+generate_fingerprint_sha1(selene_cert_t *cert)
 {
   unsigned int md_size;
   unsigned char md[EVP_MAX_MD_SIZE];
@@ -185,7 +185,7 @@ generate_fingerprint_sha1(const selene_cert_t *cert)
 }
 
 const char*
-selene_cert_fingerprint_sha1(const selene_cert_t *cert)
+selene_cert_fingerprint_sha1(selene_cert_t *cert)
 {
   if (cert->cache_fingerprint_sha1 == NULL) {
     generate_fingerprint_sha1(cert);
@@ -196,7 +196,7 @@ selene_cert_fingerprint_sha1(const selene_cert_t *cert)
 
 
 static void
-generate_fingerprint_md5(const selene_cert_t *cert)
+generate_fingerprint_md5(selene_cert_t *cert)
 {
   unsigned int md_size;
   unsigned char md[EVP_MAX_MD_SIZE];
@@ -207,7 +207,7 @@ generate_fingerprint_md5(const selene_cert_t *cert)
 }
 
 const char*
-selene_cert_fingerprint_md5(const selene_cert_t *cert)
+selene_cert_fingerprint_md5(selene_cert_t *cert)
 {
   if (cert->cache_fingerprint_md5 == NULL) {
     generate_fingerprint_md5(cert);
@@ -218,37 +218,119 @@ selene_cert_fingerprint_md5(const selene_cert_t *cert)
 
 
 int
-selene_cert_not_before(const selene_cert_t *cert)
+selene_cert_not_before(selene_cert_t *cert)
 {
   return cert->cache_not_before;
 }
 
 int
-selene_cert_not_after(const selene_cert_t *cert)
+selene_cert_not_after(selene_cert_t *cert)
 {
   return cert->cache_not_after;
 }
 
 int
-selene_cert_alt_names_count(const selene_cert_t *cert)
+selene_cert_alt_names_count(selene_cert_t *cert)
 {
   return cert->cache_alt_names_len;
 }
 
 const char*
-selene_cert_alt_names_entry(const selene_cert_t *cert, int offset)
+selene_cert_alt_names_entry(selene_cert_t *cert, int offset)
 {
   return NULL;
 }
 
+static void
+convert_X509_NAME_to_selene_name(selene_cert_t *cert, X509_NAME *org, selene_cert_name_t *name)
+{
+  char buf[1024];
+  int ret;
+
+  /* TODO: NULL in CN attacks */
+
+  ret = X509_NAME_get_text_by_NID(org,
+                                  NID_commonName,
+                                  buf, 1024);
+  if (ret != -1) {
+    name->commonName = sln_strdup(cert->s, buf);
+  }
+
+
+  ret = X509_NAME_get_text_by_NID(org,
+                                  NID_pkcs9_emailAddress,
+                                  buf, 1024);
+
+  if (ret != -1) {
+    name->emailAddress = sln_strdup(cert->s, buf);
+  }
+
+
+  ret = X509_NAME_get_text_by_NID(org,
+                                  NID_organizationName,
+                                  buf, 1024);
+  if (ret != -1) {
+    name->organizationName = sln_strdup(cert->s, buf);
+  }
+
+
+  ret = X509_NAME_get_text_by_NID(org,
+                                  NID_organizationalUnitName,
+                                  buf, 1024);
+  if (ret != -1) {
+    name->organizationalUnitName = sln_strdup(cert->s, buf);
+  }
+
+
+  ret = X509_NAME_get_text_by_NID(org,
+                                  NID_localityName,
+                                  buf, 1024);
+  if (ret != -1) {
+    name->localityName = sln_strdup(cert->s, buf);
+  }
+
+
+  ret = X509_NAME_get_text_by_NID(org,
+                                  NID_stateOrProvinceName,
+                                  buf, 1024);
+  if (ret != -1) {
+    name->stateOrProvinceName = sln_strdup(cert->s, buf);
+  }
+
+
+  ret = X509_NAME_get_text_by_NID(org,
+                                  NID_countryName,
+                                  buf, 1024);
+  if (ret != -1) {
+    name->countryName = sln_strdup(cert->s, buf);
+  }
+}
+
 selene_cert_name_t*
-selene_cert_issuer(const selene_cert_t *cert)
+selene_cert_issuer(selene_cert_t *cert)
 {
   return cert->cache_issuer;
 }
 
-selene_cert_name_t*
-selene_cert_subject(const selene_cert_t *cert)
+static void
+generate_subject(selene_cert_t *cert)
 {
+  X509_NAME *subject = X509_get_subject_name(cert->cert);
+  if (!subject) {
+    /* Is it better to make an empty cache_subject with NULL fields, or just leave it NULL? */
+    return;
+  }
+
+  cert->cache_subject = sln_calloc(cert->s, sizeof(selene_cert_name_t));
+
+  convert_X509_NAME_to_selene_name(cert, subject, cert->cache_subject);
+}
+
+selene_cert_name_t*
+selene_cert_subject(selene_cert_t *cert)
+{
+  if (cert->cache_subject == NULL) {
+    generate_subject(cert);
+  }
   return cert->cache_subject;
 }

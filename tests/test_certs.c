@@ -250,8 +250,32 @@ cert_fingerprints(void **state)
   destroy_cert(state, s, conf, cert);
 }
 
+static void
+cert_subject(void **state)
+{
+  selene_t *s;
+  selene_conf_t *conf;
+  selene_cert_t *cert;
+  selene_cert_name_t *name;
+
+  init_cert(state, &s, &conf, &cert);
+
+  name = selene_cert_subject(cert);
+
+  assert_string_equal("*.apache.org", name->commonName);
+  assert_int_equal(0, name->emailAddress);
+  assert_string_equal("Infrastructure", name->organizationalUnitName);
+  assert_string_equal("Apache Software Foundation", name->organizationName);
+  assert_string_equal("Forest Hill", name->localityName);
+  assert_string_equal("Maryland", name->stateOrProvinceName);
+  assert_string_equal("US", name->countryName);
+
+  destroy_cert(state, s, conf, cert);
+}
+
 
 SLN_TESTS_START(certs)
   SLN_TESTS_ENTRY(cert_depth)
   SLN_TESTS_ENTRY(cert_fingerprints)
+  SLN_TESTS_ENTRY(cert_subject)
 SLN_TESTS_END()
