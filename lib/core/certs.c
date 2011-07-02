@@ -306,11 +306,30 @@ convert_X509_NAME_to_selene_name(selene_cert_t *cert, X509_NAME *org, selene_cer
   }
 }
 
+
+static void
+generate_issuer(selene_cert_t *cert)
+{
+  X509_NAME *issuer = X509_get_issuer_name(cert->cert);
+  if (!issuer) {
+    /* Is it better to make an empty cache_subject with NULL fields, or just leave it NULL? */
+    return;
+  }
+
+  cert->cache_issuer = sln_calloc(cert->s, sizeof(selene_cert_name_t));
+
+  convert_X509_NAME_to_selene_name(cert, issuer, cert->cache_issuer);
+}
+
 selene_cert_name_t*
 selene_cert_issuer(selene_cert_t *cert)
 {
+  if (cert->cache_issuer == NULL) {
+    generate_issuer(cert);
+  }
   return cert->cache_issuer;
 }
+
 
 static void
 generate_subject(selene_cert_t *cert)

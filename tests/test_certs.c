@@ -262,6 +262,8 @@ cert_subject(void **state)
 
   name = selene_cert_subject(cert);
 
+  assert_int_not_equal(0, name);
+
   assert_string_equal("*.apache.org", name->commonName);
   assert_int_equal(0, name->emailAddress);
   assert_string_equal("Infrastructure", name->organizationalUnitName);
@@ -274,8 +276,34 @@ cert_subject(void **state)
 }
 
 
+static void
+cert_issuer(void **state)
+{
+  selene_t *s;
+  selene_conf_t *conf;
+  selene_cert_t *cert;
+  selene_cert_name_t *name;
+
+  init_cert(state, &s, &conf, &cert);
+
+  name = selene_cert_issuer(cert);
+
+  assert_int_not_equal(0, name);
+
+  assert_string_equal("Thawte Premium Server CA", name->commonName);
+  assert_string_equal("premium-server@thawte.com", name->emailAddress);
+  assert_string_equal("Certification Services Division", name->organizationalUnitName);
+  assert_string_equal("Thawte Consulting cc", name->organizationName);
+  assert_string_equal("Cape Town", name->localityName);
+  assert_string_equal("Western Cape", name->stateOrProvinceName);
+  assert_string_equal("ZA", name->countryName);
+
+  destroy_cert(state, s, conf, cert);
+}
+
 SLN_TESTS_START(certs)
   SLN_TESTS_ENTRY(cert_depth)
   SLN_TESTS_ENTRY(cert_fingerprints)
   SLN_TESTS_ENTRY(cert_subject)
+  SLN_TESTS_ENTRY(cert_issuer)
 SLN_TESTS_END()
