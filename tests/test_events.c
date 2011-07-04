@@ -36,12 +36,13 @@ static void event_handlers(void **state)
   selene_conf_t *conf = NULL;
   selene_t *ctxt = NULL;
   selene_event_e e = SELENE_EVENT_IOWANT_CHANGED;
+  baton_t b1;
+  baton_t b2;
+
   selene_conf_create(&conf);
   SLN_ERR(selene_client_create(conf, &ctxt));
   SLN_ASSERT_CONTEXT(ctxt);
 
-  baton_t b1;
-  baton_t b2;
   b1.count = 0;
   b1.etype = e;
 

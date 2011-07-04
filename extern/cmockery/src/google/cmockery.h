@@ -324,7 +324,7 @@ typedef int (*CheckParameterValue)(const LargestIntegralType value,
 typedef enum UnitTestFunctionType {
     UNIT_TEST_FUNCTION_TYPE_TEST = 0,
     UNIT_TEST_FUNCTION_TYPE_SETUP,
-    UNIT_TEST_FUNCTION_TYPE_TEARDOWN,
+    UNIT_TEST_FUNCTION_TYPE_TEARDOWN
 } UnitTestFunctionType;
 
 /* Stores a unit test function with its name and type.

@@ -38,7 +38,7 @@ lenv.AppendUnique(CPPPATH=['#/include/private'])
 #lenv.AppendUnique(CPPDEFINES=['UNIT_TESTING=1'])
 lenv.AppendUnique(CPPDEFINES=['LargestIntegralTypePrintfFormat=\\"%llu\\"'])
 cenv = lenv.Clone()
-cenv['CCFLAGS'] = filter(lambda x: x not in ["-Wall", "-pedantic"], cenv['CCFLAGS'])
+cenv['CCFLAGS'] = filter(lambda x: x not in ["-Wall", "-pedantic", "-std=gnu89"], cenv['CCFLAGS'])
 cenv.Command("cmockery.c", cenv.File('#/extern/cmockery/src/cmockery.c'), Copy("$TARGET", "$SOURCE"))
 cmock = cenv.StaticLibrary('libcmockery', source=cenv.File('cmockery.c'))
 
@@ -46,6 +46,7 @@ tenv = lenv.Clone()
 tenv.AppendUnique(CPPATH=['#/tests'])
 tenv.AppendUnique(LIBS=cmock)
 tenv.AppendUnique(LIBS=tenv['libselene'])
+tenv.AppendUnique(CCFLAGS=['-Wno-long-long'])
 tenv.AppendUnique(CPPDEFINES=['SLN_TEST_ALL=1'])
 tests = []
 
