@@ -17,6 +17,8 @@
 
 EnsureSConsVersion(1, 1, 0)
 
+SetOption('num_jobs', 4)
+
 import os, sys
 from site_scons import ac
 from os.path import join as pjoin
