@@ -165,7 +165,7 @@ read_handshake_parser(sln_tok_value_t *v, void *baton_)
       err = hs->current_msg_step(hs, v, hs->current_msg_baton);
 
       hs->remaining -= v->wantlen;
-      //slnDbg(s, "remaining: %d want: %u\n", hs->remaining, v->wantlen);
+      /* slnDbg(s, "remaining: %d want: %u\n", hs->remaining, v->wantlen); */
       if (hs->remaining < 0) {
 
         if (hs->current_msg_baton != NULL && hs->current_msg_finish != NULL) {

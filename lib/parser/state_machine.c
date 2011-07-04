@@ -50,7 +50,7 @@ enter_state_machine:
   }
 
   if (baton->ready_for_appdata && !SLN_BRIGADE_EMPTY(s->bb.in_cleartext)) {
-    //err = sln_io_tls_write_appdata(s, baton);
+    /* err = sln_io_tls_write_appdata(s, baton); */
     if (err) {
       return err;
     }
@@ -115,7 +115,6 @@ enter_state_machine:
         /* TODO: better handle this */
         abort();
         break;
-      //default:
     }
   }
 
