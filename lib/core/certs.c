@@ -19,7 +19,10 @@
 #include "selene_cert.h"
 #include "sln_types.h"
 #include "sln_certs.h"
+#include "sln_brigades.h"
+#include <openssl/x509v3.h>
 #include <string.h>
+
 /**
  * This whole interface is derived on the code in Serf's SSL Buckets:
  *   <http://code.google.com/p/serf/source/browse/trunk/buckets/ssl_buckets.c>
@@ -138,6 +141,11 @@ sln_cert_destroy(selene_cert_t *cert)
   if (cert->cache_issuer) {
     sln_cert_name_destroy(s, cert->cache_issuer);
     cert->cache_issuer = NULL;
+  }
+
+  if (cert->cache_subjectAltNames) {
+    sln_brigade_destroy(cert->cache_subjectAltNames);
+    cert->cache_subjectAltNames = NULL;
   }
 
   sln_free(s, cert);
@@ -291,18 +299,6 @@ selene_cert_not_after_str(selene_cert_t *cert)
 }
 
 
-int
-selene_cert_alt_names_count(selene_cert_t *cert)
-{
-  return cert->cache_alt_names_len;
-}
-
-const char*
-selene_cert_alt_names_entry(selene_cert_t *cert, int offset)
-{
-  return NULL;
-}
-
 static void
 convert_X509_NAME_to_selene_name(selene_cert_t *cert, X509_NAME *org, selene_cert_name_t *name)
 {
@@ -423,4 +419,76 @@ selene_cert_version(selene_cert_t *cert)
 {
   /* This returns the value, which... starts at 0, so version 3 is actually 2 here, bump it. */
   return X509_get_version(cert->cert) + 1;
+}
+
+
+
+
+static void
+generate_subject_alt_names(selene_cert_t *cert)
+{
+  STACK_OF(GENERAL_NAME) *names;
+
+  /* TODO: err */
+  sln_brigade_create(cert->s->alloc, &cert->cache_subjectAltNames);
+
+  /* Get subjectAltNames */
+  names = X509_get_ext_d2i(cert->cert, NID_subject_alt_name, NULL, NULL);
+  if (names) {
+    int i;
+    int names_count = sk_GENERAL_NAME_num(names);
+
+    for (i = 0; i < names_count; i++) {
+      sln_bucket_t *e = NULL;
+      GENERAL_NAME *nm = sk_GENERAL_NAME_value(names, i);
+
+      switch (nm->type) {
+      case GEN_DNS:
+        sln_bucket_create_copy_bytes(cert->s->alloc, &e, (const char*)nm->d.ia5->data,  nm->d.ia5->length);
+        SLN_BRIGADE_INSERT_TAIL(cert->cache_subjectAltNames, e);
+        break;
+      default:
+        /* Don't know what to do - skip. */
+        break;
+      }
+    }
+
+    sk_GENERAL_NAME_pop_free(names, GENERAL_NAME_free);
+  }
+}
+
+int
+selene_cert_alt_names_count(selene_cert_t *cert)
+{
+  if (cert->cache_subjectAltNames == NULL) {
+    generate_subject_alt_names(cert);
+  }
+
+  return sln_brigade_bucket_count(cert->cache_subjectAltNames);
+}
+
+const char*
+selene_cert_alt_names_entry(selene_cert_t *cert, int offset)
+{
+  int i = 0;
+  sln_bucket_t *b;
+
+  if (cert->cache_subjectAltNames == NULL) {
+    generate_subject_alt_names(cert);
+  }
+
+  SLN_RING_FOREACH(b, &(cert->cache_subjectAltNames)->list, sln_bucket_t, link)
+  {
+    if (offset == i) {
+      return b->data;
+    }
+
+    if (i > offset) {
+      break;
+    }
+
+    i++;
+  }
+
+  return NULL;
 }
