@@ -233,6 +233,20 @@ cert_depth(void **state)
 }
 
 static void
+cert_version(void **state)
+{
+  selene_t *s;
+  selene_conf_t *conf;
+  selene_cert_t *cert;
+
+  init_cert(state, &s, &conf, &cert);
+
+  assert_int_equal(3, selene_cert_version(cert));
+
+  destroy_cert(state, s, conf, cert);
+}
+
+static void
 cert_fingerprints(void **state)
 {
   selene_t *s;
@@ -320,6 +334,7 @@ cert_validtime(void **state)
 
 SLN_TESTS_START(certs)
   SLN_TESTS_ENTRY(cert_depth)
+  SLN_TESTS_ENTRY(cert_version)
   SLN_TESTS_ENTRY(cert_fingerprints)
   SLN_TESTS_ENTRY(cert_subject)
   SLN_TESTS_ENTRY(cert_issuer)

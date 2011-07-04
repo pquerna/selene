@@ -416,3 +416,11 @@ selene_cert_subject(selene_cert_t *cert)
   }
   return cert->cache_subject;
 }
+
+
+int
+selene_cert_version(selene_cert_t *cert)
+{
+  /* This returns the value, which... starts at 0, so version 3 is actually 2 here, bump it. */
+  return X509_get_version(cert->cert) + 1;
+}

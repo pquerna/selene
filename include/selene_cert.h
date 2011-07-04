@@ -43,6 +43,8 @@ typedef struct selene_cert_name_t {
 
 SELENE_API(int) selene_cert_depth(selene_cert_t *cert);
 
+SELENE_API(int) selene_cert_version(selene_cert_t *cert);
+
 SELENE_API(const char*) selene_cert_fingerprint_sha1(selene_cert_t *cert);
 
 SELENE_API(const char*) selene_cert_fingerprint_md5(selene_cert_t *cert);
