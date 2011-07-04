@@ -43,6 +43,10 @@ sln_brigade_clear(sln_brigade_t *bb);
 size_t
 sln_brigade_size(sln_brigade_t *bb);
 
+/* Number of buckets inside this brigade */
+int
+sln_brigade_bucket_count(sln_brigade_t *bb);
+
 /**
  * Flatten a section of a brigade into an existing buffer.
  *

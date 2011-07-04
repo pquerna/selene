@@ -69,6 +69,21 @@ sln_brigade_size(sln_brigade_t *bb)
   return total;
 }
 
+int
+sln_brigade_bucket_count(sln_brigade_t *bb)
+{
+  /* TODO: cache current value inside the sln_brigade_t structure */
+  int total = 0;
+  sln_bucket_t *b;
+
+  SLN_RING_FOREACH(b, &(bb)->list, sln_bucket_t, link)
+  {
+    total++;
+  }
+
+  return total;
+}
+
 static size_t sln_min(size_t x, size_t y) {
   if (x < y) {
     return x;
