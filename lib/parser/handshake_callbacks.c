@@ -66,11 +66,31 @@ handle_client_hello(selene_t *s, selene_event_e event, void *baton_)
 }
 
 
+selene_cert_chain_t*
+selene_peer_certchain(selene_t *s)
+{
+  return NULL;
+}
+
+void
+selene_complete_peer_certchain_validated(selene_t *s, int valid)
+{
+
+}
+
 /* default fallback */
 static selene_error_t*
 validate_certificates(selene_t *s, selene_event_e event, void *baton)
 {
   selene_cert_chain_t* certs = selene_peer_certchain(s);
+
+  if (certs) {
+    /* TOOD: inspect certs */
+    selene_complete_peer_certchain_validated(s, 1);
+  }
+  else {
+    selene_complete_peer_certchain_validated(s, 0);
+  }
 
   return SELENE_SUCCESS;
 }
@@ -86,6 +106,7 @@ sln_handshake_register_callbacks(selene_t *s)
 {
   if (s->mode == SLN_MODE_CLIENT) {
     selene_handler_set(s, SELENE__EVENT_HS_GOT_CERTIFICATE, handle_server_certificate, NULL);
+    selene_handler_set(s, SELENE_EVENT_VALIDATE_CERTIFICATE, validate_certificates, NULL);
   }
   else {
     selene_handler_set(s, SELENE__EVENT_HS_GOT_CLIENT_HELLO, handle_client_hello, NULL);
