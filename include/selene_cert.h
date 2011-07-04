@@ -29,8 +29,16 @@
 extern "C" {
 #endif /* __cplusplus */
 
+/* A single X509 certificate */
 typedef struct selene_cert_t selene_cert_t;
 
+/* A list of (related) certificates */
+typedef struct selene_cert_chain_t selene_cert_chain_t;
+
+/**
+ * Common Attributes of the name in a x509 certificate.
+ * Elements MAY be NULLL.
+ */
 typedef struct selene_cert_name_t {
   const char *commonName;
   const char *emailAddress;
@@ -67,6 +75,10 @@ SELENE_API(selene_cert_name_t*) selene_cert_issuer(selene_cert_t *cert);
 
 SELENE_API(selene_cert_name_t*) selene_cert_subject(selene_cert_t *cert);
 
+
+SELENE_API(int) selene_cert_chain_count(selene_cert_chain_t *cert);
+
+SELENE_API(selene_cert_t*) selene_cert_chain_entry(selene_cert_chain_t *cert, int offset);
 
 #ifdef __cplusplus
 }

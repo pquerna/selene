@@ -38,6 +38,7 @@ parser/alert_io.c
 parser/alert_messages.c
 parser/common.c
 parser/handshake_io.c
+parser/handshake_callbacks.c
 parser/handshake_messages.c
 parser/handshake_messages/certificate.c
 parser/handshake_messages/client_hello.c

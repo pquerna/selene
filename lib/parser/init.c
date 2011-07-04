@@ -43,7 +43,7 @@ sln_parser_create(selene_t *s)
   sln_brigade_create(s->alloc, &baton->in_handshake);
   sln_brigade_create(s->alloc, &baton->in_application);
 
-  selene_handler_set(s, SELENE__EVENT_HS_GOT_CLIENT_HELLO, sln_handshake_handle_client_hello, NULL);
+  sln_handshake_register_callbacks(s);
 
   return SELENE_SUCCESS;
 }

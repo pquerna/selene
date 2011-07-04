@@ -37,6 +37,8 @@ extern "C" {
 /** Opaque context of an SSL/TLS Session */
 typedef struct selene_t selene_t;
 
+#include "selene_cert.h"
+
 /**
  * Creates a Client SSL/TLS Context.
  */
@@ -86,7 +88,8 @@ typedef enum {
   SELENE__EVENT_HS_GOT_CLIENT_HELLO = 8,
   SELENE__EVENT_HS_GOT_SERVER_HELLO = 9,
   SELENE__EVENT_HS_GOT_CERTIFICATE = 10,
-  SELENE_EVENT__MAX = 11,
+  SELENE_EVENT_VALIDATE_CERTIFICATE = 11,
+  SELENE_EVENT__MAX = 12,
 } selene_event_e;
 
 typedef enum {
@@ -178,6 +181,20 @@ selene_io_out_enc_bytes(selene_t *ctxt,
 SELENE_API(void)
 selene_log_msg_get(selene_t *ctxt, const char **log_msg,
                    size_t *log_msg_len);
+
+/**
+ * May return NULL until SELENE_EVENT_VALIDATE_CERTIFICATE event has fired.
+ */
+SELENE_API(selene_cert_chain_t*)
+selene_peer_certchain(selene_t *ctxt);
+
+/**
+ * Mark a the peer cert chain as trusted (1) or untrusted (0).  Must be called for
+ * SELENE_EVENT_VALIDATE_CERTIFICATE event to complete.  If untrusted,
+ * a TLS alert will be sent, and the connection will be closed.
+ */
+SELENE_API(void)
+selene_complete_peer_certchain_validated(selene_t *ctxt, int valid);
 
 
 #ifdef __cplusplus

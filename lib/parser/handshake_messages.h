@@ -131,10 +131,6 @@ sln_handshake_serialize_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sl
 selene_error_t*
 sln_handshake_parse_client_hello_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, void **baton);
 
-selene_error_t*
-sln_handshake_handle_client_hello(selene_t *ctxt, selene_event_e event, void *baton_);
-
-
 /* Server Hello Message Methods */
 
 typedef enum sln_handshake_server_hello_state_e {
@@ -167,8 +163,8 @@ sln_handshake_serialize_server_hello(selene_t *s, sln_msg_server_hello_t *sh, sl
 selene_error_t*
 sln_handshake_parse_server_hello_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, void **baton);
 
-selene_error_t*
-sln_handshake_handle_server_hello(selene_t *ctxt, selene_event_e event, void *baton_);
+void
+sln_handshake_register_callbacks(selene_t *s);
 
 
 /* Certificate Message Methods */
