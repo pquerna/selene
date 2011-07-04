@@ -516,6 +516,7 @@ cert_subjectAltNames(void **state)
   assert_int_equal(2, selene_cert_alt_names_count(cert));
   assert_string_equal("svn.apache.org", selene_cert_alt_names_entry(cert, 0));
   assert_string_equal("www.svn.apache.org", selene_cert_alt_names_entry(cert, 1));
+  assert_int_equal(0, selene_cert_alt_names_entry(cert, 2));
 
   destroy_cert(state, s, conf, cert);
 }
