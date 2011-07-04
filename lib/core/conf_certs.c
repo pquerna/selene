@@ -31,7 +31,8 @@ selene_conf_cert_chain_add(selene_conf_t *conf, const char *certificate, const c
 selene_error_t*
 selene_conf_ca_trusted_cert_add(selene_conf_t *conf, const char *certificate)
 {
-  /* TOOD: replace with native x509 :( )*/
+  /* TOOD: replace with native x509 :( ) */
+  X509* x509;
   BIO *bio = BIO_new(BIO_s_mem());
 
   int r = BIO_write(bio, certificate, strlen(certificate));
@@ -40,7 +41,7 @@ selene_conf_ca_trusted_cert_add(selene_conf_t *conf, const char *certificate)
     return selene_error_createf(SELENE_ENOMEM, "Attempting to parse CA certificate, BIO_write returned: %d", r);
   }
 
-  X509* x509 = PEM_read_bio_X509(bio, NULL, NULL, NULL);
+  x509 = PEM_read_bio_X509(bio, NULL, NULL, NULL);
   if (!x509) {
     BIO_free(bio);
     /* TODO: better error messages */

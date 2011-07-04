@@ -132,7 +132,7 @@ cov_targets = []
 # defaults for all platforms
 # TODO: non-gcc/clang platforms
 env.AppendUnique(CPPPATH=['#/include'],
-                 CCFLAGS=['-pedantic', '-std=c99'])
+                 CCFLAGS=['-pedantic', '-std=gnu89', '-Wno-variadic-macros'])
 all_targets = {}
 all_test_targets = {}
 

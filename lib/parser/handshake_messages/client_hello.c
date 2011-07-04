@@ -31,6 +31,7 @@ sln_handshake_serialize_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sl
   size_t snilen = 0;
   size_t sninamelen = 0;
   int dlen;
+  int i;
 
   /* header size */
   len += 4;
@@ -126,7 +127,7 @@ sln_handshake_serialize_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sl
   b->data[off+1] = ch->ciphers->used * 2;
   off += 2;
 
-  for (int i = 0; i < ch->ciphers->used; i++) {
+  for (i = 0; i < ch->ciphers->used; i++) {
     switch (ch->ciphers->ciphers[i]) {
       /* TODO: move a better utility place */
       case SELENE_CS_RSA_WITH_RC4_128_SHA:

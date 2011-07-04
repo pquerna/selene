@@ -40,6 +40,7 @@ parse_certificate_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
   cert_baton_t *certb = (cert_baton_t*)baton;
   sln_msg_certificate_t *cert = &certb->cert;
   selene_t *s = hs->s;
+  size_t l;
 
   switch (certb->state) {
     case SLN_HS_CERTIFICATE_LENGTH:
@@ -59,11 +60,13 @@ parse_certificate_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
       break;
     case SLN_HS_CERTIFICATE_ENTRY_DATA:
     {
+      const unsigned char *buf;
+      const unsigned char *p;
       slnDbg(s, "got cert data in brigade!");
       /* TODO: use a BIO here to avoid alloc */
-      size_t l = sln_brigade_size(v->v.bb);
-      const unsigned char *buf = sln_alloc(s, l);
-      const unsigned char *p = buf;
+      l = sln_brigade_size(v->v.bb);
+      buf = sln_alloc(s, l);
+      p = buf;
       err = sln_brigade_flatten(v->v.bb, (char*)buf, &l);
 
       if (err) {

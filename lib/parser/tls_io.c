@@ -31,7 +31,7 @@ typedef enum tls_ct_e {
    TLS_CT_CHANGE_CIPHER_SPEC = 20,
    TLS_CT_ALERT = 21,
    TLS_CT_HANDSHAKE = 22,
-   TLS_CT_APPLICATION = 23,
+   TLS_CT_APPLICATION = 23
 } tls_ct_e;
 
 typedef enum tls_record_state_e {
@@ -45,7 +45,7 @@ typedef enum tls_record_state_e {
   TLS_RS_PADDING,
   TLS_RS_MAYBE_HTTP_REQUEST,
   TLS_RS__DONE,
-  TLS_RS__MAX,
+  TLS_RS__MAX
 } tls_record_state_e;
 
 typedef struct rtls_baton_t {

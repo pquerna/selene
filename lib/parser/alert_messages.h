@@ -22,7 +22,7 @@
 
 typedef enum sln_alert_level_e {
   SLN_ALERT_LEVEL_WARNING = 1,
-  SLN_ALERT_LEVEL_FATAL = 2,
+  SLN_ALERT_LEVEL_FATAL = 2
 } sln_alert_level_e;
 
 typedef enum sln_alert_description_e {
@@ -50,7 +50,7 @@ typedef enum sln_alert_description_e {
   SLN_ALERT_DESC_INTERNAL_ERROR = 80,
   SLN_ALERT_DESC_USER_CANCELED = 90,
   SLN_ALERT_DESC_NO_RENEGOTIATION = 100,
-  SLN_ALERT_DESC_UNSUPPORTED_EXTENSION = 110,
+  SLN_ALERT_DESC_UNSUPPORTED_EXTENSION = 110
 } sln_alert_description_e;
 
 typedef enum sln_alert_state_e {
@@ -59,7 +59,7 @@ typedef enum sln_alert_state_e {
   SLN_ALERT_STATE_LEVEL,
   SLN_ALERT_STATE_DESCRIPTION,
   SLN_ALERT_STATE__DONE,
-  SLN_ALERT_STATE__MAX,
+  SLN_ALERT_STATE__MAX
 } sln_alert_state_e;
 
 typedef struct sln_msg_alert_t {

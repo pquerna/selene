@@ -69,7 +69,7 @@ typedef enum {
 
 typedef enum sln_connstate_e {
   SLN_CONNSTATE_HANDSHAKE,
-  SLN_CONNSTATE_ALERT_FATAL,
+  SLN_CONNSTATE_ALERT_FATAL
 } sln_connstate_e;
 
 struct sln_parser_baton_t {

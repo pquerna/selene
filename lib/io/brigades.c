@@ -111,10 +111,13 @@ sln_brigade_pread_bytes(sln_brigade_t *bb, size_t want_offset, size_t want_lengt
 
     if (want_offset <= (offset + b->size)) {
       size_t startpoint = 0;
+      size_t tocopy;
+
       if (want_offset > offset) {
         startpoint = want_offset - offset;
       }
-      size_t tocopy = sln_min(b->size - startpoint, want_length - got);
+
+      tocopy = sln_min(b->size - startpoint, want_length - got);
       got += tocopy;
       memcpy(buffer+buffer_offset, b->data+startpoint, tocopy);
       buffer_offset += tocopy;

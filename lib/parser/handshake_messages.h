@@ -47,7 +47,7 @@ typedef enum sln_hs_mt_e {
   SLN_HS_MT_SERVER_HELLO_DONE = 14,
   SLN_HS_MT_CERTIFICATE_VERIFY = 15,
   SLN_HS_MT_CLIENT_KEY_EXCHANGE = 16,
-  SLN_HS_MT_FINISHED = 20,
+  SLN_HS_MT_FINISHED = 20
 } sln_hs_mt_e;
 
 typedef enum sln_handshake_state_e {
@@ -57,7 +57,7 @@ typedef enum sln_handshake_state_e {
   SLN_HS_LENGTH,
   SLN_HS_MESSAGE_PARSER,
   SLN_HS__DONE,
-  SLN_HS__MAX,
+  SLN_HS__MAX
 } sln_handshake_state_e;
 
 typedef struct sln_hs_baton_t sln_hs_baton_t;
@@ -109,7 +109,7 @@ typedef enum sln_handshake_client_hello_state_e {
   SLN_HS_CLIENT_HELLO_EXT_SNI_NUM_NAMES,
   SLN_HS_CLIENT_HELLO_EXT_SNI_NAME_TYPE,
   SLN_HS_CLIENT_HELLO_EXT_SNI_NAME_LENGTH,
-  SLN_HS_CLIENT_HELLO_EXT_SNI_NAME_VALUE,
+  SLN_HS_CLIENT_HELLO_EXT_SNI_NAME_VALUE
 } sln_handshake_client_hello_state_e;
 
 typedef struct sln_msg_client_hello_t {
@@ -142,7 +142,7 @@ typedef enum sln_handshake_server_hello_state_e {
   SLN_HS_SERVER_HELLO_CIPHER_SUITE,
   SLN_HS_SERVER_HELLO_COMPRESSION,
   SLN_HS_SERVER_HELLO_EXT_DEF,
-  SLN_HS_SERVER_HELLO_EXT_SKIP,
+  SLN_HS_SERVER_HELLO_EXT_SKIP
 } sln_handshake_server_hello_state_e;
 
 typedef struct sln_msg_server_hello_t {

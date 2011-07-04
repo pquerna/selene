@@ -110,7 +110,7 @@ typedef enum {
   SELENE_PROTOCOL_TLS10 = (1U<<2),
   SELENE_PROTOCOL_TLS11 = (1U<<3),
   SELENE_PROTOCOL_TLS12 = (1U<<4),
-  SELENE_PROTOCOL__MAX = (1U<<5),
+  SELENE_PROTOCOL__MAX = (1U<<5)
 } selene_protocol_e;
 
 SELENE_API(selene_error_t*)
