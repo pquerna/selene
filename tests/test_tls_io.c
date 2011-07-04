@@ -25,7 +25,7 @@
 /**
  * Packet Capture from OpenSSL s_client sending a client hello.
  */
-static char openssl_client_hello_basic[] = {
+static unsigned char openssl_client_hello_basic[] = {
   0x16, 0x03, 0x01, 0x00, 0xce, 0x01, 0x00, 0x00, 
   0xca, 0x03, 0x01, 0x4d, 0xc5, 0xa9, 0x90, 0x4f, 
   0xfe, 0x47, 0x4c, 0xc4, 0x64, 0x34, 0x1b, 0x73, 
@@ -74,7 +74,7 @@ static void tls_io_slowly(void **state)
 
   for (i = 0; i <= maxlen; i++) {
     SLN_ERR(sln_bucket_create_copy_bytes(sln_test_alloc, &e1,
-                                         openssl_client_hello_basic,
+                                         (const char*)openssl_client_hello_basic,
                                          i));
     SLN_BRIGADE_INSERT_TAIL(s->bb.in_enc, e1);
     err  = sln_io_tls_read(s, baton);
