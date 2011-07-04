@@ -55,6 +55,37 @@ static unsigned char openssl_client_hello_basic[] = {
   0x23, 0x00, 0x00
 };
 
+static unsigned char openssl_client_hello_sslv2[] = {
+  0x80, 0x2b, 0x01, 0x00, 0x02, 0x00, 0x12, 0x00,
+  0x00, 0x00, 0x10, 0x07, 0x00, 0xc0, 0x03, 0x00,
+  0x80, 0x01, 0x00, 0x80, 0x06, 0x00, 0x40, 0x04,
+  0x00, 0x80, 0x02, 0x00, 0x80, 0xaf, 0x88, 0xc4,
+  0x31, 0x8c, 0x6d, 0xec, 0x04, 0x57, 0x8b, 0x99,
+  0x10, 0x86, 0xe0, 0x1c, 0x7d
+};
+
+static void
+init_ctxt(void **state, selene_t **s_, selene_conf_t **conf_)
+{
+  selene_t *s = NULL;
+  selene_conf_t *conf = NULL;
+
+  selene_conf_create(&conf);
+  SLN_ERR(selene_conf_use_reasonable_defaults(conf));
+  SLN_ERR(selene_server_create(conf, &s));
+  SLN_ASSERT_CONTEXT(s);
+
+  *s_ = s;
+  *conf_ = conf;
+}
+
+static void
+destroy_ctxt(void **state, selene_t *s, selene_conf_t *conf)
+{
+  selene_destroy(s);
+  selene_conf_destroy(conf);
+}
+
 static void tls_io_slowly(void **state)
 {
   selene_error_t *err;
@@ -65,10 +96,7 @@ static void tls_io_slowly(void **state)
   size_t maxlen = sizeof(openssl_client_hello_basic);
   size_t i;
 
-  selene_conf_create(&conf);
-  SLN_ERR(selene_conf_use_reasonable_defaults(conf));
-  SLN_ERR(selene_server_create(conf, &s));
-  SLN_ASSERT_CONTEXT(s);
+  init_ctxt(state, &s, &conf);
 
   baton = (sln_parser_baton_t *)s->backend_baton;
 
@@ -89,8 +117,7 @@ static void tls_io_slowly(void **state)
     sln_brigade_clear(s->bb.in_enc);
   }
 
-  selene_destroy(s);
-  selene_conf_destroy(conf);
+  destroy_ctxt(state, s, conf);
 }
 
 
@@ -116,10 +143,7 @@ static void tls_http_accident(void **state)
   http_cb_t cbb;
   sln_bucket_t *e1;
 
-  selene_conf_create(&conf);
-  SLN_ERR(selene_conf_use_reasonable_defaults(conf));
-  SLN_ERR(selene_server_create(conf, &s));
-  SLN_ASSERT_CONTEXT(s);
+  init_ctxt(state, &s, &conf);
 
   baton = (sln_parser_baton_t *)s->backend_baton;
 
@@ -135,11 +159,37 @@ static void tls_http_accident(void **state)
   SLN_ASSERT(err->err == SELENE_EINVAL);
   selene_error_clear(err);
   assert_int_equal(1, cbb.gotit);
-  selene_destroy(s);
-  selene_conf_destroy(conf);
+
+  destroy_ctxt(state, s, conf);
+}
+
+static void tls_v2_hello(void **state)
+{
+  selene_error_t *err;
+  sln_parser_baton_t *baton;
+  selene_conf_t *conf = NULL;
+  selene_t *s = NULL;
+  sln_bucket_t *e1;
+
+  init_ctxt(state, &s, &conf);
+
+  baton = (sln_parser_baton_t *)s->backend_baton;
+
+  SLN_ERR(sln_bucket_create_copy_bytes(sln_test_alloc, &e1,
+                                       (const char*)openssl_client_hello_sslv2,
+                                       sizeof(openssl_client_hello_sslv2)));
+
+  SLN_BRIGADE_INSERT_TAIL(s->bb.in_enc, e1);
+  err  = sln_io_tls_read(s, baton);
+  /* TODO: successfully parse the sslv2 client hello... enough to know it was sslv2. */
+  /* SLN_ASSERT(err == NULL); */
+  selene_error_clear(err);
+
+  destroy_ctxt(state, s, conf);
 }
 
 SLN_TESTS_START(tls_io)
   SLN_TESTS_ENTRY(tls_io_slowly)
   SLN_TESTS_ENTRY(tls_http_accident)
+  SLN_TESTS_ENTRY(tls_v2_hello)
 SLN_TESTS_END()
