@@ -310,50 +310,12 @@ cert_validtime(void **state)
 
   init_cert(state, &s, &conf, &cert);
 
-  assert_string_equal("Dec 30 00:00:00 2009 GMT", selene_cert_not_before(cert));
-  assert_string_equal("Dec 30 23:59:59 2011 GMT", selene_cert_not_after(cert));
+  assert_string_equal("Dec 30 00:00:00 2009 GMT", selene_cert_not_before_str(cert));
+  assert_string_equal("Dec 30 23:59:59 2011 GMT", selene_cert_not_after_str(cert));
+  assert_int_equal(1262217600, selene_cert_not_before(cert));
+  assert_int_equal(1325375999, selene_cert_not_after(cert));
 
   destroy_cert(state, s, conf, cert);
-}
-
-static void
-test_generalized_time(void **state)
-{
-	char times[][32] = { "19700101000000Z", "19700101000000.123456+0000", "19700101060059-0600", "20380119031407Z", "20380119001407+0300" };
-	time_t results[] = { 0, 0, 59, 0x7FFFFFFF, 0x7FFFFFFF };
-	ASN1_TIME cas;
-	time_t stamp;
-	int i, ret = 0;
-	
-	memset(&cas, 0, sizeof cas);
-	for (i = 0; i < 5; ++i) {
-		cas.length = (int) strlen(times[i]);
-		cas.type = V_ASN1_GENERALIZEDTIME;
-		cas.data = (unsigned char *)times[i];
-		stamp = sln_asn1_time_to_timestamp(&cas);
-		printf("%s -> %ld -> %s\n", (char *)cas.data, stamp, (stamp == results[i] ? "OK" : (++ret, "FAIL")) );
-	}
-//	return (ret);
-}
-
-static void
-test_utc_time(void **state)
-{
-	char times[][20] = { "700101000000Z", "700101000000+0000", "700101060000-0600", "380119031407Z", "380119001407+0300" };
-	time_t results[] = { 0, 0, 0, 0x7FFFFFFF, 0x7FFFFFFF };
-	ASN1_TIME cas;
-	time_t stamp;
-	int i, ret = 0;
-	
-	memset(&cas, 0, sizeof cas);
-	for (i = 0; i < 5; ++i) {
-		cas.length = (int) strlen(times[i]);
-		cas.type = V_ASN1_UTCTIME;
-		cas.data = (unsigned char *)times[i];
-		stamp = sln_asn1_time_to_timestamp(&cas);
-		printf("%s -> %ld -> %s\n", (char *)cas.data, stamp, (stamp == results[i] ? "OK" : (++ret, "FAIL")) );
-	}
-//	return (ret);
 }
 
 SLN_TESTS_START(certs)
@@ -362,6 +324,4 @@ SLN_TESTS_START(certs)
   SLN_TESTS_ENTRY(cert_subject)
   SLN_TESTS_ENTRY(cert_issuer)
   SLN_TESTS_ENTRY(cert_validtime)
-  SLN_TESTS_ENTRY(test_generalized_time)
-  SLN_TESTS_ENTRY(test_utc_time)
 SLN_TESTS_END()

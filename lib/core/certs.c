@@ -225,12 +225,13 @@ generate_expires(selene_cert_t *cert)
   bio = BIO_new(BIO_s_mem());
 
   if (bio) {
-    ASN1_TIME *notBefore, *notAfter;
+    ASN1_UTCTIME *notBefore, *notAfter;
     char buf[256];
 
     memset(buf, 0, sizeof (buf));
 
     notBefore = X509_get_notBefore(cert->cert);
+    cert->cache_not_before_ts = sln_asn1_time_to_timestamp(notBefore);
     if (ASN1_TIME_print(bio, notBefore)) {
       BIO_read(bio, buf, 255);
       cert->cache_not_before = sln_strdup(cert->s, buf);
@@ -239,18 +240,38 @@ generate_expires(selene_cert_t *cert)
      memset (buf, 0, sizeof (buf));
 
      notAfter = X509_get_notAfter(cert->cert);
+     cert->cache_not_after_ts = sln_asn1_time_to_timestamp(notAfter);
      if (ASN1_TIME_print(bio, notAfter)) {
        BIO_read(bio, buf, 255);
        cert->cache_not_after = sln_strdup(cert->s, buf);
-    }
-
+     }
   }
 
   BIO_free(bio);
 }
 
-const char*
+int64_t
 selene_cert_not_before(selene_cert_t *cert)
+{
+  if (cert->cache_not_before_ts == 0) {
+    generate_expires(cert);
+  }
+
+  return cert->cache_not_before_ts;
+}
+
+int64_t
+selene_cert_not_after(selene_cert_t *cert)
+{
+  if (cert->cache_not_after_ts == 0) {
+    generate_expires(cert);
+  }
+
+  return cert->cache_not_after_ts;
+}
+
+const char*
+selene_cert_not_before_str(selene_cert_t *cert)
 {
   if (cert->cache_not_before == NULL) {
     generate_expires(cert);
@@ -260,7 +281,7 @@ selene_cert_not_before(selene_cert_t *cert)
 }
 
 const char*
-selene_cert_not_after(selene_cert_t *cert)
+selene_cert_not_after_str(selene_cert_t *cert)
 {
   if (cert->cache_not_after == NULL) {
     generate_expires(cert);

@@ -1,217 +1,130 @@
-/**
- * From <http://cap.potazmo.cz/software/_bits_n_pieces/asn1_time_t.c>
- */
 /*
- * Copyright (c) 2011 Martin Pelikan <martin.pelikan@gmail.com>
- *
- * Permission to use, copy, modify, and distribute this software for any
- * purpose with or without fee is hereby granted, provided that the above
- * copyright notice and this permission notice appear in all copies.
- *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
- * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * Conversion from ASN1 Time to a time_exp_t is dervived from
+ *   <httpd/modules/ssl/ssl_engine_vars.c>  ssl_var_lookup_ssl_cert_remain
+ * (Portable) Conversion from a time_exp_t to a int64_t is
  */
 
+/* Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*                      _             _
+ *  _ __ ___   ___   __| |    ___ ___| |  mod_ssl
+ * | '_ ` _ \ / _ \ / _` |   / __/ __| |  Apache Interface to OpenSSL
+ * | | | | | | (_) | (_| |   \__ \__ \ |
+ * |_| |_| |_|\___/ \__,_|___|___/___/_|
+ *                      |_____|
+ *  ssl_engine_vars.c
+ *  Variable Lookup Facility
+ */
+                             /* ``Those of you who think they
+                                  know everything are very annoying
+                                  to those of us who do.''
+                                                  -- Unknown       */
+
+#include <stdint.h>
 #include "sln_certs.h"
 #include <time.h>
 #include <openssl/ssl.h>
 
-/* Returns the wall time in the specified time zone. */
-time_t
-sln_asn1_time_to_timestamp(ASN1_TIME *as)
+#define USEC_PER_SEC   INT64_C(1000000)
+
+/**
+ * a structure similar to ANSI struct tm with the following differences:
+ *  - tm_usec isn't an ANSI field
+ *  - tm_gmtoff isn't an ANSI field (it's a bsdism)
+ */
+typedef struct time_exp_t {
+  /** microseconds past tm_sec */
+  int32_t tm_usec;
+  /** (0-61) seconds past tm_min */
+  int32_t tm_sec;
+  /** (0-59) minutes past tm_hour */
+  int32_t tm_min;
+  /** (0-23) hours past midnight */
+  int32_t tm_hour;
+  /** (1-31) day of the month */
+  int32_t tm_mday;
+  /** (0-11) month of the year */
+  int32_t tm_mon;
+  /** year since 1900 */
+  int32_t tm_year;
+  /** (0-6) days since sunday */
+  int32_t tm_wday;
+  /** (0-365) days since jan 1 */
+  int32_t tm_yday;
+  /** daylight saving time */
+  int32_t tm_isdst;
+  /** seconds east of UTC */
+  int32_t tm_gmtoff;
+} time_exp_t;
+
+static void 
+time_exp_gmt_get(int64_t *t, time_exp_t *xt)
 {
-#define B2I(byte)	((byte) - '0')
-/* offset from GMT has to be in seconds - format +HHMM */
-#define OFFSET_SEC(str, i)	(			\
-	((B2I(str[i+1]) * 10 + B2I(str[i+2])) * 3600)	\
-	+ ((B2I(str[i+3]) * 10 + B2I(str[i+4])) * 60) )
-	
-	int i;
-	char *data = (char *)as->data;
-	struct tm tm;
-	time_t current;
+  int64_t year = xt->tm_year;
+  int64_t days;
+  static const int dayoffset[12] = {306, 337, 0, 31, 61, 92, 122, 153, 184, 214, 245, 275};
 
-	memset(&tm, 0, sizeof(tm));
+  /* shift new year to 1st March in order to make leap year calc easy */
+  if (xt->tm_mon < 2) {
+    year--;
+  }
 
-	switch (as->type) {
-	/* YYMMDDHHMM[SS]{Z,{+,-}hhmm} */
-	case V_ASN1_UTCTIME:
-		/* first part basic check */
-		if (as->length < 11)
-			return (-1);
-		for (i = 0; i < 10; ++i)
-			if (data[i] < '0' || data[i] > '9')
-				return (-1);
+  /* Find number of days since 1st March 1900 (in the Gregorian calendar). */
+  days = year * 365 + year / 4 - year / 100 + (year / 100 + 3) / 4;
+  days += dayoffset[xt->tm_mon] + xt->tm_mday - 1;
+  days -= 25508;              /* 1 jan 1970 is 25508 days since 1 mar 1900 */
+  days = ((days * 24 + xt->tm_hour) * 60 + xt->tm_min) * 60 + xt->tm_sec;
 
-		/* year - 1900 is OK for mktime() */
-		tm.tm_year = B2I(data[0]) * 10 + B2I(data[1]);
-		if (tm.tm_year < 50)
-			tm.tm_year += 100;
+  if (days < 0) {
+    *t = 0;
+    return;
+  }
 
-		/* month has to be -1 for mktime() */
-		tm.tm_mon = B2I(data[2]) * 10 + B2I(data[3]) - 1;
-		if (tm.tm_mon >= 12 || tm.tm_mon < 0)
-			return (-1);
+  *t = days + xt->tm_usec;
+}
 
-		/* day */
-		tm.tm_mday = B2I(data[4]) * 10 + B2I(data[5]);
-		if (tm.tm_mday > 31 || tm.tm_mday < 1)
-			return (-1);
+#define DIGIT2NUM(x) (((x)[0] - '0') * 10 + (x)[1] - '0')
 
-		/* hour */
-		tm.tm_hour = B2I(data[6]) * 10 + B2I(data[7]);
-		if (tm.tm_hour > 23 || tm.tm_hour < 0)
-			return (-1);
+int64_t
+sln_asn1_time_to_timestamp(ASN1_UTCTIME *tm)
+{
+  int64_t rv = 0;
+  /* Converts a ASN1_UTCTIME to an int64_t of seconds since 1970.  Returns 0 on failure. */
+  time_exp_t exp = {0};
 
-		/* minute */
-		tm.tm_min = B2I(data[8]) * 10 + B2I(data[9]);
-		if (tm.tm_min > 59 || tm.tm_min < 0)
-			return (-1);
+  /* Fail if the time isn't a valid ASN.1 UTCTIME; RFC3280 mandates
+  * that the seconds digits are present even though ASN.1
+  * doesn't. */
+  if (tm->length < 11 || !ASN1_UTCTIME_check(tm)) {
+    return 0;
+  }
 
-		if (as->length > 11) {
-			switch (data[12]) {
-			/* These three cases have seconds specified. */
-			case 'Z':
-				break;
-			/* yymmddhhmmss+HHMM */
-			case '+':
-				tm.tm_gmtoff = OFFSET_SEC(data, 12);
-				break;
-			case '-':
-				tm.tm_gmtoff = -OFFSET_SEC(data, 12);
-				break;
-			/*
-			 * Here is either a number, which would be
-			 * part of the offset from GMT, or it's an
-			 * error. We won't have to parse seconds.
-			 */
-			default:
-				if (data[12] < '0' || data[12] > '9')
-					return (-1);
-				/* yymmddhhmm+HHMM */
-				else if (data[10] == '+')
-					tm.tm_gmtoff = OFFSET_SEC(data, 10);
-				else if (data[10] == '-')
-					tm.tm_gmtoff = -OFFSET_SEC(data, 10);
-				goto convert;
-			}
+  exp.tm_year = DIGIT2NUM(tm->data);
+  exp.tm_mon = DIGIT2NUM(tm->data + 2) - 1;
+  exp.tm_mday = DIGIT2NUM(tm->data + 4) + 1;
+  exp.tm_hour = DIGIT2NUM(tm->data + 6);
+  exp.tm_min = DIGIT2NUM(tm->data + 8);
+  exp.tm_sec = DIGIT2NUM(tm->data + 10);
 
-			/* seconds for those three cases */
-			tm.tm_sec = B2I(data[10]) * 10 + B2I(data[11]);
-			if (tm.tm_sec > 59 || tm.tm_sec < 0)
-				return (-1);
-		}
-		else if (data[10] != 'Z')
-			return (-1);
-		break;
+  if (exp.tm_year <= 50) {
+    exp.tm_year += 100;
+  }
 
-	/* YYYYMMDDHHMM[SS[.F[F[F[F[F[F[F...]]]]]]]]{Z,{+,-}hhmm} */
-	case V_ASN1_GENERALIZEDTIME:
-		if (as->length < 12)
-			return (-1);
-		for (i = 0; i < 12; ++i)
-			if (data[i] < '0' || data[i] > '9')
-				return (-1);
+  time_exp_gmt_get(&rv, &exp);
 
-		/* year for mktime() */
-		tm.tm_year = B2I(data[0]) * 1000 + B2I(data[1]) * 100;
-		tm.tm_year += B2I(data[2]) * 10 + B2I(data[3]);
-		tm.tm_year -= 1900;
-
-		/* month for mktime() */
-		tm.tm_mon = B2I(data[4]) * 10 + B2I(data[5]) - 1;
-		if (tm.tm_mon >= 12 || tm.tm_mon < 0)
-			return (-1);
-
-		/* day */
-		tm.tm_mday = B2I(data[6]) * 10 + B2I(data[7]);
-		if (tm.tm_mday > 31 || tm.tm_mday < 1)
-			return (-1);
-
-		/* hour */
-		tm.tm_hour = B2I(data[8]) * 10 + B2I(data[9]);
-		if (tm.tm_hour > 23 || tm.tm_hour < 0)
-			return (-1);
-
-		/* minute */
-		tm.tm_min = B2I(data[10]) * 10 + B2I(data[11]);
-		if (tm.tm_min > 59 || tm.tm_min < 0)
-			return (-1);
-
-		if (as->length > 13) {
-			switch (data[14]) {
-			case '.':
-				/*
-				 * Here's an arbitrary amount of jiffies
-				 * less than second - skip over them to 
-				 * the timezone spec.
-				 */
-				for (i = 15; data[i] >= '0' && data[i] <= '9';
-				    ++i) 
-					;
-				switch (data[i]) {
-				/* yyyymmddhhmmss.fffffffffffZ */
-				case 'Z':
-					break;
-				/* yyyymmddhhmmss.fffffffffff+HHMM */
-				case '+':
-					tm.tm_gmtoff = OFFSET_SEC(data, i);
-					break;
-				case '-':
-					tm.tm_gmtoff = -OFFSET_SEC(data, i);
-					break;
-				default:
-					return (-1);
-				}
-				break;
-			/* yyyymmddhhmmssZ */
-			case 'Z':
-				break;
-			/* yyyymmddhhmmss+HHMM */
-			case '+':
-				tm.tm_gmtoff = OFFSET_SEC(data, 14);
-				break;
-			case '-':
-				tm.tm_gmtoff = -OFFSET_SEC(data, 14);
-				break;
-			/* yyyymmddhhmm+HHMM */
-			default:
-				if (data[14] < '0' || data[14] > '9')
-					return (-1);
-				else if (data[12] == '+')
-					tm.tm_gmtoff = OFFSET_SEC(data, 12);
-				else if (data[12] == '-')
-					tm.tm_gmtoff = -OFFSET_SEC(data, 12);
-				goto convert;
-			}
-			/* seconds for cases with jiffies, ssZ or ss+OFF */
-			tm.tm_sec = B2I(data[12]) * 10 + B2I(data[13]);
-			if (tm.tm_sec > 59 || tm.tm_sec < 0)
-				return (-1);
-		}
-		else if (data[12] != 'Z')
-			return (-1);
-		break;
-	default:
-		return (-1);
-	}
-
-convert:
-	/* 
-	 * Convert the filled 'struct tm' and correct from the local time zone
-	 * so the result is in what user proposed.
-	 * Don't try to baffle mktime() with tm_gmtoff - doesn't work.
-	 */
-	current = time(NULL);
-	i = (int) (tm.tm_gmtoff + localtime(&current)->tm_gmtoff);
-	tm.tm_gmtoff = 0;
-	return (time_t)(mktime(&tm) + i);
-
-#undef B2I
-#undef OFFSET_SEC
+  return rv;
 }

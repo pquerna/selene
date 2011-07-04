@@ -21,7 +21,7 @@
 #include "selene.h"
 #include "sln_types.h"
 
-time_t
+int64_t
 sln_asn1_time_to_timestamp(ASN1_TIME *as);
 
 selene_error_t*

@@ -47,9 +47,13 @@ SELENE_API(const char*) selene_cert_fingerprint_sha1(selene_cert_t *cert);
 
 SELENE_API(const char*) selene_cert_fingerprint_md5(selene_cert_t *cert);
 
-SELENE_API(const char*) selene_cert_not_before(selene_cert_t *cert);
+SELENE_API(const char*) selene_cert_not_before_str(selene_cert_t *cert);
 
-SELENE_API(const char*) selene_cert_not_after(selene_cert_t *cert);
+SELENE_API(const char*) selene_cert_not_after_str(selene_cert_t *cert);
+
+SELENE_API(int64_t) selene_cert_not_before(selene_cert_t *cert);
+
+SELENE_API(int64_t) selene_cert_not_after(selene_cert_t *cert);
 
 /* TODO: array of subjectAltName ?*/
 /* TODO: this is a crap API */

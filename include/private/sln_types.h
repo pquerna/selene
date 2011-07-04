@@ -142,6 +142,8 @@ struct selene_cert_t {
   const char *cache_fingerprint_md5;
   const char *cache_not_before;
   const char *cache_not_after;
+  int64_t cache_not_before_ts;
+  int64_t cache_not_after_ts;
   selene_cert_name_t *cache_subject;
   selene_cert_name_t *cache_issuer;
   int cache_alt_names_len;
