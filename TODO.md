@@ -6,6 +6,18 @@ Current TODO:
 
 * Improve debug logging.  If we had bug reports, I couldn't fix the from debug logs right now.
 
+* Parse all handshake message types (see lib/parser/handshake_messages.h):
+ * hello_request(0) [ignore]
+ * client_hello(1) [done]
+ * server_hello(2) [done]
+ * certificate(11) [WIP]
+ * server_key_exchange(12)
+ * certificate_request(13)
+ * server_hello_done(14) [done]
+ * certificate_verify(15)
+ * client_key_exchange(16)
+ * finished(20)
+
 * Add Certificate Store interface
  * Search for cert by:
   * CN, subjectAltName, dnsName, etc
@@ -18,18 +30,6 @@ Current TODO:
 * Alert message handling (parsing is done)
  * If Fatal, cleanup to mark the selene_t as dead, return a selene_error_t from all API surfaces.
  * Several TODOs throughout the parse about sending fatal alerts / shutting down the connection, this needs work.
-
-* Parse all handshake message types (see lib/parser/handshake_messages.c):
- * hello_request(0) [ignore]
- * client_hello(1) [done]
- * server_hello(2) [done]
- * certificate(11) [WIP]
- * server_key_exchange(12)
- * certificate_request(13)
- * server_hello_done(14)
- * certificate_verify(15)
- * client_key_exchange(16)
- * finished(20)
 
 * Implement next protocol negotiation <http://tools.ietf.org/html/draft-agl-tls-nextprotoneg-02>:
  * see NextProtos <http://golang.org/src/pkg/crypto/tls/common.go?s=2940:4315#L97>
