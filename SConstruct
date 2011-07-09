@@ -130,7 +130,7 @@ options = {
   },
 }
 
-selected_variant = '%s-%s-%s' % (env['SELENE_PLATFORM'].lower(), env['profile'].lower(), env['build_type'].lower())
+selected_variant = '%s-%s' % (env['profile'].lower(), env['build_type'].lower())
 print "Selected %s variant build..." % (selected_variant)
 
 variants = []
@@ -157,7 +157,7 @@ for vari in variants:
   platform = vari['PLATFORM']
   profile =  vari['PROFILE']
   build = vari['BUILD']
-  variant = '%s-%s-%s' % (platform.lower(), profile.lower(), build.lower())
+  variant = '%s-%s' % (profile.lower(), build.lower())
   vdir = pjoin('build', variant)
   venv = env.Clone()
   venv['SELEN_LIB_TYPE'] = build
@@ -221,6 +221,8 @@ env.Alias('coverage', cov_targets)
 
 def _get_files(env, source, globs, reldir=os.curdir):
   results = []
+  if not os.path.isdir(source):
+    return results
   for entry in os.listdir(source):
     fullpath = os.path.join(source, entry)
     if os.path.islink(fullpath):
