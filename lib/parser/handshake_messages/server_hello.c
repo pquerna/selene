@@ -52,7 +52,7 @@ sln_handshake_serialize_server_hello(selene_t *s, sln_msg_server_hello_t *sh, sl
   /* TODO: extensions */
   sln_bucket_create_empty(s->alloc, &b, len);
 
-  b->data[0] = SLN_HS_MSG_TYPE_SERVER_HELLO;
+  b->data[0] = SLN_HS_MT_SERVER_HELLO;
   dlen = len - 4;
   b->data[1] = dlen >> 16;
   b->data[2] = dlen >> 8;
