@@ -84,7 +84,21 @@ if conf.env['WANT_OPENSSL']:
     print 'Unable to use OpenSSL development enviroment (missing libcrypto?): with_openssl=%s' %  conf.env.get('with_openssl')
     Exit(-1)
 
+if not conf.CheckCC():
+  print 'Unable to find a functioning compiler, tried %s' % (conf.env.get('CC'))
+  Exit(-1)
+
+for flag in ['-pedantic', '-std=gnu89', '-Wno-variadic-macros']:
+  conf.env.AppendUnique(CCFLAGS=flag)
+  if not conf.CheckCC():
+    print 'Checking for compiler support of %s ... no' % flag
+    conf.env['CCFLAGS'] = filter(lambda x: x != flag, conf.env['CCFLAGS'])
+  else:
+    print 'Checking for compiler support of %s ... yes' % flag
+
 env = conf.Finish()
+
+env.AppendUnique(CPPPATH=['#/include'])
 
 options = {
   'PLATFORM': {
@@ -132,7 +146,7 @@ cov_targets = []
 # defaults for all platforms
 # TODO: non-gcc/clang platforms
 env.AppendUnique(CPPPATH=['#/include'],
-                 CCFLAGS=['-pedantic', '-std=gnu89', '-Wno-variadic-macros'])
+                 CCFLAGS=['-pedantic', '-std=gnu89'])
 all_targets = {}
 all_test_targets = {}
 
