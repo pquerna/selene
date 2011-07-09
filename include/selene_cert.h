@@ -49,24 +49,51 @@ typedef struct selene_cert_name_t {
   const char *countryName;
 } selene_cert_name_t;
 
+/**
+ * Depth of certificate in a chain.
+ */
 SELENE_API(int) selene_cert_depth(selene_cert_t *cert);
 
+/**
+ * X509 version of the certificate.
+ */
 SELENE_API(int) selene_cert_version(selene_cert_t *cert);
 
+/**
+ * SHA1 Fingerprint of the certificate, as a : seperated string, 
+ * for example: "19:C3:BA:6B:1F:82:42:2A:CE:46:E0:B7:E3:0D:33:CD:53:B4:6E:52".
+ */
 SELENE_API(const char*) selene_cert_fingerprint_sha1(selene_cert_t *cert);
 
+/**
+ * MD5 Fingerprint of the certificate, as a : seperated string, 
+ * for example: "9A:A9:71:5B:98:3E:50:D7:B5:90:85:26:AB:34:27:33".
+ */
 SELENE_API(const char*) selene_cert_fingerprint_md5(selene_cert_t *cert);
 
+/**
+ * Converts the ASN1 time to a more human readable string, like "Dec 30 00:00:00 2009 GMT".
+ */
 SELENE_API(const char*) selene_cert_not_before_str(selene_cert_t *cert);
 
+/**
+ *
+ */
 SELENE_API(const char*) selene_cert_not_after_str(selene_cert_t *cert);
 
+/**
+ * Return the ASN1 time in seconds since 1970.  Note there
+ * are several possibilities for errors in this conversion,
+ * since ASN1 can repersent a much larger date range.  This
+ * function returns 0 on any kind of error.
+ */
 SELENE_API(int64_t) selene_cert_not_before(selene_cert_t *cert);
 
+/**
+ * See selene_cert_not_before.
+ */
 SELENE_API(int64_t) selene_cert_not_after(selene_cert_t *cert);
 
-/* TODO: array of subjectAltName ?*/
-/* TODO: this is a crap API */
 SELENE_API(int) selene_cert_alt_names_count(selene_cert_t *cert);
 
 SELENE_API(const char*) selene_cert_alt_names_entry(selene_cert_t *cert, int offset);
