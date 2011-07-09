@@ -209,7 +209,7 @@ for vari in variants:
 
 denv = env.Clone()
 denv['DOXYGEN'] = 'doxygen'
-doxy = denv.Command(env.Dir('#/api-docs'), all_targets.values(),
+doxy = denv.Command(env.Dir('#/api-docs'), env.Glob("include/**"),
                    ['rm -rf api-docs',
                     '$DOXYGEN'])
 
@@ -219,6 +219,6 @@ env.Alias('test', all_test_targets[selected_variant])
 env.Alias('coverage', cov_targets)
 
 if not env.GetOption('clean'):
-  env.Default([all_targets[selected_variant], cov_targets])
+  env.Default([all_targets[selected_variant]])
 else:
   env.Default([all_targets.values(), all_test_targets.values(), cov_targets])
