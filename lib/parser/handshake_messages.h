@@ -21,10 +21,6 @@
 #define _handshake_messages_h_
 
 
-/* TODO: move to better place */
-#define SLN_HS_MSG_TYPE_CLIENT_HELLO 1
-#define SLN_HS_MSG_TYPE_SERVER_HELLO 2
-
 typedef enum sln_hs_mt_e {
   /**
    * 0	HelloRequest
@@ -185,5 +181,21 @@ sln_handshake_serialize_certificate(selene_t *s, sln_msg_certificate_t *cert, sl
 
 selene_error_t*
 sln_handshake_parse_certificate_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, void **baton);
+
+
+typedef enum sln_handshake_server_hello_done_state_e {
+  SLN_HS_SERVER_HELLO_DONE_LENGTH
+} sln_handshake_server_hello_done_state_e;
+
+typedef struct sln_msg_server_hello_done_t {
+  /* TODO: no fields needed here right? */
+  int dummy;
+} sln_msg_server_hello_done_t;
+
+selene_error_t*
+sln_handshake_parse_server_hello_done_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, void **baton);
+
+selene_error_t*
+sln_handshake_serialize_server_hello_done(selene_t *s, sln_msg_server_hello_done_t *sh, sln_bucket_t **p_b);
 
 #endif

@@ -112,9 +112,13 @@ setup_mt_parser(sln_tok_value_t *v, sln_hs_baton_t *hs)
       hs->state = SLN_HS_MESSAGE_PARSER;
       return sln_handshake_parse_certificate_setup(hs, v, &hs->current_msg_baton);
       break;
+    case SLN_HS_MT_SERVER_HELLO_DONE:
+      slnDbg(s, "parsing server hello done...");
+      hs->state = SLN_HS_MESSAGE_PARSER;
+      return sln_handshake_parse_server_hello_done_setup(hs, v, &hs->current_msg_baton);
+      break;
     case SLN_HS_MT_SERVER_KEY_EXCHANGE:
     case SLN_HS_MT_CERTIFICATE_REQUEST:
-    case SLN_HS_MT_SERVER_HELLO_DONE:
     case SLN_HS_MT_CERTIFICATE_VERIFY:
     case SLN_HS_MT_CLIENT_KEY_EXCHANGE:
     case SLN_HS_MT_FINISHED:
