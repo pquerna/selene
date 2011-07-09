@@ -77,7 +77,7 @@ SELENE_API(const char*) selene_cert_fingerprint_md5(selene_cert_t *cert);
 SELENE_API(const char*) selene_cert_not_before_str(selene_cert_t *cert);
 
 /**
- *
+* Converts the ASN1 time to a more human readable string, like "Dec 30 00:00:00 2009 GMT".
  */
 SELENE_API(const char*) selene_cert_not_after_str(selene_cert_t *cert);
 
@@ -94,17 +94,38 @@ SELENE_API(int64_t) selene_cert_not_before(selene_cert_t *cert);
  */
 SELENE_API(int64_t) selene_cert_not_after(selene_cert_t *cert);
 
+/**
+ * Number of Subject Alt Names present in this certificate.  May return 0.
+ */
 SELENE_API(int) selene_cert_alt_names_count(selene_cert_t *cert);
 
+/**
+ * Read a single subject alt name. returns NULL if offset doesn't exist.
+ */
 SELENE_API(const char*) selene_cert_alt_names_entry(selene_cert_t *cert, int offset);
 
+/**
+ * Returns a {selene_cert_name_t} instance which contains describtions of the
+ * Issuer for this certificate. Individual fields MAY be NULL.
+ */
 SELENE_API(selene_cert_name_t*) selene_cert_issuer(selene_cert_t *cert);
 
+/**
+ * Returns a {selene_cert_name_t} instance which contains describtions of the
+ * Subject for this certificate. Individual fields MAY be NULL.
+ */
 SELENE_API(selene_cert_name_t*) selene_cert_subject(selene_cert_t *cert);
 
 
+/**
+ * Number of Certficates in the chain. May be 0.
+ */
 SELENE_API(int) selene_cert_chain_count(selene_cert_chain_t *cert);
 
+/**
+ * Returns a certificate at this offset in the chain, returns NULL if
+ * the offset is invalid.
+ */
 SELENE_API(selene_cert_t*) selene_cert_chain_entry(selene_cert_chain_t *cert, int offset);
 
 #ifdef __cplusplus
