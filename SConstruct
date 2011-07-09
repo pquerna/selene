@@ -19,7 +19,7 @@ EnsureSConsVersion(1, 1, 0)
 
 SetOption('num_jobs', 4)
 
-import os, sys
+import os, sys, fnmatch
 from site_scons import ac
 from os.path import join as pjoin
 
@@ -218,7 +218,25 @@ env.Alias('docs', doxy)
 env.Alias('test', all_test_targets[selected_variant])
 env.Alias('coverage', cov_targets)
 
-if not env.GetOption('clean'):
-  env.Default([all_targets[selected_variant]])
+
+def _get_files(env, source, globs, reldir=os.curdir):
+  results = []
+  for entry in os.listdir(source):
+    fullpath = os.path.join(source, entry)
+    if os.path.islink(fullpath):
+      continue
+    if os.path.isfile(fullpath):
+      if any((fnmatch.fnmatchcase(fullpath, i) for i in globs)):
+        results.append(fullpath)
+    elif os.path.isdir(fullpath):
+      newrel = os.path.join(reldir, entry)
+      results.extend(_get_files(env, fullpath, globs, newrel))
+  return results
+
+if env.GetOption('clean'):
+  env.Clean(all_targets.values()[0], _get_files(env, 'build', ['*.gcda', '*.gcno']))
+  env.Default([all_targets.values(),
+               all_test_targets.values(),
+               cov_targets])
 else:
-  env.Default([all_targets.values(), all_test_targets.values(), cov_targets])
+  env.Default([all_targets[selected_variant]])
