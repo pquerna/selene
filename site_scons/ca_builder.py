@@ -29,11 +29,12 @@ def to_bytes(input):
 
 def certs_to_header(target, source, env):
     target[0].remove()
-    with open(target[0].get_path(), 'wb') as t:
-        t.write("/* GENERATED TRUSTED CERTIFICATE HEADER --- DO NOT EDIT */\n\n""")
-        for f in source:
-            data = f.get_contents()
-            t.write("static const char const TODO_FIX_THIS[] = {\n%s};\n" % to_bytes(data));
+    t = open(target[0].get_path(), 'wb')
+    t.write("/* GENERATED TRUSTED CERTIFICATE HEADER --- DO NOT EDIT */\n\n""")
+    for f in source:
+        data = f.get_contents()
+        t.write("static const char const TODO_FIX_THIS[] = {\n%s};\n" % to_bytes(data));
+    t.close()
     return None
 
 env.Append(BUILDERS = {'CertificateHeader' : Builder(action = certs_to_header, suffix='.h', src_suffix='.crt')})
