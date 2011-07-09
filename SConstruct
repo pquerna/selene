@@ -217,7 +217,8 @@ denv.AlwaysBuild(doxy)
 env.Alias('docs', doxy)
 env.Alias('test', all_test_targets[selected_variant])
 env.Alias('coverage', cov_targets)
+
 if not env.GetOption('clean'):
   env.Default([all_targets[selected_variant], cov_targets])
 else:
-  env.Default([all_targets.values(), 'test', cov_targets])
+  env.Default([all_targets.values(), all_test_targets.values(), cov_targets])
