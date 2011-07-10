@@ -90,6 +90,7 @@ struct sln_parser_baton_t {
     sln_msg_server_hello_t *server_hello;
     sln_msg_certificate_t *certificate;
     sln_msg_server_hello_done_t *server_hello_done;
+    sln_msg_client_key_exchange_t *client_key_exchange;
   } msg;
 };
 

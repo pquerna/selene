@@ -198,4 +198,21 @@ sln_handshake_parse_server_hello_done_setup(sln_hs_baton_t *hs, sln_tok_value_t 
 selene_error_t*
 sln_handshake_serialize_server_hello_done(selene_t *s, sln_msg_server_hello_done_t *sh, sln_bucket_t **p_b);
 
+
+typedef enum sln_handshake_client_key_exchange_state_e {
+  SLN_HS_CLIENT_KEY_EXCHANGE_LENGTH,
+  SLN_HS_CLIENT_KEY_EXCHANGE_DATA
+} sln_handshake_client_key_exchange_state_e;
+
+typedef struct sln_msg_client_key_exchange_t {
+  uint32_t pre_master_key_length;
+  char *pre_master_key;
+} sln_msg_client_key_exchange_t;
+
+selene_error_t*
+sln_handshake_parse_client_key_exchange_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, void **baton);
+
+selene_error_t*
+sln_handshake_serialize_client_key_exchange(selene_t *s, sln_msg_client_key_exchange_t *cke, sln_bucket_t **p_b);
+
 #endif

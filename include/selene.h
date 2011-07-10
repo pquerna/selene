@@ -84,13 +84,14 @@ typedef enum {
   /* The first bytes of our TLS data looked like an HTTP request, maybe send
    * your client a nice error message? */
   SELENE_EVENT_TLS_GOT_HTTP = 7,
+  SELENE_EVENT_VALIDATE_CERTIFICATE = 8,
   /* INTERNAL: When we recieved a properly formed client hello */
-  SELENE__EVENT_HS_GOT_CLIENT_HELLO = 8,
-  SELENE__EVENT_HS_GOT_SERVER_HELLO = 9,
-  SELENE__EVENT_HS_GOT_CERTIFICATE = 10,
-  SELENE__EVENT_HS_GOT_SERVER_HELLO_DONE = 11,
-  SELENE_EVENT_VALIDATE_CERTIFICATE = 12,
-  SELENE_EVENT__MAX = 13
+  SELENE__EVENT_HS_GOT_CLIENT_HELLO = 9,
+  SELENE__EVENT_HS_GOT_SERVER_HELLO = 10,
+  SELENE__EVENT_HS_GOT_CERTIFICATE = 11,
+  SELENE__EVENT_HS_GOT_SERVER_HELLO_DONE = 12,
+  SELENE__EVENT_HS_GOT_CLIENT_KEY_EXCHANGE = 13,
+  SELENE_EVENT__MAX = 14
 } selene_event_e;
 
 typedef enum {
