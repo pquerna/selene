@@ -88,6 +88,7 @@ if not conf.CheckCC():
   print 'Unable to find a functioning compiler, tried %s' % (conf.env.get('CC'))
   Exit(-1)
 
+# TODO: consider '-fmudflap', '-fstack-check'
 for flag in ['-pedantic', '-std=gnu89', '-Wno-variadic-macros']:
   conf.env.AppendUnique(CCFLAGS=flag)
   if not conf.CheckCC():
