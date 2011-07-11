@@ -196,4 +196,12 @@ char *sln_strdup(selene_t *s, const char *in);
   } \
 } while(0);
 
+#ifdef __builtin_expect
+#define sln_likely(x) __builtin_expect((x),1)
+#define sln_unlikely(x) __builtin_expect((x),0)
+#else
+#define sln_likely(x) (x)
+#define sln_unlikely(x) (x)
+#endif
+
 #endif
