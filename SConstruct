@@ -144,10 +144,7 @@ for platform in [env['SELENE_PLATFORM']]:
 append_types = ['CCFLAGS', 'CFLAGS', 'CPPDEFINES', 'LIBS']
 replace_types = ['CC']
 cov_targets = []
-# defaults for all platforms
-# TODO: non-gcc/clang platforms
-env.AppendUnique(CPPPATH=['#/include'],
-                 CCFLAGS=['-pedantic', '-std=gnu89'])
+
 all_targets = {}
 all_test_targets = {}
 
@@ -161,7 +158,7 @@ for vari in variants:
   variant = '%s-%s' % (profile.lower(), build.lower())
   vdir = pjoin('build', variant)
   venv = env.Clone()
-  venv['SELEN_LIB_TYPE'] = build
+  venv['SELENE_LIB_TYPE'] = build
 
   for k in sorted(options.keys()):
     ty = vari.get(k)

@@ -59,9 +59,9 @@ caheader = lenv.CertificateHeader(lenv.File('selene_trusted_ca_certificates.h'),
 lenv.AppendUnique(CPPPATH=['#/include/private', dirname(caheader[0].get_abspath())])
 sources.append(caheader)
 
-if lenv['SELEN_LIB_TYPE'] == "STATIC":
+if lenv['SELENE_LIB_TYPE'] == "STATIC":
   libselene = lenv.StaticLibrary('libselene', sources)
-elif venv['SELEN_LIB_TYPE'] == "SHARED":
+elif venv['SELENE_LIB_TYPE'] == "SHARED":
   libselene = lenv.SharedLibrary('libselene', sources)
 
 Return('libselene')
