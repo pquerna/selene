@@ -1,7 +1,8 @@
-/*
+/**
  * Conversion from ASN1 Time to a time_exp_t is dervived from
  *   <httpd/modules/ssl/ssl_engine_vars.c>  ssl_var_lookup_ssl_cert_remain
- * (Portable) Conversion from a time_exp_t to a int64_t is
+ * (Portable) Conversion from a time_exp_t to a int64_t is from APR:
+ *  <time/unix/time.c>
  */
 
 /* Licensed to the Apache Software Foundation (ASF) under one or more
