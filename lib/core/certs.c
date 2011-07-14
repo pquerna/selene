@@ -245,7 +245,7 @@ generate_expires(selene_cert_t *cert)
       cert->cache_not_before = sln_strdup(cert->s, buf);
      }
 
-     memset (buf, 0, sizeof (buf));
+     memset(buf, 0, sizeof (buf));
 
      notAfter = X509_get_notAfter(cert->cert);
      cert->cache_not_after_ts = sln_asn1_time_to_timestamp(notAfter);
