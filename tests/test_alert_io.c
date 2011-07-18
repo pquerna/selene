@@ -130,6 +130,7 @@ static void alert_to_self(void **state)
 
   if (err) {
     SLN_ASSERT(err->err == SELENE_EINVAL);
+    selene_error_clear(err);
   }
   else {
     /* TODO: more asserts */
