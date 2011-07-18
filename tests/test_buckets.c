@@ -63,9 +63,28 @@ bucket_from_bucket(void **state)
   sln_bucket_destroy(b);
 }
 
+static void
+bucket_from_bucket_deeper(void **state)
+{
+  const char *data = "foobar";
+  sln_bucket_t *e;
+  sln_bucket_t *b;
+  sln_bucket_t *j;
+  SLN_ERR(sln_bucket_create_copy_bytes(sln_test_alloc, &e, data, strlen(data)));
+  assert_memory_equal(data, e->data, 6);
+  SLN_ERR(sln_bucket_create_from_bucket(sln_test_alloc, &b, e, 1, 2));
+  assert_memory_equal(data+1, b->data, 2);
+  SLN_ERR(sln_bucket_create_from_bucket(sln_test_alloc, &j, b, 1, 1));
+  assert_memory_equal(data+2, b->data, 1);
+  sln_bucket_destroy(j);
+  sln_bucket_destroy(e);
+  sln_bucket_destroy(b);
+}
+
 SLN_TESTS_START(buckets)
   SLN_TESTS_ENTRY(bucket_empty)
   SLN_TESTS_ENTRY(bucket_with_bytes)
   SLN_TESTS_ENTRY(bucket_copy_bytes)
   SLN_TESTS_ENTRY(bucket_from_bucket)
+  SLN_TESTS_ENTRY(bucket_from_bucket_deeper)
 SLN_TESTS_END()

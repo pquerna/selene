@@ -28,8 +28,12 @@ static void create_sized(selene_alloc_t *alloc, sln_bucket_t *parent, size_t siz
   b->alloc = alloc;
   b->parent = parent;
   if (parent != NULL) {
+    sln_bucket_t *e = parent;
+    while (e != NULL) {
+      e->refcount++;
+      e = e->parent;
+    }
     /* TODO: perhaps have a CAS version for multi-threaded operation, but, no.... no. */
-    parent->refcount++;
     b->memory_is_mine = 0;
   }
   else {
@@ -63,7 +67,7 @@ sln_bucket_create_from_bucket(selene_alloc_t *alloc, sln_bucket_t **out_b, sln_b
 {
   sln_bucket_t *b = NULL;
 
-  SLN_ASSERT(parent->size > offset + length);
+  SLN_ASSERT(parent->size >= offset + length);
 
   create_sized(alloc, parent, length, &b);
 
