@@ -188,28 +188,40 @@ sln_brigade_flatten(sln_brigade_t *bb, char *c, size_t *len)
 selene_error_t*
 sln_brigade_copy_into(sln_brigade_t *source_bb, size_t want_offset, size_t want_length, sln_brigade_t *into_bb)
 {
-  selene_error_t* err;
+  size_t got = 0;
+  size_t offset = 0;
+  size_t buffer_offset = 0;
+  sln_bucket_t *b;
   sln_bucket_t *e;
-  size_t rlen = 0;
-  size_t tocopy;
 
-  tocopy = sln_min(want_length, sln_brigade_size(source_bb) - want_offset);
+  SLN_RING_FOREACH(b, &(source_bb)->list, sln_bucket_t, link)
+  {
+    if (got == want_length) {
+      break;
+    }
 
-  err = sln_bucket_create_empty(into_bb->alloc, &e, tocopy);
+    if (want_offset <= (offset + b->size)) {
+      size_t startpoint = 0;
+      size_t tocopy;
 
-  if (err) {
-    return err;
+      if (want_offset > offset) {
+        startpoint = want_offset - offset;
+      }
+
+      tocopy = sln_min(b->size - startpoint, want_length - got);
+      got += tocopy;
+      SELENE_ERR(sln_bucket_create_from_bucket(into_bb->alloc, &e, b, startpoint, tocopy));
+
+      SLN_BRIGADE_INSERT_HEAD(into_bb, e);
+
+      buffer_offset += tocopy;
+      offset += tocopy;
+    }
+    else {
+      offset += b->size;
+      continue;
+    }
   }
-
-  /* TODO: this is maybe not the most efficient method... but fuck it, optimize it later right?*/
-  err = sln_brigade_pread_bytes(source_bb, want_offset, tocopy, e->data, &rlen);
-
-  if (err) {
-    sln_bucket_destroy(e);
-    return err;
-  }
-
-  SLN_BRIGADE_INSERT_TAIL(into_bb, e);
 
   return SELENE_SUCCESS;
 }
