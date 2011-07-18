@@ -56,6 +56,7 @@ static void alert_msg(void **state)
     err  = sln_io_alert_read(s, baton);
     if (err) {
       SLN_ASSERT(err->err == SELENE_EINVAL);
+      selene_error_clear(err);
     }
     else {
       /* TODO: more asserts */
@@ -92,6 +93,7 @@ static void alert_invalid_msg(void **state)
     err  = sln_io_alert_read(s, baton);
     if (err) {
       SLN_ASSERT(err->err == SELENE_EINVAL);
+      selene_error_clear(err);
     }
     else {
       /* TODO: more asserts */
