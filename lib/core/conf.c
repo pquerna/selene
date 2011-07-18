@@ -73,15 +73,17 @@ selene_conf_create(selene_conf_t **p_conf)
 void
 selene_conf_destroy(selene_conf_t *conf)
 {
+  selene_alloc_t *alloc = conf->alloc;
+
   X509_STORE_free(conf->trusted_cert_store);
-  free(conf);
+  alloc->free(alloc->baton, conf);
 }
 
 selene_error_t *
 selene_conf_use_reasonable_defaults(selene_conf_t *conf)
 {
   selene_cipher_suite_list_t *ciphers = NULL;
-  SELENE_ERR(selene_cipher_suite_list_create(&ciphers));
+  SELENE_ERR(selene_cipher_suite_list_create(conf->alloc, &ciphers));
 
   SELENE_ERR(selene_cipher_suite_list_add(ciphers, SELENE_CS_RSA_WITH_RC4_128_SHA));
   SELENE_ERR(selene_cipher_suite_list_add(ciphers, SELENE_CS_RSA_WITH_AES_128_CBC_SHA));
@@ -108,11 +110,13 @@ selene_conf_cipher_suites(selene_conf_t *conf, selene_cipher_suite_list_t *ciphe
 }
 
 selene_error_t*
-selene_cipher_suite_list_create(selene_cipher_suite_list_t **p_ciphers)
+selene_cipher_suite_list_create(selene_alloc_t *alloc, selene_cipher_suite_list_t **p_ciphers)
 {
   selene_cipher_suite_list_t *ciphers;
 
-  ciphers = calloc(1, sizeof(selene_cipher_suite_list_t));
+  ciphers = alloc->calloc(alloc->baton, sizeof(selene_cipher_suite_list_t));
+
+  ciphers->alloc = alloc;
 
   *p_ciphers = ciphers;
 
@@ -137,7 +141,8 @@ selene_cipher_suite_list_add(selene_cipher_suite_list_t *ciphers, selene_cipher_
 
 void selene_cipher_suite_list_destroy(selene_cipher_suite_list_t *ciphers)
 {
-  free(ciphers);
+  selene_alloc_t *alloc = ciphers->alloc;
+  alloc->free(alloc->baton, ciphers);
 }
 
 selene_error_t *

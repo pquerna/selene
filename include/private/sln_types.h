@@ -124,6 +124,7 @@ typedef struct {
 } sln_backend_t;
 
 struct selene_cipher_suite_list_t {
+  selene_alloc_t *alloc;
   int used;
   int ciphers[SELENE_CS__MAX];
 };

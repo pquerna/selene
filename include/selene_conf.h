@@ -85,7 +85,7 @@ typedef struct selene_cipher_suite_list_t selene_cipher_suite_list_t;
 /**
  * Creates an ordered list of Cipher Suites.
  */
-SELENE_API(selene_error_t*) selene_cipher_suite_list_create(selene_cipher_suite_list_t **ciphers);
+SELENE_API(selene_error_t*) selene_cipher_suite_list_create(selene_alloc_t *alloc, selene_cipher_suite_list_t **ciphers);
 
 /**
  * Add a single cipher suite to the list.

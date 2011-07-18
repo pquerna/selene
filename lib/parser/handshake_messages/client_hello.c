@@ -291,7 +291,7 @@ parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
       chb->cipher_suites_num = cipher_suites_len / 2;
       slnDbg(s, "got cipher suites length: %d numCiphers: %d", cipher_suites_len, chb->cipher_suites_num);
       if (ch->ciphers == NULL) {
-        err = selene_cipher_suite_list_create(&ch->ciphers);
+        err = selene_cipher_suite_list_create(s->alloc, &ch->ciphers);
       }
       break;
     }
