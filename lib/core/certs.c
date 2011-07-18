@@ -73,6 +73,8 @@ sln_cert_create(selene_t *s, X509 *x509, int depth, selene_cert_t **p_cert)
   cert->cert = x509;
   cert->depth = depth;
 
+  SLN_RING_ELEM_INIT(cert, link);
+
   *p_cert = cert;
   return SELENE_SUCCESS;
 }
@@ -122,6 +124,8 @@ void
 sln_cert_destroy(selene_cert_t *cert)
 {
   selene_t *s = cert->s;
+
+  SLN_CERT_REMOVE(cert);
 
   if (cert->cache_fingerprint_sha1) {
     sln_free(s, (void*)cert->cache_fingerprint_sha1);
@@ -517,6 +521,24 @@ selene_cert_chain_count(selene_cert_chain_t *cc)
   }
 
   return i;
+}
+
+void
+sln_cert_chain_destroy(selene_t *s, selene_cert_chain_t *chain)
+{
+  sln_cert_chain_clear(s, chain);
+  sln_free(s, chain);
+}
+
+void
+sln_cert_chain_clear(selene_t *s, selene_cert_chain_t *chain)
+{
+  selene_cert_t *c;
+
+  while (!SLN_CERT_CHAIN_EMPTY(chain)) {
+      c = SLN_CERT_CHAIN_FIRST(chain);
+      sln_cert_destroy(c);
+  }
 }
 
 selene_cert_t*

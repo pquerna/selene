@@ -124,7 +124,9 @@ static void
 parse_certificate_destroy(sln_hs_baton_t *hs, void *baton)
 {
   cert_baton_t *certb = (cert_baton_t*)baton;
-
+  if (certb->cert.chain != NULL) {
+    sln_cert_chain_destroy(hs->s, certb->cert.chain);
+  }
   sln_free(hs->s, certb);
 }
 
@@ -133,6 +135,7 @@ sln_handshake_parse_certificate_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, vo
 {
   cert_baton_t *certb = sln_calloc(hs->s, sizeof(cert_baton_t));
   slnDbg(hs->s, "sln_handshake_parse_certificate_setup");
+  sln_cert_chain_create(hs->s, &certb->cert.chain);
   certb->state = SLN_HS_CERTIFICATE_LENGTH;
   hs->baton->msg.certificate = &certb->cert;
   hs->current_msg_step = parse_certificate_step;

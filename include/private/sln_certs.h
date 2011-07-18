@@ -30,6 +30,22 @@ sln_cert_create(selene_t *s, X509 *x509, int depth, selene_cert_t **p_cert);
 void
 sln_cert_destroy(selene_cert_t *cert);
 
+selene_error_t*
+sln_cert_chain_create(selene_t *s, selene_cert_chain_t **out_cc);
+
+void
+sln_cert_chain_destroy(selene_t *s, selene_cert_chain_t *chain);
+
+void
+sln_cert_chain_clear(selene_t *s, selene_cert_chain_t *chain);
+
+#define SLN_CERT_REMOVE(e) SLN_RING_REMOVE((e), link)
+
+#define SLN_CERT_CHAIN_SENTINEL(b) SLN_RING_SENTINEL(&(b)->list, selene_cert_t, link)
+#define SLN_CERT_CHAIN_EMPTY(b) SLN_RING_EMPTY(&(b)->list, selene_cert_t, link)
+#define SLN_CERT_CHAIN_FIRST(b) SLN_RING_FIRST(&(b)->list)
+#define SLN_CERT_CHAIN_LAST(b) SLN_RING_LAST(&(b)->list)
+
 #define SLN_CERT_CHAIN_INSERT_TAIL(cc, e) \
   do { \
     selene_cert_t *sln__c = (e); \
