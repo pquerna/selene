@@ -137,6 +137,16 @@ sln_cert_destroy(selene_cert_t *cert)
     cert->cache_fingerprint_md5 = NULL;
   }
 
+  if (cert->cache_not_before) {
+    sln_free(s, (void*)cert->cache_not_before);
+    cert->cache_fingerprint_md5 = NULL;
+  }
+
+  if (cert->cache_not_after) {
+    sln_free(s, (void*)cert->cache_not_after);
+    cert->cache_fingerprint_md5 = NULL;
+  }
+
   if (cert->cache_subject) {
     sln_cert_name_destroy(s, cert->cache_subject);
     cert->cache_subject = NULL;
