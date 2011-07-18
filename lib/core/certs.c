@@ -152,6 +152,10 @@ sln_cert_destroy(selene_cert_t *cert)
     cert->cache_subjectAltNames = NULL;
   }
 
+  if (cert->cert) {
+    X509_free(cert->cert);
+  }
+
   sln_free(s, cert);
 }
 
