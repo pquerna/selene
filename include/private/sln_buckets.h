@@ -41,7 +41,8 @@ selene_error_t*
 sln_bucket_create_from_bucket(selene_alloc_t *alloc, sln_bucket_t **out_b,
                               sln_bucket_t *parent, size_t offset, size_t length);
 
-/* Cleanup a memory buffer */
+/* Cleanup a memory buffer, bucket will be removed from its brigade
+ * but may not be actually free'ed if other buckets reference some of it's memory. */
 void
 sln_bucket_destroy(sln_bucket_t *b);
 
