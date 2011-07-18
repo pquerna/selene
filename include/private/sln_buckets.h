@@ -34,6 +34,13 @@ sln_bucket_create_copy_bytes(selene_alloc_t *alloc, sln_bucket_t **b, const char
 selene_error_t*
 sln_bucket_create_with_bytes(selene_alloc_t *alloc, sln_bucket_t **b, char* bytes, size_t size);
 
+/* Create a new bucket, which references a slice from an existing bucket.  This increments
+ * the reference count of the parent.  This method is not re-entrant safe across single parent buckets.
+ */
+selene_error_t*
+sln_bucket_create_from_bucket(selene_alloc_t *alloc, sln_bucket_t **out_b,
+                              sln_bucket_t *parent, size_t offset, size_t length);
+
 /* Cleanup a memory buffer */
 void
 sln_bucket_destroy(sln_bucket_t *b);

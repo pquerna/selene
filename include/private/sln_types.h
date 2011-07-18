@@ -57,9 +57,11 @@ struct sln_bucket_t {
   selene_alloc_t *alloc;
   /* When destroying this bucket, can we also destroy memory */
   int memory_is_mine;
+  int refcount;
   size_t size;
   /* TODO: non-memory buckets */
   char *data;
+  sln_bucket_t *parent;
 };
 
 /* A list of chunks (aka, a bucket brigade) */

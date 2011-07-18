@@ -18,14 +18,24 @@
 #include "sln_brigades.h"
 #include "sln_buckets.h"
 #include "sln_types.h"
+#include "sln_assert.h"
 #include <string.h>
 
-static void create_sized(selene_alloc_t *alloc, sln_bucket_t **out_b, size_t size)
+static void create_sized(selene_alloc_t *alloc, sln_bucket_t *parent, size_t size, sln_bucket_t **out_b)
 {
   sln_bucket_t *b = alloc->calloc(alloc->baton, sizeof(sln_bucket_t));
 
   b->alloc = alloc;
-  b->memory_is_mine = 1;
+  b->parent = parent;
+  if (parent != NULL) {
+    /* TODO: perhaps have a CAS version for multi-threaded operation, but, no.... no. */
+    parent->refcount++;
+    b->memory_is_mine = 0;
+  }
+  else {
+    b->memory_is_mine = 1;
+  }
+  b->refcount = 1;
   b->size = size;
 
   SLN_RING_ELEM_INIT(b, link);
@@ -38,10 +48,26 @@ sln_bucket_create_empty(selene_alloc_t *alloc, sln_bucket_t **out_b, size_t size
 {
   sln_bucket_t *b = NULL;
 
-  create_sized(alloc, &b, size);
+  create_sized(alloc, NULL, size, &b);
 
   /* TODO: pool allocator */
   b->data = malloc(size);
+
+  *out_b = b;
+
+  return SELENE_SUCCESS;
+}
+
+selene_error_t*
+sln_bucket_create_from_bucket(selene_alloc_t *alloc, sln_bucket_t **out_b, sln_bucket_t *parent, size_t offset, size_t length)
+{
+  sln_bucket_t *b = NULL;
+
+  SLN_ASSERT(parent->size > offset + length);
+
+  create_sized(alloc, parent, length, &b);
+
+  b->data = parent->data + offset;
 
   *out_b = b;
 
@@ -67,7 +93,7 @@ sln_bucket_create_with_bytes(selene_alloc_t *alloc, sln_bucket_t **out_b, char* 
 {
   sln_bucket_t *b = NULL;
 
-  create_sized(alloc, &b, size);
+  create_sized(alloc, NULL, size, &b);
 
   b->memory_is_mine = 0;
 
@@ -78,16 +104,31 @@ sln_bucket_create_with_bytes(selene_alloc_t *alloc, sln_bucket_t **out_b, char* 
   return SELENE_SUCCESS;
 }
 
+void bucket_try_destroy(sln_bucket_t *b)
+{
+  sln_bucket_t *parent = b->parent;
+  b->refcount--;
+
+  /* fprintf(stderr, "bucket_try_destroy: b: %p ref: %d  parent: %p\n", (void*)b, b->refcount, (void*)parent); */
+  if (b->refcount <= 0) {
+    if (b->memory_is_mine == 1 && b->data != NULL) {
+      b->alloc->free(b->alloc->baton, b->data);
+    }
+
+    b->data = NULL;
+
+    b->alloc->free(b->alloc->baton, b);
+  }
+
+  if (parent) {
+    bucket_try_destroy(parent);
+  }
+}
+
 void
 sln_bucket_destroy(sln_bucket_t *b)
 {
   SLN_BUCKET_REMOVE(b);
 
-  if (b->memory_is_mine == 1 && b->data != NULL) {
-    b->alloc->free(b->alloc->baton, b->data);
-  }
-
-  b->data = NULL;
-
-  b->alloc->free(b->alloc->baton, b);
+  bucket_try_destroy(b);
 }
