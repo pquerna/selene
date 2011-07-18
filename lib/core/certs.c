@@ -492,3 +492,51 @@ selene_cert_alt_names_entry(selene_cert_t *cert, int offset)
 
   return NULL;
 }
+
+selene_error_t*
+sln_cert_chain_create(selene_t *s, selene_cert_chain_t **out_cc)
+{
+  selene_cert_chain_t* cc = sln_calloc(s, sizeof(selene_cert_chain_t));
+
+  SLN_RING_INIT(&cc->list, selene_cert_t, link);
+
+  *out_cc = cc;
+
+  return SELENE_SUCCESS;
+}
+
+int
+selene_cert_chain_count(selene_cert_chain_t *cc)
+{
+  int i = 0;
+  selene_cert_t *c;
+
+  SLN_RING_FOREACH(c, &(cc)->list, selene_cert_t, link)
+  {
+    i++;
+  }
+
+  return i;
+}
+
+selene_cert_t*
+selene_cert_chain_entry(selene_cert_chain_t *cc, int offset)
+{
+  int i = 0;
+  selene_cert_t *c;
+
+  SLN_RING_FOREACH(c, &(cc)->list, selene_cert_t, link)
+  {
+    if (offset == i) {
+      return c;
+    }
+
+    if (i > offset) {
+      break;
+    }
+
+    i++;
+  }
+
+  return NULL;
+}

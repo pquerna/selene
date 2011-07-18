@@ -136,6 +136,7 @@ struct selene_conf_t {
 };
 
 struct selene_cert_t {
+  SLN_RING_ENTRY(selene_cert_t) link;
   selene_t *s;
   X509 *cert;
   int depth;
@@ -151,6 +152,10 @@ struct selene_cert_t {
   sln_brigade_t *cache_subjectAltNames;
 };
 
+struct selene_cert_chain_t {
+  SLN_RING_HEAD(selene_cert_list, selene_cert_t) list;
+  selene_t *s;
+};
 
 typedef struct {
   sln_brigade_t *in_enc;
