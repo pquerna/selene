@@ -172,8 +172,7 @@ typedef enum sln_handshake_certificate_state_e {
 } sln_handshake_certificate_state_e;
 
 typedef struct sln_msg_certificate_t {
-  /* TODO: cert lists */
-  X509 *cert;
+  selene_cert_chain_t *chain;
 } sln_msg_certificate_t;
 
 selene_error_t*

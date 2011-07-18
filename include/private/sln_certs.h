@@ -30,4 +30,11 @@ sln_cert_create(selene_t *s, X509 *x509, int depth, selene_cert_t **p_cert);
 void
 sln_cert_destroy(selene_cert_t *cert);
 
+#define SLN_CERT_CHAIN_INSERT_TAIL(cc, e) \
+  do { \
+    selene_cert_t *sln__c = (e); \
+    SLN_RING_INSERT_TAIL(&(cc)->list, sln__c, selene_cert_t, link); \
+    SLN_BRIGADE_CHECK_CONSISTENCY((cc)); \
+  } while (0)
+
 #endif

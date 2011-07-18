@@ -17,12 +17,15 @@
 
 #include "../parser.h"
 #include "../handshake_messages.h"
+#include "sln_certs.h"
 #include <string.h>
 
 selene_error_t*
 sln_handshake_serialize_certificate(selene_t *s, sln_msg_certificate_t *cert, sln_bucket_t **p_b)
 {
-  /* TODO: impl */
+/*  sln_bucket_t *b = NULL;
+  size_t len = 0;
+*/
   return SELENE_SUCCESS;
 }
 
@@ -30,6 +33,7 @@ sln_handshake_serialize_certificate(selene_t *s, sln_msg_certificate_t *cert, sl
 typedef struct cert_baton_t {
   sln_handshake_certificate_state_e state;
   int certleft;
+  int depth;
   sln_msg_certificate_t cert;
 } cert_baton_t;
 
@@ -45,6 +49,7 @@ parse_certificate_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
   switch (certb->state) {
     case SLN_HS_CERTIFICATE_LENGTH:
       certb->certleft = v->v.uint24;
+      certb->depth = 0;
       certb->state = SLN_HS_CERTIFICATE_ENTRY_LENGTH;
       v->next = TOK_UINT24;
       v->wantlen = 3;
@@ -62,6 +67,8 @@ parse_certificate_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
     {
       const unsigned char *buf;
       const unsigned char *p;
+      X509 *x509;
+
       slnDbg(s, "got cert data in brigade!");
       /* TODO: use a BIO here to avoid alloc */
       l = sln_brigade_size(v->v.bb);
@@ -75,10 +82,17 @@ parse_certificate_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
       }
 
       /* TODO: certlist */
-      cert->cert = d2i_X509(NULL, &p, l);
+      x509 = d2i_X509(NULL, &p, l);
       /* TODO: error handling */
-      if (cert->cert != NULL) {
-        slnDbg(s, "cert name: %s", cert->cert->name);
+      if (x509 != NULL) {
+        selene_cert_t *tmpc;
+        slnDbg(s, "cert name: %s", x509->name);
+        err = sln_cert_create(s, x509, certb->depth, &tmpc);
+        certb->depth++;
+        if (err) {
+          return err;
+        }
+        SLN_CERT_CHAIN_INSERT_TAIL(cert->chain, tmpc);
       }
       sln_free(s, (void*)buf);
 
