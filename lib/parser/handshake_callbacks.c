@@ -69,7 +69,7 @@ handle_client_hello(selene_t *s, selene_event_e event, void *baton_)
 selene_cert_chain_t*
 selene_peer_certchain(selene_t *s)
 {
-  return NULL;
+  return s->peer_certs;
 }
 
 void
@@ -98,6 +98,10 @@ validate_certificates(selene_t *s, selene_event_e event, void *baton)
 static selene_error_t*
 handle_server_certificate(selene_t *s, selene_event_e event, void *x)
 {
+  sln_parser_baton_t *baton = s->backend_baton;
+  sln_msg_certificate_t *certs = baton->msg.certificate;
+  s->peer_certs = certs->chain;
+  certs->chain = NULL;
   return selene_publish(s, SELENE_EVENT_VALIDATE_CERTIFICATE);
 }
 

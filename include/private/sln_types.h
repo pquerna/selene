@@ -183,6 +183,7 @@ struct selene_t {
   void *backend_baton;
 
   const char *client_sni;
+  selene_cert_chain_t *peer_certs;
 };
 
 void* sln_alloc(selene_t *s, size_t len);

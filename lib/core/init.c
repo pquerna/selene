@@ -114,6 +114,11 @@ selene_destroy(selene_t *s)
     s->client_sni = NULL;
   }
 
+  if (s->peer_certs != NULL) {
+    sln_cert_chain_destroy(s, s->peer_certs);
+    s->peer_certs = NULL;
+  }
+
   sln_free(s, s);
 
   sln_terminate();
