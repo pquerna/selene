@@ -167,8 +167,7 @@ sln_brigade_flatten(sln_brigade_t *bb, char *c, size_t *len)
     if (b->size != data_len) {
       sln_bucket_t *tmpe;
 
-      SELENE_ERR(sln_bucket_create_copy_bytes(bb->alloc, &tmpe, (b->data + data_len), b->size - data_len));
-
+      SELENE_ERR(sln_bucket_create_from_bucket(bb->alloc, &tmpe, b, data_len, b->size - data_len));
       SLN_BRIGADE_INSERT_HEAD(bb, tmpe);
     }
 
@@ -235,9 +234,7 @@ sln_brigade_chomp(sln_brigade_t *bb, size_t len)
 
     if (b->size != data_len) {
       sln_bucket_t *tmpe;
-
-      SELENE_ERR(sln_bucket_create_copy_bytes(bb->alloc, &tmpe, (b->data + data_len), b->size - data_len));
-
+      SELENE_ERR(sln_bucket_create_from_bucket(bb->alloc, &tmpe, b, data_len, b->size - data_len));
       SLN_BRIGADE_INSERT_HEAD(bb, tmpe);
     }
 
