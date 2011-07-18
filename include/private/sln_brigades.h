@@ -71,6 +71,8 @@ sln_brigade_chomp(sln_brigade_t *bb, size_t len);
 
 /**
  * Duplicate a section of a brigade, into the tail of another brigade.
+ *
+ * Note: Bucket's data are reference counted and should not be modified in place.
  */
 selene_error_t*
 sln_brigade_copy_into(sln_brigade_t *source_bb, size_t offset, size_t point, sln_brigade_t *into_bb);
