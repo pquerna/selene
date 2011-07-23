@@ -85,13 +85,14 @@ typedef enum {
    * your client a nice error message? */
   SELENE_EVENT_TLS_GOT_HTTP = 7,
   SELENE_EVENT_VALIDATE_CERTIFICATE = 8,
+  SELENE_EVENT_SELECT_CERTIFICATES = 9,
   /* INTERNAL: When we recieved a properly formed client hello */
-  SELENE__EVENT_HS_GOT_CLIENT_HELLO = 9,
-  SELENE__EVENT_HS_GOT_SERVER_HELLO = 10,
-  SELENE__EVENT_HS_GOT_CERTIFICATE = 11,
-  SELENE__EVENT_HS_GOT_SERVER_HELLO_DONE = 12,
-  SELENE__EVENT_HS_GOT_CLIENT_KEY_EXCHANGE = 13,
-  SELENE_EVENT__MAX = 14
+  SELENE__EVENT_HS_GOT_CLIENT_HELLO = 10,
+  SELENE__EVENT_HS_GOT_SERVER_HELLO = 11,
+  SELENE__EVENT_HS_GOT_CERTIFICATE = 12,
+  SELENE__EVENT_HS_GOT_SERVER_HELLO_DONE = 13,
+  SELENE__EVENT_HS_GOT_CLIENT_KEY_EXCHANGE = 14,
+  SELENE_EVENT__MAX = 15
 } selene_event_e;
 
 typedef enum {
@@ -196,7 +197,10 @@ selene_peer_certchain(selene_t *ctxt);
  * a TLS alert will be sent, and the connection will be closed.
  */
 SELENE_API(void)
-selene_complete_peer_certchain_validated(selene_t *ctxt, int valid);
+selene_complete_validate_certificate(selene_t *ctxt, int valid);
+
+SELENE_API(void)
+selene_complete_select_certificates(selene_t *s, selene_cert_chain_t *chain);
 
 
 #ifdef __cplusplus

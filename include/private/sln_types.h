@@ -184,6 +184,7 @@ struct selene_t {
 
   const char *client_sni;
   selene_cert_chain_t *peer_certs;
+  selene_cert_chain_t *my_certs;
 };
 
 void* sln_alloc(selene_t *s, size_t len);

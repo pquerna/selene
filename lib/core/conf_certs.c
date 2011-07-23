@@ -17,14 +17,75 @@
 
 #include "selene.h"
 #include "sln_types.h"
-
 #include "selene_trusted_ca_certificates.h"
+#include "sln_certs.h"
+
+#include <openssl/err.h>
+
 #include <string.h>
 
 /* All Certificate related configuration APIs */
+
+/* Based on Node's SSL_CTX_use_certificate_chain, in src/node_crypto.cc */
+selene_error_t*
+read_certificate_chain(selene_conf_t *conf, BIO *in, selene_cert_chain_t** p_certs) {
+  X509 *x = NULL;
+  selene_cert_chain_t* chain;
+  selene_cert_t *tmpc;
+
+  x = PEM_read_bio_X509_AUX(in, NULL, NULL, NULL);
+
+  if (x == NULL) {
+    return selene_error_create(SELENE_ENOMEM, "Failed to parse certificate");
+  }
+
+  SELENE_ERR(sln_cert_chain_create(conf, &chain));
+  SELENE_ERR(sln_cert_create(conf, x, 0, &tmpc));
+  SLN_CERT_CHAIN_INSERT_TAIL(chain, tmpc);
+
+  {
+    // If we could set up our certificate, now proceed to
+    // the CA certificates.
+    X509 *ca;
+    unsigned long err;
+
+    while ((ca = PEM_read_bio_X509(in, NULL, NULL, NULL))) {
+      SELENE_ERR(sln_cert_create(conf, ca, 0, &tmpc));
+      SLN_CERT_CHAIN_INSERT_TAIL(chain, tmpc);
+    }
+
+    // When the while loop ends, it's usually just EOF.
+    err = ERR_peek_last_error();
+    if (ERR_GET_LIB(err) == ERR_LIB_PEM &&
+        ERR_GET_REASON(err) == PEM_R_NO_START_LINE) {
+      ERR_clear_error();
+    } else  {
+      // some real error
+      /* TODO: handle parse errors of the ca certs */
+    }
+  }
+
+  *p_certs = chain;
+
+  return SELENE_SUCCESS;
+}
+
 selene_error_t*
 selene_conf_cert_chain_add(selene_conf_t *conf, const char *certificate, const char *pkey)
 {
+  selene_cert_chain_t *certs = NULL;
+  BIO *bio = BIO_new(BIO_s_mem());
+
+  int r = BIO_write(bio, certificate, strlen(certificate));
+  if (r <= 0) {
+    BIO_free(bio);
+    return selene_error_createf(SELENE_ENOMEM, "Attempting to parse Cert Chain certificate, BIO_write returned: %d", r);
+  }
+
+  /* TODO: private key */
+  SELENE_ERR(read_certificate_chain(conf, bio, &certs));
+
+  /* TODO: store list of chains */
   return SELENE_SUCCESS;
 }
 

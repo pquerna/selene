@@ -35,6 +35,20 @@ handle_client_hello(selene_t *s, selene_event_e event, void *baton_)
 
   /* TODO: validate other parameters / extensions */
 
+  return selene_publish(s, SELENE_EVENT_SELECT_CERTIFICATES);
+}
+
+/* default fallback */
+static selene_error_t*
+select_certificates(selene_t *s, selene_event_e event, void *baton)
+{
+  selene_complete_select_certificates(s, NULL);
+  return SELENE_SUCCESS;
+}
+
+
+static selene_error_t*
+send_server_certs(selene_t *s){
   /* TODO: move to post-finding certificate callback */
   {
     sln_msg_server_hello_t sh;
@@ -61,8 +75,42 @@ handle_client_hello(selene_t *s, selene_event_e event, void *baton_)
     SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, btls);
 
     SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, bhs);
+
   }
+
+  {
+    /* TODO: more handshake extensions, client certificate request support */
+    sln_msg_certificate_t cert;
+    sln_msg_server_hello_done_t done;
+    sln_msg_tls_t tls;
+    sln_bucket_t *btls = NULL;
+    sln_bucket_t *bcert = NULL;
+    sln_bucket_t *bdone = NULL;
+
+    cert.chain = s->my_certs;
+    SELENE_ERR(sln_handshake_serialize_certificate(s, &cert, &bcert));
+
+    SELENE_ERR(sln_handshake_serialize_server_hello_done(s, &done, &bdone));
+
+    tls.content_type = SLN_CONTENT_TYPE_HANDSHAKE;
+    sln_parser_tls_set_current_version(s, &tls.version_major, &tls.version_minor);
+    tls.length = bcert->size + bdone->size;
+
+    SELENE_ERR(sln_tls_serialize_header(s, &tls, &btls));
+
+    SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, btls);
+    SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, bcert);
+    SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, bdone);
+  }
+
   return SELENE_SUCCESS;
+}
+
+void
+selene_complete_select_certificates(selene_t *s, selene_cert_chain_t *chain)
+{
+  /* TODO: errors */
+  // send_server_certs(s);
 }
 
 
@@ -73,23 +121,23 @@ selene_peer_certchain(selene_t *s)
 }
 
 void
-selene_complete_peer_certchain_validated(selene_t *s, int valid)
+selene_complete_validate_certificate(selene_t *s, int valid)
 {
-
+  /* TODO: note this in selene_t8s */
 }
 
 /* default fallback */
 static selene_error_t*
-validate_certificates(selene_t *s, selene_event_e event, void *baton)
+validate_certificate(selene_t *s, selene_event_e event, void *baton)
 {
   selene_cert_chain_t* certs = selene_peer_certchain(s);
 
   if (certs) {
     /* TOOD: inspect certs */
-    selene_complete_peer_certchain_validated(s, 1);
+    selene_complete_validate_certificate(s, 1);
   }
   else {
-    selene_complete_peer_certchain_validated(s, 0);
+    selene_complete_validate_certificate(s, 0);
   }
 
   return SELENE_SUCCESS;
@@ -110,10 +158,11 @@ sln_handshake_register_callbacks(selene_t *s)
 {
   if (s->mode == SLN_MODE_CLIENT) {
     selene_handler_set(s, SELENE__EVENT_HS_GOT_CERTIFICATE, handle_server_certificate, NULL);
-    selene_handler_set(s, SELENE_EVENT_VALIDATE_CERTIFICATE, validate_certificates, NULL);
+    selene_handler_set(s, SELENE_EVENT_VALIDATE_CERTIFICATE, validate_certificate, NULL);
   }
   else {
     selene_handler_set(s, SELENE__EVENT_HS_GOT_CLIENT_HELLO, handle_client_hello, NULL);
+    selene_handler_set(s, SELENE_EVENT_SELECT_CERTIFICATES, select_certificates, NULL);
   }
 }
 

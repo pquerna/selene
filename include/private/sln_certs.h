@@ -46,11 +46,20 @@ sln_cert_chain_clear(selene_conf_t *conf, selene_cert_chain_t *chain);
 #define SLN_CERT_CHAIN_FIRST(b) SLN_RING_FIRST(&(b)->list)
 #define SLN_CERT_CHAIN_LAST(b) SLN_RING_LAST(&(b)->list)
 
+#ifdef SLN_CERT_CHAIN_DEBUG
+#define SLN_CERT_CHAIN_CHECK_CONSISTENCY(b) \
+  do { \
+    SLN_RING_CHECK_CONSISTENCY(&(b)->list, selene_cert_t, link); \
+  } while (0)
+#else
+#define SLN_CERT_CHAIN_CHECK_CONSISTENCY(b)
+#endif
+
 #define SLN_CERT_CHAIN_INSERT_TAIL(cc, e) \
   do { \
     selene_cert_t *sln__c = (e); \
     SLN_RING_INSERT_TAIL(&(cc)->list, sln__c, selene_cert_t, link); \
-    SLN_BRIGADE_CHECK_CONSISTENCY((cc)); \
+    SLN_CERT_CHAIN_CHECK_CONSISTENCY((cc)); \
   } while (0)
 
 #endif
