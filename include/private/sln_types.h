@@ -129,6 +129,19 @@ struct selene_cipher_suite_list_t {
   int ciphers[SELENE_CS__MAX];
 };
 
+typedef struct sln_array_header_t sln_array_header_t;
+struct sln_array_header_t {
+  selene_alloc_t *alloc;
+  /** The amount of memory allocated for each element of the array */
+  int elt_size;
+  /** The number of active elements in the array */
+  int nelts;
+  /** The number of elements allocated in the array */
+  int nalloc;
+  /** The elements in the array */
+  char *elts;
+};
+
 struct selene_conf_t {
   selene_alloc_t *alloc;
   int protocols;
