@@ -138,7 +138,7 @@ struct selene_conf_t {
 
 struct selene_cert_t {
   SLN_RING_ENTRY(selene_cert_t) link;
-  selene_t *s;
+  selene_conf_t *conf;
   X509 *cert;
   int depth;
   /* Cache extracted information out of the certificate. */
@@ -190,6 +190,11 @@ void* sln_alloc(selene_t *s, size_t len);
 void* sln_calloc(selene_t *s, size_t len);
 void sln_free(selene_t *s, void *ptr);
 char *sln_strdup(selene_t *s, const char *in);
+
+void* sln_conf_alloc(selene_conf_t *conf, size_t len);
+void* sln_conf_calloc(selene_conf_t *conf, size_t len);
+void sln_conf_free(selene_conf_t *conf, void *ptr);
+char *sln_conf_strdup(selene_conf_t *conf, const char *in);
 
 #define SLN_ERR_CLIENT_ONLY(s) do { \
   if (s->conf.mode != SLN_MODE_CLIENT) { \

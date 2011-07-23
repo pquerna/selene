@@ -367,7 +367,7 @@ init_cert(int c, void **state, selene_t **s_, selene_conf_t **conf_, selene_cert
     x509 = d2i_X509(NULL, (const unsigned char **)&p, sizeof(public_cert_svn_apache_org));
   }
 
-  SLN_ERR(sln_cert_create(s, x509, 0, &cert));
+  SLN_ERR(sln_cert_create(conf, x509, 0, &cert));
 
   *s_ = s;
   *conf_ = conf;

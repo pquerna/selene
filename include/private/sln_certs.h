@@ -25,19 +25,19 @@ int64_t
 sln_asn1_time_to_timestamp(ASN1_TIME *as);
 
 selene_error_t*
-sln_cert_create(selene_t *s, X509 *x509, int depth, selene_cert_t **p_cert);
+sln_cert_create(selene_conf_t *conf, X509 *x509, int depth, selene_cert_t **p_cert);
 
 void
 sln_cert_destroy(selene_cert_t *cert);
 
 selene_error_t*
-sln_cert_chain_create(selene_t *s, selene_cert_chain_t **out_cc);
+sln_cert_chain_create(selene_conf_t *conf, selene_cert_chain_t **out_cc);
 
 void
-sln_cert_chain_destroy(selene_t *s, selene_cert_chain_t *chain);
+sln_cert_chain_destroy(selene_conf_t *conf, selene_cert_chain_t *chain);
 
 void
-sln_cert_chain_clear(selene_t *s, selene_cert_chain_t *chain);
+sln_cert_chain_clear(selene_conf_t *conf, selene_cert_chain_t *chain);
 
 #define SLN_CERT_REMOVE(e) SLN_RING_REMOVE((e), link)
 

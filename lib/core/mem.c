@@ -19,6 +19,21 @@
 #include "sln_types.h"
 #include <string.h>
 
+void* sln_conf_alloc(selene_conf_t *conf, size_t len)
+{
+  return conf->alloc->malloc(conf->alloc->baton, len);
+}
+
+void* sln_conf_calloc(selene_conf_t *conf, size_t len)
+{
+  return conf->alloc->calloc(conf->alloc->baton, len);
+}
+
+void sln_conf_free(selene_conf_t *conf, void *ptr)
+{
+  conf->alloc->free(conf->alloc->baton, ptr);
+}
+
 void* sln_alloc(selene_t *s, size_t len)
 {
   return s->conf->alloc->malloc(s->conf->alloc->baton, len);
@@ -34,15 +49,20 @@ void sln_free(selene_t *s, void *ptr)
   s->conf->alloc->free(s->conf->alloc->baton, ptr);
 }
 
-char *sln_strdup(selene_t *s, const char *in)
+char *sln_conf_strdup(selene_conf_t *conf, const char *in)
 {
   /* LAME: why am i doing this */
   char *dest;
 
   size_t len = strlen(in) + 1;
 
-  dest = sln_alloc(s, len);
+  dest = sln_conf_alloc(conf, len);
   memcpy(dest, in, len);
 
   return dest;
+}
+
+char *sln_strdup(selene_t *s, const char *in)
+{
+  return sln_conf_strdup(s->conf, in);
 }

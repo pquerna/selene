@@ -116,7 +116,7 @@ selene_destroy(selene_t *s)
   }
 
   if (s->peer_certs != NULL) {
-    sln_cert_chain_destroy(s, s->peer_certs);
+    sln_cert_chain_destroy(s->conf, s->peer_certs);
     s->peer_certs = NULL;
   }
 

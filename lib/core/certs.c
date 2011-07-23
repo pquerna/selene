@@ -65,11 +65,11 @@
  */
 
 selene_error_t*
-sln_cert_create(selene_t *s, X509 *x509, int depth, selene_cert_t **p_cert)
+sln_cert_create(selene_conf_t *conf, X509 *x509, int depth, selene_cert_t **p_cert)
 {
-  selene_cert_t *cert = sln_calloc(s, sizeof(selene_cert_t));
+  selene_cert_t *cert = sln_conf_calloc(conf, sizeof(selene_cert_t));
 
-  cert->s = s;
+  cert->conf = conf;
   cert->cert = x509;
   cert->depth = depth;
 
@@ -80,80 +80,80 @@ sln_cert_create(selene_t *s, X509 *x509, int depth, selene_cert_t **p_cert)
 }
 
 static void
-sln_cert_name_destroy(selene_t *s, selene_cert_name_t *cn)
+sln_cert_name_destroy(selene_conf_t *conf, selene_cert_name_t *cn)
 {
   if (cn->commonName) {
-    sln_free(s, (void*)cn->commonName);
+    sln_conf_free(conf, (void*)cn->commonName);
     cn->commonName = NULL;
   }
 
   if (cn->emailAddress) {
-    sln_free(s, (void*)cn->emailAddress);
+    sln_conf_free(conf, (void*)cn->emailAddress);
     cn->emailAddress = NULL;
   }
 
   if (cn->organizationalUnitName) {
-    sln_free(s, (void*)cn->organizationalUnitName);
+    sln_conf_free(conf, (void*)cn->organizationalUnitName);
     cn->organizationalUnitName = NULL;
   }
 
   if (cn->organizationName) {
-    sln_free(s, (void*)cn->organizationName);
+    sln_conf_free(conf, (void*)cn->organizationName);
     cn->organizationName = NULL;
   }
 
   if (cn->localityName) {
-    sln_free(s, (void*)cn->localityName);
+    sln_conf_free(conf, (void*)cn->localityName);
     cn->localityName = NULL;
   }
 
   if (cn->stateOrProvinceName) {
-    sln_free(s, (void*)cn->stateOrProvinceName);
+    sln_conf_free(conf, (void*)cn->stateOrProvinceName);
     cn->stateOrProvinceName = NULL;
   }
 
   if (cn->countryName) {
-    sln_free(s, (void*)cn->countryName);
+    sln_conf_free(conf, (void*)cn->countryName);
     cn->countryName = NULL;
   }
 
-  sln_free(s, cn);
+  sln_conf_free(conf, cn);
 }
 
 void
 sln_cert_destroy(selene_cert_t *cert)
 {
-  selene_t *s = cert->s;
+  selene_conf_t *conf = cert->conf;
 
   SLN_CERT_REMOVE(cert);
 
   if (cert->cache_fingerprint_sha1) {
-    sln_free(s, (void*)cert->cache_fingerprint_sha1);
+    sln_conf_free(conf, (void*)cert->cache_fingerprint_sha1);
     cert->cache_fingerprint_sha1 = NULL;
   }
 
   if (cert->cache_fingerprint_md5) {
-    sln_free(s, (void*)cert->cache_fingerprint_md5);
+    sln_conf_free(conf, (void*)cert->cache_fingerprint_md5);
     cert->cache_fingerprint_md5 = NULL;
   }
 
   if (cert->cache_not_before) {
-    sln_free(s, (void*)cert->cache_not_before);
+    sln_conf_free(conf, (void*)cert->cache_not_before);
     cert->cache_fingerprint_md5 = NULL;
   }
 
   if (cert->cache_not_after) {
-    sln_free(s, (void*)cert->cache_not_after);
+    sln_conf_free(conf, (void*)cert->cache_not_after);
     cert->cache_fingerprint_md5 = NULL;
   }
 
   if (cert->cache_subject) {
-    sln_cert_name_destroy(s, cert->cache_subject);
+    sln_cert_name_destroy(conf, cert->cache_subject);
     cert->cache_subject = NULL;
   }
 
   if (cert->cache_issuer) {
-    sln_cert_name_destroy(s, cert->cache_issuer);
+    sln_cert_name_destroy(conf, cert->cache_issuer);
     cert->cache_issuer = NULL;
   }
 
@@ -166,7 +166,7 @@ sln_cert_destroy(selene_cert_t *cert)
     X509_free(cert->cert);
   }
 
-  sln_free(s, cert);
+  sln_conf_free(conf, cert);
 }
 
 int
@@ -176,7 +176,7 @@ selene_cert_depth(selene_cert_t *cert)
 }
 
 static void
-hash_to_fingerprint_hex(selene_t *s, unsigned char *md, unsigned int md_size, char **out)
+hash_to_fingerprint_hex(selene_conf_t *conf, unsigned char *md, unsigned int md_size, char **out)
 {
   int i;
   const char hex[] = "0123456789ABCDEF";
@@ -195,7 +195,7 @@ hash_to_fingerprint_hex(selene_t *s, unsigned char *md, unsigned int md_size, ch
     fingerprint[0] = '\0';
   }
 
-  *out = sln_strdup(s, fingerprint);
+  *out = sln_conf_strdup(conf, fingerprint);
 }
 
 
@@ -206,7 +206,7 @@ generate_fingerprint_sha1(selene_cert_t *cert)
   unsigned char md[EVP_MAX_MD_SIZE];
 
   if (X509_digest(cert->cert, EVP_sha1(), md, &md_size)) {
-    hash_to_fingerprint_hex(cert->s, md, md_size, (char **)&cert->cache_fingerprint_sha1);
+    hash_to_fingerprint_hex(cert->conf, md, md_size, (char **)&cert->cache_fingerprint_sha1);
   }
 }
 
@@ -228,7 +228,7 @@ generate_fingerprint_md5(selene_cert_t *cert)
   unsigned char md[EVP_MAX_MD_SIZE];
 
   if (X509_digest(cert->cert, EVP_md5(), md, &md_size)) {
-    hash_to_fingerprint_hex(cert->s, md, md_size, (char **)&cert->cache_fingerprint_md5);
+    hash_to_fingerprint_hex(cert->conf, md, md_size, (char **)&cert->cache_fingerprint_md5);
   }
 }
 
@@ -260,7 +260,7 @@ generate_expires(selene_cert_t *cert)
     cert->cache_not_before_ts = sln_asn1_time_to_timestamp(notBefore);
     if (ASN1_TIME_print(bio, notBefore)) {
       BIO_read(bio, buf, 255);
-      cert->cache_not_before = sln_strdup(cert->s, buf);
+      cert->cache_not_before = sln_conf_strdup(cert->conf, buf);
      }
 
      memset(buf, 0, sizeof (buf));
@@ -269,7 +269,7 @@ generate_expires(selene_cert_t *cert)
      cert->cache_not_after_ts = sln_asn1_time_to_timestamp(notAfter);
      if (ASN1_TIME_print(bio, notAfter)) {
        BIO_read(bio, buf, 255);
-       cert->cache_not_after = sln_strdup(cert->s, buf);
+       cert->cache_not_after = sln_conf_strdup(cert->conf, buf);
      }
   }
 
@@ -329,7 +329,7 @@ convert_X509_NAME_to_selene_name(selene_cert_t *cert, X509_NAME *org, selene_cer
                                   NID_commonName,
                                   buf, 1024);
   if (ret != -1) {
-    name->commonName = sln_strdup(cert->s, buf);
+    name->commonName = sln_conf_strdup(cert->conf, buf);
   }
 
 
@@ -338,7 +338,7 @@ convert_X509_NAME_to_selene_name(selene_cert_t *cert, X509_NAME *org, selene_cer
                                   buf, 1024);
 
   if (ret != -1) {
-    name->emailAddress = sln_strdup(cert->s, buf);
+    name->emailAddress = sln_conf_strdup(cert->conf, buf);
   }
 
 
@@ -346,7 +346,7 @@ convert_X509_NAME_to_selene_name(selene_cert_t *cert, X509_NAME *org, selene_cer
                                   NID_organizationName,
                                   buf, 1024);
   if (ret != -1) {
-    name->organizationName = sln_strdup(cert->s, buf);
+    name->organizationName = sln_conf_strdup(cert->conf, buf);
   }
 
 
@@ -354,7 +354,7 @@ convert_X509_NAME_to_selene_name(selene_cert_t *cert, X509_NAME *org, selene_cer
                                   NID_organizationalUnitName,
                                   buf, 1024);
   if (ret != -1) {
-    name->organizationalUnitName = sln_strdup(cert->s, buf);
+    name->organizationalUnitName = sln_conf_strdup(cert->conf, buf);
   }
 
 
@@ -362,7 +362,7 @@ convert_X509_NAME_to_selene_name(selene_cert_t *cert, X509_NAME *org, selene_cer
                                   NID_localityName,
                                   buf, 1024);
   if (ret != -1) {
-    name->localityName = sln_strdup(cert->s, buf);
+    name->localityName = sln_conf_strdup(cert->conf, buf);
   }
 
 
@@ -370,7 +370,7 @@ convert_X509_NAME_to_selene_name(selene_cert_t *cert, X509_NAME *org, selene_cer
                                   NID_stateOrProvinceName,
                                   buf, 1024);
   if (ret != -1) {
-    name->stateOrProvinceName = sln_strdup(cert->s, buf);
+    name->stateOrProvinceName = sln_conf_strdup(cert->conf, buf);
   }
 
 
@@ -378,7 +378,7 @@ convert_X509_NAME_to_selene_name(selene_cert_t *cert, X509_NAME *org, selene_cer
                                   NID_countryName,
                                   buf, 1024);
   if (ret != -1) {
-    name->countryName = sln_strdup(cert->s, buf);
+    name->countryName = sln_conf_strdup(cert->conf, buf);
   }
 
 }
@@ -393,7 +393,7 @@ generate_issuer(selene_cert_t *cert)
     return;
   }
 
-  cert->cache_issuer = sln_calloc(cert->s, sizeof(selene_cert_name_t));
+  cert->cache_issuer = sln_conf_calloc(cert->conf, sizeof(selene_cert_name_t));
 
   convert_X509_NAME_to_selene_name(cert, issuer, cert->cache_issuer);
 }
@@ -417,7 +417,7 @@ generate_subject(selene_cert_t *cert)
     return;
   }
 
-  cert->cache_subject = sln_calloc(cert->s, sizeof(selene_cert_name_t));
+  cert->cache_subject = sln_conf_calloc(cert->conf, sizeof(selene_cert_name_t));
 
   convert_X509_NAME_to_selene_name(cert, subject, cert->cache_subject);
 }
@@ -448,7 +448,7 @@ generate_subject_alt_names(selene_cert_t *cert)
   STACK_OF(GENERAL_NAME) *names;
 
   /* TODO: err */
-  sln_brigade_create(cert->s->alloc, &cert->cache_subjectAltNames);
+  sln_brigade_create(cert->conf->alloc, &cert->cache_subjectAltNames);
 
   /* Get subjectAltNames */
   names = X509_get_ext_d2i(cert->cert, NID_subject_alt_name, NULL, NULL);
@@ -462,7 +462,7 @@ generate_subject_alt_names(selene_cert_t *cert)
 
       switch (nm->type) {
       case GEN_DNS:
-        sln_bucket_create_copy_bytes(cert->s->alloc, &e, (const char*)nm->d.ia5->data,  nm->d.ia5->length);
+        sln_bucket_create_copy_bytes(cert->conf->alloc, &e, (const char*)nm->d.ia5->data,  nm->d.ia5->length);
         SLN_BRIGADE_INSERT_TAIL(cert->cache_subjectAltNames, e);
         break;
       default:
@@ -512,9 +512,9 @@ selene_cert_alt_names_entry(selene_cert_t *cert, int offset)
 }
 
 selene_error_t*
-sln_cert_chain_create(selene_t *s, selene_cert_chain_t **out_cc)
+sln_cert_chain_create(selene_conf_t *conf, selene_cert_chain_t **out_cc)
 {
-  selene_cert_chain_t* cc = sln_calloc(s, sizeof(selene_cert_chain_t));
+  selene_cert_chain_t* cc = sln_conf_calloc(conf, sizeof(selene_cert_chain_t));
 
   SLN_RING_INIT(&cc->list, selene_cert_t, link);
 
@@ -538,14 +538,14 @@ selene_cert_chain_count(selene_cert_chain_t *cc)
 }
 
 void
-sln_cert_chain_destroy(selene_t *s, selene_cert_chain_t *chain)
+sln_cert_chain_destroy(selene_conf_t *conf, selene_cert_chain_t *chain)
 {
-  sln_cert_chain_clear(s, chain);
-  sln_free(s, chain);
+  sln_cert_chain_clear(conf, chain);
+  sln_conf_free(conf, chain);
 }
 
 void
-sln_cert_chain_clear(selene_t *s, selene_cert_chain_t *chain)
+sln_cert_chain_clear(selene_conf_t *conf, selene_cert_chain_t *chain)
 {
   selene_cert_t *c;
 
