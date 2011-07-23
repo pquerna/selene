@@ -89,7 +89,7 @@ if not conf.CheckCC():
   Exit(-1)
 
 # TODO: consider '-fmudflap', '-fstack-check'
-for flag in ['-pedantic', '-std=gnu89', '-Wno-variadic-macros']:
+for flag in ['-pedantic', '-std=gnu89', '-Wno-variadic-macros', '-Wno-deprecated-declarations']:
   conf.env.AppendUnique(CCFLAGS=flag)
   if not conf.CheckCC():
     print 'Checking for compiler support of %s ... no' % flag
