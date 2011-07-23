@@ -61,5 +61,6 @@ int main(int argc, char* argv[]) {
   RUNT(tls_io);
   RUNT(handshake_io);
   RUNT(alert_io);
+  RUNT(loopback);
   return 0;
 }
