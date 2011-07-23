@@ -21,6 +21,7 @@
 #include "sln_events.h"
 #include "sln_backends.h"
 #include "sln_assert.h"
+#include "sln_certs.h"
 
 static int initialized = 0;
 
