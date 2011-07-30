@@ -49,20 +49,21 @@ conf.env['PYTHON'] = env.WhereIs('python')
 if not conf.env['PYTHON']:
   conf.env['PYTHON'] = sys.executable
 
-conf.env['CLANG'] = env.WhereIs('clang')
-conf.env['CLANGXX'] = env.WhereIs('clang++')
+if not conf.env.get('CLANG'):
+  conf.env['CLANG'] = env.WhereIs('clang')
 
-if conf.env['CLANG']:
-  conf.env['CC'] = conf.env['CLANG']
-
-if conf.env['CLANGXX']:
-  conf.env['CXX'] = conf.env['CLANGXX']
+if not conf.env.get('CLANGXX'):
+  conf.env['CLANGXX'] = env.WhereIs('clang++')
 
 if os.environ.has_key('CC'):
   conf.env['CC'] = os.environ['CC']
+elif conf.env['CLANG']:
+  conf.env['CC'] = conf.env['CLANG']
 
 if os.environ.has_key('CXX'):
   conf.env['CXX'] = os.environ['CXX']
+elif conf.env['CLANGXX']:
+  conf.env['CXX'] = conf.env['CLANGXX']
 
 (st, platform) = conf.CheckUname("-sm")
 
