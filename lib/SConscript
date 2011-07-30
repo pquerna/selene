@@ -46,8 +46,8 @@ parser/handshake_messages/client_hello.c
 parser/handshake_messages/client_key_exchange.c
 parser/handshake_messages/server_hello.c
 parser/handshake_messages/server_hello_done.c
-parser/init.c
 parser/parser.c
+parser/parser_init.c
 parser/state_machine.c
 parser/tls_io.c
 parser/tls_messages.c
