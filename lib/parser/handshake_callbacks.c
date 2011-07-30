@@ -43,15 +43,18 @@ handle_client_hello(selene_t *s, selene_event_e event, void *baton_)
 static selene_error_t*
 select_certificates(selene_t *s, selene_event_e event, void *baton)
 {
-  selene_complete_select_certificates(s, NULL);
   /* TODO: matching names and subject alt names */
-  s->my_certs = SLN_ARRAY_IDX(s->conf->certs, 0, selene_cert_chain_t*);
+
+  selene_complete_select_certificates(s, SLN_ARRAY_IDX(s->conf->certs, 0, selene_cert_chain_t*));
+
   return SELENE_SUCCESS;
 }
 
 
 static selene_error_t*
-send_server_certs(selene_t *s) {
+send_server_certs(selene_t *s)
+{
+  sln_parser_baton_t *baton = s->backend_baton;
 
   SLN_ASSERT(s->my_certs != NULL);
 
@@ -109,13 +112,17 @@ send_server_certs(selene_t *s) {
     SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, bdone);
   }
 
-  return SELENE_SUCCESS;
+  baton->handshake = SLN_HANDSHAKE_SERVER_WAIT_CLIENT_FINISHED;
+
+  return sln_state_machine(s, baton);
 }
 
 void
 selene_complete_select_certificates(selene_t *s, selene_cert_chain_t *chain)
 {
   sln_parser_baton_t *baton = s->backend_baton;
+
+  s->my_certs = chain;
 
   if (s->my_certs != NULL) {
     baton->fatal_err = send_server_certs(s);

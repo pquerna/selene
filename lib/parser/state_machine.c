@@ -26,7 +26,7 @@ sln_state_machine(selene_t *s, sln_parser_baton_t *baton)
 enter_state_machine:
   slnDbg(s, "enter handshake_state_machine=%d", baton->handshake);
 
-  if (baton->connstate == SLN_CONNSTATE_ALERT_FATAL) {
+  if (baton->fatal_err != SELENE_SUCCESS || baton->connstate == SLN_CONNSTATE_ALERT_FATAL) {
     /* TODO: better error */
     slnDbg(s, "connection previously aborted");
     return baton->fatal_err;

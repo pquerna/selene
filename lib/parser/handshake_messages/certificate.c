@@ -27,6 +27,7 @@ sln_handshake_serialize_certificate(selene_t *s, sln_msg_certificate_t *cert, sl
   size_t len = 0;
   size_t off;
   int dlen;
+  int clen = 0;
   int num_certs = selene_cert_chain_count(cert->chain);
   int i;
   unsigned char *p;
@@ -39,11 +40,15 @@ sln_handshake_serialize_certificate(selene_t *s, sln_msg_certificate_t *cert, sl
 
   /* length for each cert */
   len += 3 * num_certs;
+  clen += 3 * num_certs;
 
   for (i = 0; i < num_certs; i++) {
+    int l;
     selene_cert_t *c = selene_cert_chain_entry(cert->chain, i);
     /* the actual cert */
-    len += i2d_X509(c->cert, NULL);
+    l = i2d_X509(c->cert, NULL);
+    len += l;
+    clen += l;
   }
 
   sln_bucket_create_empty(s->alloc, &b, len);
@@ -54,6 +59,11 @@ sln_handshake_serialize_certificate(selene_t *s, sln_msg_certificate_t *cert, sl
   b->data[2] = dlen >> 8;
   b->data[3] = dlen;
   off = 4;
+
+  b->data[0] = clen >> 16;
+  b->data[1] = clen >> 8;
+  b->data[2] = clen;
+  off += 3;
 
   for (i = 0; i < num_certs; i++) {
     selene_cert_t *c = selene_cert_chain_entry(cert->chain, i);
