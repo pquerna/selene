@@ -60,21 +60,21 @@ sln_handshake_serialize_certificate(selene_t *s, sln_msg_certificate_t *cert, sl
   b->data[3] = dlen;
   off = 4;
 
-  b->data[0] = clen >> 16;
-  b->data[1] = clen >> 8;
-  b->data[2] = clen;
+  b->data[off + 0] = clen >> 16;
+  b->data[off + 1] = clen >> 8;
+  b->data[off + 2] = clen;
   off += 3;
 
   for (i = 0; i < num_certs; i++) {
     selene_cert_t *c = selene_cert_chain_entry(cert->chain, i);
     size_t cert_len = i2d_X509(c->cert, NULL);
 
-    b->data[0] = cert_len >> 16;
-    b->data[1] = cert_len >> 8;
-    b->data[2] = cert_len;
+    b->data[off + 0] = cert_len >> 16;
+    b->data[off + 1] = cert_len >> 8;
+    b->data[off + 2] = cert_len;
     off += 3;
 
-    p = (unsigned char *)&b->data[0];
+    p = (unsigned char *)&b->data[off + 0];
     i2d_X509(c->cert, &p);
     off += cert_len;
   }
