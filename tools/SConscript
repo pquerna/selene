@@ -20,6 +20,7 @@ Import('venv')
 
 sources = Split("""
   selene_client.c
+  selene_server.c
 """)
 
 
