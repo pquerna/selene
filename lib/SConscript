@@ -20,6 +20,7 @@ Import('venv')
 from os.path import dirname
 
 sources = Split("""
+core/arrays.c
 core/certs.c
 core/certs_asn1_time.c
 core/client.c
