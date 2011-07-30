@@ -17,6 +17,8 @@
 
 #include "selene.h"
 #include "sln_types.h"
+#include "sln_arrays.h"
+#include "sln_certs.h"
 #include <string.h>
 
 static void*
@@ -56,6 +58,8 @@ selene_conf_create_with_allloc(selene_conf_t **p_conf, selene_alloc_t *alloc)
 
   conf->trusted_cert_store = X509_STORE_new();
 
+  conf->certs = sln_array_make(alloc, 2, sizeof(void*));
+
   *p_conf = conf;
 
 
@@ -68,12 +72,18 @@ selene_conf_create(selene_conf_t **p_conf)
   return selene_conf_create_with_allloc(p_conf, NULL);
 }
 
-
-
 void
 selene_conf_destroy(selene_conf_t *conf)
 {
+  int i;
   selene_alloc_t *alloc = conf->alloc;
+
+  for (i = 0; i < conf->certs->nelts; i++) {
+    selene_cert_chain_t *chain = SLN_ARRAY_IDX(conf->certs, i, selene_cert_chain_t*);
+    sln_cert_chain_destroy(conf, chain);
+  }
+
+  sln_array_clear(conf->certs);
 
   X509_STORE_free(conf->trusted_cert_store);
   alloc->free(alloc->baton, conf);

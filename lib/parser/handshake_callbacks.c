@@ -19,6 +19,7 @@
 #include "common.h"
 #include "handshake_messages.h"
 #include "sln_tok.h"
+#include "sln_arrays.h"
 #include <string.h>
 
 static selene_error_t*
@@ -43,12 +44,17 @@ static selene_error_t*
 select_certificates(selene_t *s, selene_event_e event, void *baton)
 {
   selene_complete_select_certificates(s, NULL);
+  /* TODO: matching names and subject alt names */
+  s->my_certs = SLN_ARRAY_IDX(s->conf->certs, 0, selene_cert_chain_t*);
   return SELENE_SUCCESS;
 }
 
 
 static selene_error_t*
-send_server_certs(selene_t *s){
+send_server_certs(selene_t *s) {
+
+  SLN_ASSERT(s->my_certs != NULL);
+
   /* TODO: move to post-finding certificate callback */
   {
     sln_msg_server_hello_t sh;
@@ -109,8 +115,14 @@ send_server_certs(selene_t *s){
 void
 selene_complete_select_certificates(selene_t *s, selene_cert_chain_t *chain)
 {
-  /* TODO: errors */
-  // send_server_certs(s);
+  sln_parser_baton_t *baton = s->backend_baton;
+
+  if (s->my_certs != NULL) {
+    baton->fatal_err = send_server_certs(s);
+  }
+  else {
+    baton->fatal_err = selene_error_create(SELENE_EINVAL, "No certificates selected but in a server mode that requires it.");
+  }
 }
 
 

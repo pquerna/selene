@@ -146,6 +146,7 @@ struct selene_conf_t {
   selene_alloc_t *alloc;
   int protocols;
   selene_cipher_suite_list_t ciphers;
+  sln_array_header_t *certs;
   X509_STORE* trusted_cert_store;
 };
 

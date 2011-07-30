@@ -19,6 +19,7 @@
 #include "sln_types.h"
 #include "selene_trusted_ca_certificates.h"
 #include "sln_certs.h"
+#include "sln_arrays.h"
 
 #include <openssl/err.h>
 
@@ -85,7 +86,8 @@ selene_conf_cert_chain_add(selene_conf_t *conf, const char *certificate, const c
   /* TODO: private key */
   SELENE_ERR(read_certificate_chain(conf, bio, &certs));
 
-  /* TODO: store list of chains */
+  SLN_ARRAY_PUSH(conf->certs, selene_cert_chain_t*) = certs;
+
   return SELENE_SUCCESS;
 }
 
