@@ -55,6 +55,7 @@
 
 #define SLN_TESTS_END() \
     }; \
+    sln_tests_setup(); \
     return run_tests(tests); \
   }
 #endif
@@ -94,6 +95,12 @@ SLN_TEST_MODULE(loopback)
 
 
 selene_alloc_t *sln_test_alloc;
+
+#define PATHMAX 1024
+extern char executable_path[PATHMAX];
+void sln_tests_setup();
+
+const char* sln_tests_load_cert(const char *fname);
 
 #endif
 

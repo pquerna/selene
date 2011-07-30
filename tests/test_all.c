@@ -51,6 +51,9 @@ selene_alloc_t* sln_test_alloc = &test_alloc;
   } while (0);
 
 int main(int argc, char* argv[]) {
+
+  sln_tests_setup();
+
   RUNT(logging);
   RUNT(init);
   RUNT(brigade);
@@ -62,5 +65,6 @@ int main(int argc, char* argv[]) {
   RUNT(handshake_io);
   RUNT(alert_io);
   RUNT(loopback);
+
   return 0;
 }

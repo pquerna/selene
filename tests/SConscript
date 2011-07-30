@@ -18,6 +18,7 @@
 Import('venv')
 
 sources = Split("""
+  utils.c
   test_alert_io.c
   test_all.c
   test_brigrade.c
