@@ -36,7 +36,7 @@
 #define SELENE_SERVER_DEFAULT_CERT_PATH "server.pem"
 
 /**
- * 'Simple' TLS Client, connects to a port, pipes stdin to it
+ * 'Simple' TLS Server, connects to a port, pipes stdin to it
  */
 #define SERR(exp) do { \
     selene_error_t *SERR__err = NULL; \
