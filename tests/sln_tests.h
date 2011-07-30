@@ -67,8 +67,14 @@
 #undef SLN_ERR
 #define SLN_ERR(expression) \
   do { \
-    selene_error_t *selene__xx__err; \
-    SLN_ASSERT((selene__xx__err = (expression)) == SELENE_SUCCESS); \
+    selene_error_t *selene__xx__err = (expression); \
+    if (selene__xx__err != SELENE_SUCCESS) { \
+      fprintf(stderr, "fatal error: (%d) %s from %s:%d caught at %s:%d\n", \
+              selene__xx__err->err, selene__xx__err->msg, \
+              selene__xx__err->file, selene__xx__err->line, \
+              __FILE__, __LINE__); \
+    } \
+    mock_assert((int)(selene__xx__err == SELENE_SUCCESS), #expression, __FILE__, __LINE__); \
   } while (0)
 
 #define SLN_FAIL(expression) \
