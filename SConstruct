@@ -72,6 +72,10 @@ conf.env['SELENE_ARCH'] = platform[platform.find(' ')+1:].replace(" ", "_")
 
 conf.env['WANT_OPENSSL'] = True
 
+if not conf.CheckCC():
+  print 'Unable to find a functioning compiler, tried %s' % (conf.env.get('CC'))
+  Exit(-1)
+
 if conf.env['WANT_OPENSSL']:
   if conf.env.get('with_openssl'):
     conf.env.AppendUnique(LIBPATH=["${with_openssl}/lib"])
@@ -85,9 +89,9 @@ if conf.env['WANT_OPENSSL']:
     print 'Unable to use OpenSSL development enviroment (missing libcrypto?): with_openssl=%s' %  conf.env.get('with_openssl')
     Exit(-1)
 
-if not conf.CheckCC():
-  print 'Unable to find a functioning compiler, tried %s' % (conf.env.get('CC'))
-  Exit(-1)
+conf.env['HAVE_OSX_COMMONCRYPTO'] = conf.CheckLibWithHeader('libSystem', 'CommonCrypto/CommonDigest.h', 'C', 'CC_SHA1_CTX ctx; CC_SHA1_Init(&ctx);', True)
+if conf.env['HAVE_OSX_COMMONCRYPTO']:
+  conf.env.AppendUnique(CPPDEFINES=['SLN_HAVE_OSX_COMMONCRYPTO'])
 
 # TODO: consider '-fmudflap', '-fstack-check'
 for flag in ['-pedantic', '-std=gnu89', '-Wno-variadic-macros', '-Wno-deprecated-declarations']:

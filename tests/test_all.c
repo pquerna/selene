@@ -55,6 +55,7 @@ int main(int argc, char* argv[]) {
   sln_tests_setup();
 
   RUNT(logging);
+  RUNT(crypto_digest);
   RUNT(init);
   RUNT(brigade);
   RUNT(buckets);

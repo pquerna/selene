@@ -104,6 +104,21 @@ typedef enum {
   SLN_TLS_CTYPE__MAX = 5
 } sln_tls_ctype_e;
 
+#define SLN_MD5_DIGEST_LENGTH (16)
+#define SLN_SHA1_DIGEST_LENGTH (20)
+
+typedef enum {
+  /* TODO: more digest algos */
+  SLN_DIGEST_MD5,
+  SLN_DIGEST_SHA1
+} sln_digest_e;
+
+typedef struct {
+  selene_t *s;
+  sln_digest_e type;
+  void *baton;
+} sln_digest_t;
+
 /* Repersents our parsed version of the TLS record,
  * not really what we send out on the wire */
 typedef struct {
