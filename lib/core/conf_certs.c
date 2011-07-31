@@ -45,8 +45,10 @@ read_certificate_chain(selene_conf_t *conf, BIO *in, selene_cert_chain_t** p_cer
   SLN_CERT_CHAIN_INSERT_TAIL(chain, tmpc);
 
   {
-    // If we could set up our certificate, now proceed to
-    // the CA certificates.
+    /**
+     * If we could set up our certificate, now proceed to
+     * the CA certificates.
+     */
     X509 *ca;
     unsigned long err;
 
@@ -55,13 +57,13 @@ read_certificate_chain(selene_conf_t *conf, BIO *in, selene_cert_chain_t** p_cer
       SLN_CERT_CHAIN_INSERT_TAIL(chain, tmpc);
     }
 
-    // When the while loop ends, it's usually just EOF.
+    /* When the while loop ends, it's usually just EOF. */
     err = ERR_peek_last_error();
     if (ERR_GET_LIB(err) == ERR_LIB_PEM &&
         ERR_GET_REASON(err) == PEM_R_NO_START_LINE) {
       ERR_clear_error();
     } else  {
-      // some real error
+      /* some real error */
       /* TODO: handle parse errors of the ca certs */
     }
   }

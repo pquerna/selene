@@ -73,7 +73,7 @@ sln_handshake_serialize_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sl
   }
 
   if (ch->have_npn) {
-    // num_extensions++;
+    /* num_extensions++; */
     /* TODO: npn support */
   }
 
