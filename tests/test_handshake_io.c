@@ -25,7 +25,7 @@
 /**
  * Packet Capture from OpenSSL s_client sending a client hello, no TLS protocol wrapper.
  */
-static char openssl_client_hello_basic[] = {
+static unsigned char openssl_client_hello_basic[] = {
   0x01, 0x00, 0x00, 
   0xca, 0x03, 0x01, 0x4d, 0xc5, 0xa9, 0x90, 0x4f, 
   0xfe, 0x47, 0x4c, 0xc4, 0x64, 0x34, 0x1b, 0x73, 
@@ -74,7 +74,7 @@ static void handshake_io_client_hello(void **state)
 
   for (i = 1; i <= maxlen; i++) {
     SLN_ERR(sln_bucket_create_copy_bytes(sln_test_alloc, &e1,
-                                         openssl_client_hello_basic,
+                                         (const char*)openssl_client_hello_basic,
                                          i));
     SLN_BRIGADE_INSERT_TAIL(baton->in_handshake, e1);
     err  = sln_io_handshake_read(s, baton);
@@ -96,7 +96,7 @@ static void handshake_io_client_hello(void **state)
  * Packet Capture from curl sending a client hello, no TLS protocol wrapper,
  * includes SNI for 'www.apache.org' as the only extension.
  */
-static char curl_client_hello_sni[] = {
+static unsigned char curl_client_hello_sni[] = {
   0x01, 0x00, 0x00,
   0x6d, 0x03, 0x01, 0x4d, 0xfd, 0x06, 0x2f, 0x6b,
   0x25, 0xa2, 0x88, 0xee, 0xfc, 0x8d, 0x18, 0xc5,
@@ -133,7 +133,7 @@ static void handshake_io_client_hello_sni(void **state)
 
   for (i = 1; i <= maxlen; i++) {
     SLN_ERR(sln_bucket_create_copy_bytes(sln_test_alloc, &e1,
-                                         curl_client_hello_sni,
+                                         (const char*)curl_client_hello_sni,
                                          i));
     SLN_BRIGADE_INSERT_TAIL(baton->in_handshake, e1);
     err  = sln_io_handshake_read(s, baton);
@@ -155,7 +155,7 @@ static void handshake_io_client_hello_sni(void **state)
  * Packet Capture from apache 2.3 sending a server hello, no TLS protocol wrapper,
  * RC4-SHA1 as the selected cipher, and SNI as the only extension.
  */
-static char apache_server_hello_sni[] = {
+static unsigned char apache_server_hello_sni[] = {
   /* content-type server hello */
   0x02,
   /* length  of hs message */
@@ -207,7 +207,7 @@ static void handshake_io_server_hello_sni(void **state)
 
   for (i = maxlen; i <= maxlen; i++) {
     SLN_ERR(sln_bucket_create_copy_bytes(sln_test_alloc, &e1,
-                                         apache_server_hello_sni,
+                                         (const char*)apache_server_hello_sni,
                                          i));
     SLN_BRIGADE_INSERT_TAIL(baton->in_handshake, e1);
     err  = sln_io_handshake_read(s, baton);
