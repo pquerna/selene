@@ -119,6 +119,18 @@ typedef struct {
   void *baton;
 } sln_digest_t;
 
+typedef enum {
+  /* TODO: more digest algos */
+  SLN_HMAC_MD5,
+  SLN_HMAC_SHA1
+} sln_hmac_e;
+
+typedef struct {
+  selene_t *s;
+  sln_hmac_e type;
+  void *baton;
+} sln_hmac_t;
+
 /* Repersents our parsed version of the TLS record,
  * not really what we send out on the wire */
 typedef struct {

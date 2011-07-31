@@ -33,6 +33,8 @@ core/log.c
 core/mem.c
 crypto/digest_osx_commoncrypto.c
 crypto/digest_openssl.c
+crypto/hmac_osx_commoncrypto.c
+crypto/hmac_openssl.c
 io/brigades.c
 io/buckets.c
 io/io.c
