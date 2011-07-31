@@ -70,6 +70,13 @@ elif conf.env['CLANGXX']:
 conf.env['SELENE_PLATFORM'] = platform[:platform.find(' ')].upper()
 conf.env['SELENE_ARCH'] = platform[platform.find(' ')+1:].replace(" ", "_")
 
+if conf.env['SELENE_PLATFORM'] == "DARWIN" and conf.env.get('CLANG'):
+  # try to use a specific gcc version, because /usr/bin/gcc is a symlink to
+  # clang in 10.7, but clang doesn't yet support profiling :(
+  gcc_vers = [conf.env.WhereIs('gcc%s' % x) for x in ['-4.6', '-4.5', '-4.4', '-4.3', '-4.2', '-4.1', '']]
+  conf.env['PROFILE_CC'] = next(s for s in gcc_vers if s)
+  print 'Checking for compiler that supports profiling ... %s' % conf.env['PROFILE_CC']
+
 conf.env['WANT_OPENSSL'] = True
 
 if not conf.CheckCC():
@@ -124,7 +131,7 @@ options = {
       'CPPDEFINES': ['DEBUG'],
     },
     'GCOV': {
-      'CC': 'gcc',
+      'CC': env['PROFILE_CC'],
       'CCFLAGS': ['-Wall', '-O0', '-ggdb', '-fPIC', '-fprofile-arcs', '-ftest-coverage'],
       'CPPDEFINES': ['DEBUG'],
       'LIBS': 'gcov'
