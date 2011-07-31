@@ -68,6 +68,15 @@ sln_array_clear(sln_array_header_t *arr)
     arr->nelts = 0;
 }
 
+void
+sln_array_destroy(sln_array_header_t *arr)
+{
+  selene_alloc_t *alloc = arr->alloc;
+
+  alloc->free(alloc->baton, arr->elts);
+  alloc->free(alloc->baton, arr);
+}
+
 void*
 sln_array_pop(sln_array_header_t *arr)
 {

@@ -25,7 +25,7 @@ sln_array_header_t* sln_array_make(selene_alloc_t *alloc, int nelts, int elt_siz
 void sln_array_clear(sln_array_header_t *arr);
 void* sln_array_pop(sln_array_header_t *arr);
 void* sln_array_push(sln_array_header_t *arr);
-
+void sln_array_destroy(sln_array_header_t *arr);
 
 /** A helper macro for accessing a member of an APR array.
  *
