@@ -62,7 +62,8 @@ libselene = None
 lenv = venv.Clone()
 caheader = lenv.CertificateHeader(lenv.File('selene_trusted_ca_certificates.h'), lenv.Glob("#/misc/ca-tools/*.crt"))
 lenv.AppendUnique(CPPPATH=['#/include/private', dirname(caheader[0].get_abspath())])
-sources.append(caheader)
+# TODO: find better way to deal with generated header / make generated .c ?
+# sources.append(caheader)
 
 if lenv['SELENE_LIB_TYPE'] == "STATIC":
   libselene = lenv.StaticLibrary('libselene', sources)
