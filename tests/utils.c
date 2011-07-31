@@ -17,9 +17,10 @@
 
 #include "sln_tests.h"
 #include <sys/stat.h>
-#include <libgen.h>
+#include <string.h>
 
 char executable_path[PATHMAX] = { '\0' };
+char testdir_path[PATHMAX] = { '\0' };
 
 #ifdef __APPLE__
 #include <mach-o/dyld.h> /* _NSGetExecutablePath */
@@ -48,7 +49,10 @@ static void get_executable_path()
 }
 
 void sln_tests_setup() {
+  char *p;
   get_executable_path();
+  p = strrchr(executable_path, '/');
+  memcpy(testdir_path, executable_path, p - executable_path);
 }
 
 const char* sln_tests_load_cert(const char *fname)
@@ -58,7 +62,7 @@ const char* sln_tests_load_cert(const char *fname)
   struct stat s;
   char *buf;
 
-  snprintf(p, sizeof(p), "%s/../../../tests/fixtures/%s", dirname(executable_path), fname);
+  snprintf(p, sizeof(p), "%s/../../../tests/fixtures/%s", testdir_path, fname);
 
   fp = fopen(p, "r");
 
