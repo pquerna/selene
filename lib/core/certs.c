@@ -20,6 +20,7 @@
 #include "sln_types.h"
 #include "sln_certs.h"
 #include "sln_brigades.h"
+#include "sln_arrays.h"
 #include <openssl/x509v3.h>
 #include <string.h>
 
@@ -158,7 +159,11 @@ sln_cert_destroy(selene_cert_t *cert)
   }
 
   if (cert->cache_subjectAltNames) {
-    sln_brigade_destroy(cert->cache_subjectAltNames);
+    int i;
+    for (i = 0; i < cert->cache_subjectAltNames->nelts; i++) {
+      sln_conf_free(conf, SLN_ARRAY_IDX(cert->cache_subjectAltNames, i, char *));
+    }
+    sln_array_destroy(cert->cache_subjectAltNames);
     cert->cache_subjectAltNames = NULL;
   }
 
@@ -448,7 +453,7 @@ generate_subject_alt_names(selene_cert_t *cert)
   STACK_OF(GENERAL_NAME) *names;
 
   /* TODO: err */
-  sln_brigade_create(cert->conf->alloc, &cert->cache_subjectAltNames);
+  cert->cache_subjectAltNames = sln_array_make(cert->conf->alloc, 2, sizeof(char*));
 
   /* Get subjectAltNames */
   names = X509_get_ext_d2i(cert->cert, NID_subject_alt_name, NULL, NULL);
@@ -457,13 +462,15 @@ generate_subject_alt_names(selene_cert_t *cert)
     int names_count = sk_GENERAL_NAME_num(names);
 
     for (i = 0; i < names_count; i++) {
-      sln_bucket_t *e = NULL;
+      char *n = NULL;
       GENERAL_NAME *nm = sk_GENERAL_NAME_value(names, i);
 
       switch (nm->type) {
       case GEN_DNS:
-        sln_bucket_create_copy_bytes(cert->conf->alloc, &e, (const char*)nm->d.ia5->data,  nm->d.ia5->length);
-        SLN_BRIGADE_INSERT_TAIL(cert->cache_subjectAltNames, e);
+        n = sln_conf_alloc(cert->conf, nm->d.ia5->length + 1);
+        memcpy(n, nm->d.ia5->data, nm->d.ia5->length);
+        n[nm->d.ia5->length] = '\0';
+        SLN_ARRAY_PUSH(cert->cache_subjectAltNames, char *) = n;
         break;
       default:
         /* Don't know what to do - skip. */
@@ -482,33 +489,21 @@ selene_cert_alt_names_count(selene_cert_t *cert)
     generate_subject_alt_names(cert);
   }
 
-  return sln_brigade_bucket_count(cert->cache_subjectAltNames);
+  return cert->cache_subjectAltNames->nelts;
 }
 
 const char*
 selene_cert_alt_names_entry(selene_cert_t *cert, int offset)
 {
-  int i = 0;
-  sln_bucket_t *b;
-
   if (cert->cache_subjectAltNames == NULL) {
     generate_subject_alt_names(cert);
   }
 
-  SLN_RING_FOREACH(b, &(cert->cache_subjectAltNames)->list, sln_bucket_t, link)
-  {
-    if (offset == i) {
-      return b->data;
-    }
-
-    if (i > offset) {
-      break;
-    }
-
-    i++;
+  if (offset >= cert->cache_subjectAltNames->nelts) {
+    return NULL;
   }
 
-  return NULL;
+  return SLN_ARRAY_IDX(cert->cache_subjectAltNames, offset, char *);
 }
 
 selene_error_t*

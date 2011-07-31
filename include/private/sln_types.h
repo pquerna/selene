@@ -179,7 +179,7 @@ struct selene_cert_t {
   int64_t cache_not_after_ts;
   selene_cert_name_t *cache_subject;
   selene_cert_name_t *cache_issuer;
-  sln_brigade_t *cache_subjectAltNames;
+  sln_array_header_t *cache_subjectAltNames;
 };
 
 struct selene_cert_chain_t {
