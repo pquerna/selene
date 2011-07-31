@@ -105,7 +105,7 @@ sln_handshake_serialize_server_hello(selene_t *s, sln_msg_server_hello_t *sh, sl
 
   off += 1;
 
-  assert(off == len);
+  SLN_ASSERT(off == len);
 
   *p_b = b;
 

@@ -192,7 +192,7 @@ sln_handshake_serialize_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sl
     off += sninamelen;
   }
 
-  assert(off == len);
+  SLN_ASSERT(off == len);
 
   *p_b = b;
 

@@ -79,7 +79,7 @@ sln_handshake_serialize_certificate(selene_t *s, sln_msg_certificate_t *cert, sl
     off += cert_len;
   }
 
-  assert(off == len);
+  SLN_ASSERT(off == len);
 
   *p_b = b;
 

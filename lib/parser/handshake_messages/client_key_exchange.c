@@ -46,7 +46,7 @@ sln_handshake_serialize_client_key_exchange(selene_t *s, sln_msg_client_key_exch
   memcpy(b->data + off, cke->pre_master_key, cke->pre_master_key_length);
   off += cke->pre_master_key_length;
 
-  assert(off == len);
+  SLN_ASSERT(off == len);
 
   *p_b = b;
 
@@ -78,7 +78,7 @@ parse_client_key_exchange_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *bat
       size_t len = ckb->cke.pre_master_key_length;
       ckb->cke.pre_master_key = sln_alloc(hs->s, sln_brigade_size(v->v.bb));
       sln_brigade_flatten(v->v.bb, ckb->cke.pre_master_key, &len);
-      assert(ckb->cke.pre_master_key_length == len);
+      SLN_ASSERT(ckb->cke.pre_master_key_length == len);
       v->next = TOK_DONE;
       v->wantlen = 0;
       break;
