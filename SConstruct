@@ -131,7 +131,7 @@ options = {
       'CPPDEFINES': ['DEBUG'],
     },
     'GCOV': {
-      'CC': env['PROFILE_CC'],
+      'CC': env.get('PROFILE_CC', env['CC']),
       'CCFLAGS': ['-Wall', '-O0', '-ggdb', '-fPIC', '-fprofile-arcs', '-ftest-coverage'],
       'CPPDEFINES': ['DEBUG'],
       'LIBS': 'gcov'
