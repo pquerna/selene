@@ -31,12 +31,12 @@ sln_hmac_openssl_create(selene_t *s, sln_hmac_e type, const char* key, size_t kl
   h->baton = hctx;
 
   switch (h->type) {
-    case SLN_DIGEST_MD5:
+    case SLN_HMAC_MD5:
     {
       mt = EVP_md5();
       break;
     }
-    case SLN_DIGEST_SHA1:
+    case SLN_HMAC_SHA1:
     {
       mt = EVP_sha1();
       break;

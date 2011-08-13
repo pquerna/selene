@@ -56,6 +56,7 @@ int main(int argc, char* argv[]) {
 
   RUNT(logging);
   RUNT(crypto_digest);
+  RUNT(crypto_prf);
   RUNT(init);
   RUNT(brigade);
   RUNT(buckets);

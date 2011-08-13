@@ -25,6 +25,7 @@ sources = Split("""
   test_buckets.c
   test_certs.c
   test_crypto_digest.c
+  test_crypto_prf.c
   test_events.c
   test_handshake_io.c
   test_init.c

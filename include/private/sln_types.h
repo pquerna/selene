@@ -107,6 +107,9 @@ typedef enum {
 #define SLN_MD5_DIGEST_LENGTH (16)
 #define SLN_SHA1_DIGEST_LENGTH (20)
 
+/* TODO: better naming, more thought, this is kinda lame */
+#define SLN_BIG_DIGEST_LENGTH SLN_SHA1_DIGEST_LENGTH
+
 typedef enum {
   /* TODO: more digest algos */
   SLN_DIGEST_MD5,

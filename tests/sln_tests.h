@@ -89,6 +89,7 @@
 
 SLN_TEST_MODULE(logging)
 SLN_TEST_MODULE(crypto_digest)
+SLN_TEST_MODULE(crypto_prf)
 SLN_TEST_MODULE(init)
 SLN_TEST_MODULE(brigade)
 SLN_TEST_MODULE(buckets)
