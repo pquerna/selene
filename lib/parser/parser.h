@@ -72,6 +72,16 @@ typedef enum sln_connstate_e {
   SLN_CONNSTATE_ALERT_FATAL
 } sln_connstate_e;
 
+typedef struct sln_params_t {
+  char *mac_secret;
+  char *key;
+  char *iv;
+  selene_cipher_suite_e suite;
+  unsigned long seq_num;
+} sln_params_t;
+
+#define SLN_SECRET_LENGTH (48)
+
 struct sln_parser_baton_t {
   sln_connstate_e connstate;
   sln_handshake_e handshake;
@@ -84,6 +94,22 @@ struct sln_parser_baton_t {
   selene_error_t *fatal_err;
   uint8_t peer_version_major;
   uint8_t peer_version_minor;
+
+  char pre_master_secret[SLN_SECRET_LENGTH];
+  char master_secret[SLN_SECRET_LENGTH];
+
+  /* The order in the struct is important here, we abuse this layout
+   * when computing the master secret
+   */
+  uint32_t client_utc_unix_time;
+  char client_random_bytes[28];
+  uint32_t server_utc_unix_time;
+  char server_random_bytes[28];
+
+  sln_params_t  pending_send_parameters;
+  sln_params_t  pending_recv_parameters;
+  sln_params_t  active_send_parameters;
+  sln_params_t  active_recv_parameters;
 
   union {
     sln_msg_client_hello_t *client_hello;

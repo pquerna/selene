@@ -33,18 +33,18 @@ sln_handshake_serialize_client_key_exchange(selene_t *s, sln_msg_client_key_exch
   len += 3;
 
   /* pre master key size */
-  len += cke->pre_master_key_length;
+  len += cke->pre_master_secret_length;
 
   sln_bucket_create_empty(s->alloc, &b, len);
 
   b->data[0] = SLN_HS_MT_CLIENT_KEY_EXCHANGE;
-  b->data[1] = cke->pre_master_key_length >> 16;
-  b->data[2] = cke->pre_master_key_length >> 8;
-  b->data[3] = cke->pre_master_key_length;
+  b->data[1] = cke->pre_master_secret_length >> 16;
+  b->data[2] = cke->pre_master_secret_length >> 8;
+  b->data[3] = cke->pre_master_secret_length;
   off = 4;
 
-  memcpy(b->data + off, cke->pre_master_key, cke->pre_master_key_length);
-  off += cke->pre_master_key_length;
+  memcpy(b->data + off, cke->pre_master_secret, cke->pre_master_secret_length);
+  off += cke->pre_master_secret_length;
 
   SLN_ASSERT(off == len);
 
@@ -52,7 +52,6 @@ sln_handshake_serialize_client_key_exchange(selene_t *s, sln_msg_client_key_exch
 
   return SELENE_SUCCESS;
 }
-
 
 typedef struct cke_baton_t {
   sln_handshake_client_key_exchange_state_e state;
@@ -67,18 +66,18 @@ parse_client_key_exchange_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *bat
   switch (ckb->state) {
     case SLN_HS_CLIENT_KEY_EXCHANGE_LENGTH:
     {
-      ckb->cke.pre_master_key_length = v->v.uint24;
+      ckb->cke.pre_master_secret_length = v->v.uint24;
       ckb->state = SLN_HS_CLIENT_KEY_EXCHANGE_DATA;
       v->next = TOK_COPY_BRIGADE;
-      v->wantlen = ckb->cke.pre_master_key_length;
+      v->wantlen = ckb->cke.pre_master_secret_length;
       break;
     }
     case SLN_HS_CLIENT_KEY_EXCHANGE_DATA:
     {
-      size_t len = ckb->cke.pre_master_key_length;
-      ckb->cke.pre_master_key = sln_alloc(hs->s, sln_brigade_size(v->v.bb));
-      sln_brigade_flatten(v->v.bb, ckb->cke.pre_master_key, &len);
-      SLN_ASSERT(ckb->cke.pre_master_key_length == len);
+      size_t len = ckb->cke.pre_master_secret_length;
+      ckb->cke.pre_master_secret = sln_alloc(hs->s, sln_brigade_size(v->v.bb));
+      sln_brigade_flatten(v->v.bb, ckb->cke.pre_master_secret, &len);
+      SLN_ASSERT(ckb->cke.pre_master_secret_length == len);
       v->next = TOK_DONE;
       v->wantlen = 0;
       break;

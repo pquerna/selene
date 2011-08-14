@@ -20,6 +20,7 @@
 #include "handshake_messages.h"
 #include "sln_tok.h"
 #include "sln_arrays.h"
+#include "sln_rsa.h"
 #include <string.h>
 
 static selene_error_t*
@@ -152,6 +153,17 @@ selene_peer_certchain(selene_t *s)
   return s->peer_certs;
 }
 
+sln_pubkey_t*
+sln_peer_pubkey(selene_t *s)
+{
+  if (!s->peer_pubkey) {
+    selene_cert_t* cert = selene_cert_chain_entry(s->peer_certs, 0);
+    s->peer_pubkey = sln_alloc(s, sizeof(sln_pubkey_t));
+    s->peer_pubkey->key = X509_get_pubkey(cert->cert);
+  }
+  return s->peer_pubkey;
+}
+
 void
 selene_complete_validate_certificate(selene_t *s, int valid)
 {
@@ -185,11 +197,46 @@ handle_server_certificate(selene_t *s, selene_event_e event, void *x)
   return selene_publish(s, SELENE_EVENT_VALIDATE_CERTIFICATE);
 }
 
+static selene_error_t*
+handle_server_done(selene_t *s, selene_event_e event, void *x)
+{
+  sln_parser_baton_t *baton = s->backend_baton;
+  sln_msg_tls_t tls;
+  sln_msg_client_key_exchange_t cke;
+  sln_pubkey_t *pubkey;
+  sln_bucket_t *btls = NULL;
+  sln_bucket_t *bcke = NULL;
+
+  sln_parser_tls_set_current_version(s, (uint8_t *)&baton->pre_master_secret[0], (uint8_t *)&baton->pre_master_secret[1]);
+
+  sln_parser_rand_bytes_secure(baton->pre_master_secret + 2, SLN_SECRET_LENGTH - 2);
+
+  pubkey = sln_peer_pubkey(s);
+
+  /* TODO: out */
+  SELENE_ERR(sln_rsa_public_encrypt(s, pubkey, baton->pre_master_secret, SLN_SECRET_LENGTH, NULL));
+  /*  cke.pre_master_secret_length = len(out); */
+  /*  cke.pre_master_key = out; */
+
+  SELENE_ERR(sln_handshake_serialize_client_key_exchange(s, &cke, &bcke));
+  tls.content_type = SLN_CONTENT_TYPE_HANDSHAKE;
+  sln_parser_tls_set_current_version(s, &tls.version_major, &tls.version_minor);
+  tls.length = bcke->size;
+
+  SELENE_ERR(sln_tls_serialize_header(s, &tls, &btls));
+
+  SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, btls);
+  SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, bcke);
+
+  return SELENE_SUCCESS;
+}
+
 void
 sln_handshake_register_callbacks(selene_t *s)
 {
   if (s->mode == SLN_MODE_CLIENT) {
     selene_handler_set(s, SELENE__EVENT_HS_GOT_CERTIFICATE, handle_server_certificate, NULL);
+    selene_handler_set(s, SELENE__EVENT_HS_GOT_SERVER_HELLO_DONE, handle_server_done, NULL);
     selene_handler_set(s, SELENE_EVENT_VALIDATE_CERTIFICATE, validate_certificate, NULL);
   }
   else {

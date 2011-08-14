@@ -120,6 +120,10 @@ selene_destroy(selene_t *s)
     s->peer_certs = NULL;
   }
 
+  if (s->peer_pubkey != NULL) {
+    sln_free(s, s->peer_pubkey);
+  }
+
   sln_free(s, s);
 
   sln_terminate();

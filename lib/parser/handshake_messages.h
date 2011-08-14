@@ -204,8 +204,8 @@ typedef enum sln_handshake_client_key_exchange_state_e {
 } sln_handshake_client_key_exchange_state_e;
 
 typedef struct sln_msg_client_key_exchange_t {
-  uint32_t pre_master_key_length;
-  char *pre_master_key;
+  uint32_t pre_master_secret_length;
+  char *pre_master_secret;
 } sln_msg_client_key_exchange_t;
 
 selene_error_t*
