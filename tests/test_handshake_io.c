@@ -80,6 +80,7 @@ static void handshake_io_client_hello(void **state)
     err  = sln_io_handshake_read(s, baton);
     if (err) {
       SLN_ASSERT(err->err == SELENE_EINVAL);
+      selene_error_clear(err);
     }
     else {
       /* TODO: more asserts */
