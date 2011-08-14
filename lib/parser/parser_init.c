@@ -98,5 +98,10 @@ sln_parser_destroy(selene_t *s)
 
   s->backend_baton = NULL;
 
+  if (baton->fatal_err) {
+    selene_error_clear(baton->fatal_err);
+    baton->fatal_err = SELENE_SUCCESS;
+  }
+
   return SELENE_SUCCESS;
 }
