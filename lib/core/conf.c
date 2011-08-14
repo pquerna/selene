@@ -83,7 +83,7 @@ selene_conf_destroy(selene_conf_t *conf)
     sln_cert_chain_destroy(conf, chain);
   }
 
-  sln_array_clear(conf->certs);
+  sln_array_destroy(conf->certs);
 
   X509_STORE_free(conf->trusted_cert_store);
   alloc->free(alloc->baton, conf);
