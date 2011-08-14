@@ -144,6 +144,11 @@ static void loopback_basic(void **state)
   assert_int_equal(clientb.ecount[SELENE_EVENT_SELECT_CERTIFICATES], 0);
   assert_int_equal(clientb.ecount[SELENE__EVENT_HS_GOT_CERTIFICATE], 1);
   assert_int_equal(clientb.ecount[SELENE_EVENT_VALIDATE_CERTIFICATE], 1);
+
+  selene_destroy(server);
+  selene_destroy(client);
+  selene_conf_destroy(sconf);
+  selene_conf_destroy(cconf);
 }
 
 SLN_TESTS_START(loopback)
