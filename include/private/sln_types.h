@@ -203,6 +203,10 @@ struct selene_cert_chain_t {
 };
 
 typedef struct {
+  EVP_PKEY *key;
+} sln_pubkey_t;
+
+typedef struct {
   sln_brigade_t *in_enc;
   sln_brigade_t *out_enc;
   sln_brigade_t *in_cleartext;
@@ -228,6 +232,7 @@ struct selene_t {
 
   const char *client_sni;
   selene_cert_chain_t *peer_certs;
+  sln_pubkey_t *peer_pubkey;
   selene_cert_chain_t *my_certs;
 };
 

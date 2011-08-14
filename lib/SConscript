@@ -37,6 +37,7 @@ crypto/hmac.c
 crypto/hmac_osx_commoncrypto.c
 crypto/hmac_openssl.c
 crypto/prf.c
+crypto/rsa_openssl.c
 io/brigades.c
 io/buckets.c
 io/io.c
