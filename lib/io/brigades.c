@@ -59,7 +59,7 @@ sln_brigade_size(sln_brigade_t *bb)
 {
   /* TODO: cache current value inside the sln_brigade_t structure */
   size_t total = 0;
-  sln_bucket_t *b;
+  sln_bucket_t *b = NULL;
 
   SLN_RING_FOREACH(b, &(bb)->list, sln_bucket_t, link)
   {
@@ -101,7 +101,7 @@ sln_brigade_pread_bytes(sln_brigade_t *bb, size_t want_offset, size_t want_lengt
   size_t got = 0;
   size_t offset = 0;
   size_t buffer_offset = 0;
-  sln_bucket_t *b;
+  sln_bucket_t *b = NULL;
 
   SLN_RING_FOREACH(b, &(bb)->list, sln_bucket_t, link)
   {
@@ -111,7 +111,7 @@ sln_brigade_pread_bytes(sln_brigade_t *bb, size_t want_offset, size_t want_lengt
 
     if (want_offset <= (offset + b->size)) {
       size_t startpoint = 0;
-      size_t tocopy;
+      size_t tocopy = 0;
 
       if (want_offset > offset) {
         startpoint = want_offset - offset;
@@ -143,8 +143,8 @@ sln_brigade_flatten(sln_brigade_t *bb, char *c, size_t *len)
    */
 
   size_t actual = 0;
-  sln_bucket_t *b;
-  sln_bucket_t *iter;
+  sln_bucket_t *b = NULL;
+  sln_bucket_t *iter = NULL;
 
   SLN_RING_FOREACH_SAFE(b, iter, &(bb)->list, sln_bucket_t, link)
   {
@@ -191,8 +191,8 @@ sln_brigade_copy_into(sln_brigade_t *source_bb, size_t want_offset, size_t want_
   size_t got = 0;
   size_t offset = 0;
   size_t buffer_offset = 0;
-  sln_bucket_t *b;
-  sln_bucket_t *e;
+  sln_bucket_t *b = NULL;
+  sln_bucket_t *e = NULL;
 
   SLN_RING_FOREACH(b, &(source_bb)->list, sln_bucket_t, link)
   {
@@ -230,8 +230,8 @@ selene_error_t*
 sln_brigade_chomp(sln_brigade_t *bb, size_t len)
 {
   size_t actual = 0;
-  sln_bucket_t *b;
-  sln_bucket_t *iter;
+  sln_bucket_t *b = NULL;
+  sln_bucket_t *iter = NULL;
 
   SLN_RING_FOREACH_SAFE(b, iter, &(bb)->list, sln_bucket_t, link)
   {
@@ -245,7 +245,7 @@ sln_brigade_chomp(sln_brigade_t *bb, size_t len)
     actual += data_len;
 
     if (b->size != data_len) {
-      sln_bucket_t *tmpe;
+      sln_bucket_t *tmpe = NULL;
       SELENE_ERR(sln_bucket_create_from_bucket(bb->alloc, &tmpe, b, data_len, b->size - data_len));
       SLN_BRIGADE_INSERT_HEAD(bb, tmpe);
     }

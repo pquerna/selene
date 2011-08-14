@@ -139,7 +139,7 @@ selene_unsubscribe(selene_t *s, selene_event_e event,
 selene_error_t*
 selene_publish(selene_t *s, selene_event_e event)
 {
-  sln_eventcb_t *b;
+  sln_eventcb_t *b = NULL;
   sln_events_t *events;
 
   SLN_ASSERT_CONTEXT(s);
