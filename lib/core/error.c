@@ -69,6 +69,22 @@ selene_error_createf_impl(selene_status_t err,
 
   e->line = line;
   e->file = strdup(file);
+
+  return e;
+}
+
+selene_error_t *
+selene_error_dup(selene_error_t *err)
+{
+  selene_error_t *e;
+
+  e = malloc(sizeof(*e));
+
+  e->err = err->err;
+  e->msg = strdup(err->msg);
+  e->line = err->line;
+  e->file = strdup(err->file);
+
   return e;
 }
 

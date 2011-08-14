@@ -77,7 +77,7 @@ sln_io_alert_read(selene_t *s, sln_parser_baton_t *baton)
     baton->connstate = SLN_CONNSTATE_ALERT_FATAL;
     baton->fatal_err = selene_error_createf(SELENE_EINVAL, "TLS Alert: type:%d  msg:%d", ab.alert->level, ab.alert->description);
     sln_free(s, ab.alert);
-    return baton->fatal_err;
+    return selene_error_dup(baton->fatal_err);
   }
 
   sln_free(s, ab.alert);

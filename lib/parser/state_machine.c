@@ -29,7 +29,7 @@ enter_state_machine:
   if (baton->fatal_err != SELENE_SUCCESS || baton->connstate == SLN_CONNSTATE_ALERT_FATAL) {
     /* TODO: better error */
     slnDbg(s, "connection previously aborted");
-    return baton->fatal_err;
+    return selene_error_dup(baton->fatal_err);
   }
 
   if (!SLN_BRIGADE_EMPTY(s->bb.in_enc)) {

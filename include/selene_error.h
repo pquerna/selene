@@ -127,6 +127,10 @@ selene_error_createf_impl(selene_status_t err,
 SELENE_API(void)
 selene_error_clear(selene_error_t *err);
 
+/** Duplicates an error object */
+SELENE_API(selene_error_t *)
+selene_error_dup(selene_error_t *err);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
