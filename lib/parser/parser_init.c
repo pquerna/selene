@@ -94,14 +94,14 @@ sln_parser_destroy(selene_t *s)
   sln_brigade_destroy(baton->in_handshake);
   sln_brigade_destroy(baton->in_application);
 
-  sln_free(s, baton);
-
-  s->backend_baton = NULL;
-
   if (baton->fatal_err != SELENE_SUCCESS) {
     selene_error_clear(baton->fatal_err);
     baton->fatal_err = SELENE_SUCCESS;
   }
+
+  s->backend_baton = NULL;
+
+  sln_free(s, baton);
 
   return SELENE_SUCCESS;
 }
