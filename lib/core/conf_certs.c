@@ -65,6 +65,7 @@ read_certificate_chain(selene_conf_t *conf, BIO *in, selene_cert_chain_t** p_cer
     } else  {
       /* some real error */
       /* TODO: handle parse errors of the ca certs */
+      ERR_clear_error();
     }
   }
 
