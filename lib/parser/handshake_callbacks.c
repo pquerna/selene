@@ -136,6 +136,10 @@ selene_complete_select_certificates(selene_t *s, selene_cert_chain_t *chain)
 {
   sln_parser_baton_t *baton = s->backend_baton;
 
+  if (baton->fatal_err) {
+    return;
+  }
+
   s->my_certs = chain;
 
   if (s->my_certs != NULL) {
