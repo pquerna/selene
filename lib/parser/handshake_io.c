@@ -51,7 +51,7 @@ sln_io_handshake_client_hello(selene_t *s, sln_parser_baton_t *baton)
 
   ch.session_id_len = 0;
   ch.ciphers = &s->conf->ciphers;
-  ch.server_name = sln_strdup(s, s->client_sni);
+  ch.server_name = s->client_sni;
   ch.have_npn = 0;
   ch.have_ocsp_stapling = 0;
   SELENE_ERR(sln_handshake_serialize_client_hello(s, &ch, &bhs));
