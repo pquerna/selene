@@ -60,6 +60,8 @@ parse_server_hello_done_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton
 {
   shd_baton_t *shb = (shd_baton_t*)baton;
 
+  slnDbg(hs->s, "parse_server_hello_done_step");
+
   switch (shb->state) {
     case SLN_HS_SERVER_HELLO_DONE_LENGTH:
     {
@@ -73,16 +75,12 @@ parse_server_hello_done_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton
   return SELENE_SUCCESS;
 }
 
-static selene_error_t*
-parse_server_hello_done_finish(sln_hs_baton_t *hs, void *baton)
-{
-  return selene_publish(hs->s, SELENE__EVENT_HS_GOT_SERVER_HELLO_DONE);
-}
-
 static void
 parse_server_hello_done_destroy(sln_hs_baton_t *hs, void *baton)
 {
   shd_baton_t *shd = (shd_baton_t*)baton;
+
+  slnDbg(hs->s, "parse_server_hello_done_destroy");
 
   sln_free(hs->s, shd);
 }
@@ -92,12 +90,16 @@ sln_handshake_parse_server_hello_done_setup(sln_hs_baton_t *hs, sln_tok_value_t 
 {
   shd_baton_t *shd = sln_calloc(hs->s, sizeof(shd_baton_t));
   shd->state = SLN_HS_SERVER_HELLO_DONE_LENGTH;
+  slnDbg(hs->s, "sln_handshake_parse_server_hello_done_setup");
   hs->baton->msg.server_hello_done = &shd->shd;
   hs->current_msg_step = parse_server_hello_done_step;
-  hs->current_msg_finish = parse_server_hello_done_finish;
+  hs->current_msg_finish = NULL;
   hs->current_msg_destroy = parse_server_hello_done_destroy;
-  v->next = TOK_COPY_BYTES;
-  v->wantlen = 3;
+
+  v->next = TOK_DONE;
+  v->wantlen = 0;
   *baton = (void*)shd;
-  return SELENE_SUCCESS;
+
+  /* SHD has no fields, so on setup we just emit the event. */
+  return selene_publish(hs->s, SELENE__EVENT_HS_GOT_SERVER_HELLO_DONE);
 }
