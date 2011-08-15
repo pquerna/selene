@@ -210,6 +210,10 @@ handle_server_done(selene_t *s, selene_event_e event, void *x)
   sln_pubkey_t *pubkey;
   sln_bucket_t *btls = NULL;
   sln_bucket_t *bcke = NULL;
+  char *output;
+  size_t outlen;
+
+  slnDbg(s, "sending client key exchange");
 
   sln_parser_tls_set_current_version(s, (uint8_t *)&baton->pre_master_secret[0], (uint8_t *)&baton->pre_master_secret[1]);
 
@@ -217,10 +221,12 @@ handle_server_done(selene_t *s, selene_event_e event, void *x)
 
   pubkey = sln_peer_pubkey(s);
 
-  /* TODO: out */
-  SELENE_ERR(sln_rsa_public_encrypt(s, pubkey, baton->pre_master_secret, SLN_SECRET_LENGTH, NULL));
-  /*  cke.pre_master_secret_length = len(out); */
-  /*  cke.pre_master_key = out; */
+  outlen = sln_rsa_size(pubkey);
+  output = sln_alloc(s, outlen);
+
+  SELENE_ERR(sln_rsa_public_encrypt(s, pubkey, baton->pre_master_secret, SLN_SECRET_LENGTH, output));
+  cke.pre_master_secret_length = outlen;
+  cke.pre_master_secret = output;
 
   SELENE_ERR(sln_handshake_serialize_client_key_exchange(s, &cke, &bcke));
   tls.content_type = SLN_CONTENT_TYPE_HANDSHAKE;
@@ -231,6 +237,8 @@ handle_server_done(selene_t *s, selene_event_e event, void *x)
 
   SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, btls);
   SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, bcke);
+
+  sln_free(s, output);
 
   return SELENE_SUCCESS;
 }
