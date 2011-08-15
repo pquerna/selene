@@ -48,7 +48,7 @@ selene_io_in_clear_bytes(selene_t *s,
 
   SELENE_ERR(sln_bucket_create_copy_bytes(s->alloc, &e, bytes, length));
 
-  SLN_BRIGADE_INSERT_TAIL(s->bb.in_enc, e);
+  SLN_BRIGADE_INSERT_TAIL(s->bb.in_cleartext, e);
 
   SELENE_ERR(selene_publish(s, SELENE_EVENT_IO_IN_CLEAR));
 
