@@ -22,17 +22,20 @@
 #ifdef SLN_HAVE_OSX_COMMONCRYPTO
 selene_error_t* sln_rsa_osx_cc_public_encrypt(selene_t *s, sln_pubkey_t *key,
                                               const char *input, size_t inputlen, char *output);
+size_t sln_rsa_osx_cc_size(sln_pubkey_t *key);
 #endif
 
 selene_error_t* sln_rsa_openssl_public_encrypt(selene_t *s, sln_pubkey_t *key,
                                                const char *input, size_t inputlen, char *output);
+size_t sln_rsa_openssl_size(sln_pubkey_t *key);
+
 
 #if defined(SLN_HAVE_OSX_COMMONCRYPTO) && defined(__never__)
-/* Use OSX native methods if available */
 #define sln_rsa_public_encrypt sln_rsa_osx_cc_public_encrypt
+#define sln_rsa_size sln_rsa_osx_cc_size
 #else
-/* OpenSSL Fallbacks */
 #define sln_rsa_public_encrypt sln_rsa_openssl_public_encrypt
+#define sln_rsa_size sln_rsa_openssl_size
 #endif
 
 #endif

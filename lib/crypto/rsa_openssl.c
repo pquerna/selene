@@ -34,7 +34,7 @@ sln_rsa_openssl_public_encrypt(selene_t *s, sln_pubkey_t *key,
                            (unsigned char *)output,
                            rsa, RSA_PKCS1_PADDING);
 
-  if (err) {
+  if (err == -1) {
     char buf[121];
     unsigned long e = ERR_get_error();
     return selene_error_createf(SELENE_EINVAL,
@@ -43,4 +43,14 @@ sln_rsa_openssl_public_encrypt(selene_t *s, sln_pubkey_t *key,
   }
 
   return SELENE_SUCCESS;
+}
+
+size_t
+sln_rsa_openssl_size(sln_pubkey_t *key)
+{
+  RSA *rsa = key->key->pkey.rsa;
+
+  SLN_ASSERT(key->key->type == EVP_PKEY_RSA);
+
+  return RSA_size(rsa);
 }
