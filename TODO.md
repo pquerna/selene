@@ -16,7 +16,7 @@ Current TODO:
  * server_hello_done(14) [done]
  * certificate_verify(15)
  * client_key_exchange(16) [wip]
- * finished(20)
+ * finished(20) [wip]
 
 * Add bindings to various crypto operations, on both OpenSSL and OSX's CommonCrypto:
  * Digest [done]
