@@ -24,6 +24,7 @@ sln_handshake_serialize_client_key_exchange(selene_t *s, sln_msg_client_key_exch
 {
   sln_bucket_t *b = NULL;
   size_t len = 0;
+  size_t dlen = 0;
   size_t off = 0;
 
   /* message type  size */
@@ -33,15 +34,22 @@ sln_handshake_serialize_client_key_exchange(selene_t *s, sln_msg_client_key_exch
   len += 3;
 
   /* pre master key size */
+  len += 2;
   len += cke->pre_master_secret_length;
 
   sln_bucket_create_empty(s->alloc, &b, len);
 
+  dlen = len - 4;
+
   b->data[0] = SLN_HS_MT_CLIENT_KEY_EXCHANGE;
-  b->data[1] = cke->pre_master_secret_length >> 16;
-  b->data[2] = cke->pre_master_secret_length >> 8;
-  b->data[3] = cke->pre_master_secret_length;
+  b->data[1] = dlen >> 16;
+  b->data[2] = dlen >> 8;
+  b->data[3] = dlen;
   off = 4;
+
+  b->data[off] = cke->pre_master_secret_length >> 8;
+  b->data[off+1] = cke->pre_master_secret_length;
+  off += 2;
 
   memcpy(b->data + off, cke->pre_master_secret, cke->pre_master_secret_length);
   off += cke->pre_master_secret_length;
