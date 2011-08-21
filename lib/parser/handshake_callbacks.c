@@ -202,7 +202,7 @@ handle_server_certificate(selene_t *s, selene_event_e event, void *x)
 }
 
 static selene_error_t*
-handle_server_done(selene_t *s, selene_event_e event, void *x)
+send_client_key_exhcnage(selene_t *s)
 {
   sln_parser_baton_t *baton = s->backend_baton;
   sln_msg_tls_t tls;
@@ -239,6 +239,63 @@ handle_server_done(selene_t *s, selene_event_e event, void *x)
   SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, bcke);
 
   sln_free(s, output);
+
+  return SELENE_SUCCESS;
+}
+
+static selene_error_t*
+send_change_cipher_spec(selene_t *s)
+{
+  sln_msg_tls_t tls;
+  sln_msg_change_cipher_spec_t ccs;
+  sln_bucket_t *btls = NULL;
+  sln_bucket_t *bccs = NULL;
+
+  slnDbg(s, "sending change cipher spec");
+
+  SELENE_ERR(sln_handshake_serialize_change_cipher_spec(s, &ccs, &bccs));
+  tls.content_type = SLN_CONTENT_TYPE_CHANGE_CIPHER_SPEC;
+  sln_parser_tls_set_current_version(s, &tls.version_major, &tls.version_minor);
+  tls.length = bccs->size;
+
+  SELENE_ERR(sln_tls_serialize_header(s, &tls, &btls));
+
+  SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, btls);
+  SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, bccs);
+
+  return SELENE_SUCCESS;
+}
+
+static selene_error_t*
+send_finished(selene_t *s)
+{
+  sln_msg_tls_t tls;
+  sln_msg_finished_t fin;
+  sln_bucket_t *btls = NULL;
+  sln_bucket_t *bfin = NULL;
+
+  slnDbg(s, "sending finished");
+
+  SELENE_ERR(sln_handshake_serialize_finished(s, &fin, &bfin));
+  tls.content_type = SLN_CONTENT_TYPE_HANDSHAKE;
+  sln_parser_tls_set_current_version(s, &tls.version_major, &tls.version_minor);
+  tls.length = bfin->size;
+
+  SELENE_ERR(sln_tls_serialize_header(s, &tls, &btls));
+
+  SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, btls);
+  SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, bfin);
+
+  return SELENE_SUCCESS;
+}
+
+static selene_error_t*
+handle_server_done(selene_t *s, selene_event_e event, void *x)
+{
+  SELENE_ERR(send_client_key_exhcnage(s));
+  /* TODO: cert verify */
+  SELENE_ERR(send_change_cipher_spec(s));
+  SELENE_ERR(send_finished(s));
 
   return SELENE_SUCCESS;
 }

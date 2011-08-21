@@ -214,4 +214,24 @@ sln_handshake_parse_client_key_exchange_setup(sln_hs_baton_t *hs, sln_tok_value_
 selene_error_t*
 sln_handshake_serialize_client_key_exchange(selene_t *s, sln_msg_client_key_exchange_t *cke, sln_bucket_t **p_b);
 
+typedef struct sln_msg_change_cipher_spec_t {
+  int unused;
+} sln_msg_change_cipher_spec_t;
+
+selene_error_t*
+sln_handshake_serialize_change_cipher_spec(selene_t *s, sln_msg_change_cipher_spec_t *cke, sln_bucket_t **p_b);
+
+#define SLN_MSG_FINISHED_VERIFY_LENGTH (12)
+typedef struct sln_msg_finished_t {
+  /**
+   * 7.4.9:
+   * verify_data = PRF( master_secret, "client finished", MD5(handshake_messages) +
+   *  SHA-1(handshake_messages)) [0..11]
+   */
+  char vdata[SLN_MSG_FINISHED_VERIFY_LENGTH];
+} sln_msg_finished_t;
+
+selene_error_t*
+sln_handshake_serialize_finished(selene_t *s, sln_msg_finished_t *fin, sln_bucket_t **p_b);
+
 #endif
