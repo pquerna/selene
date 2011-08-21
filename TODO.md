@@ -19,14 +19,17 @@ Current TODO:
  * finished(20)
 
 * Add bindings to various crypto operations, on both OpenSSL and OSX's CommonCrypto:
- * Digest [SHA1, MD5: done]
- * HMAC [SHA1, MD5: done]
- * RSA
+ * Digest [done]
+ * HMAC [done]
+ * RSA [wip; need OSX-CommonCrypto]
  * AES
  * RC4
 
-* Create high level methods using lower level crypto operations:
- * Pseudo Random Function (PRF) + Pre-Master-Key reorganization
+# Longer term thoughts
+
+* Improve Alert message handling (parsing is done)
+ * If Fatal, cleanup to mark the selene_t as dead, return a selene_error_t from all API surfaces.
+ * Several TODOs throughout the parse about sending fatal alerts / shutting down the connection, this needs work.
 
 * Add Certificate Store interface
  * Search for cert by:
@@ -36,10 +39,6 @@ Current TODO:
 * Build extractor / easy way to get the trusted certificate list from chrome into a header file.
  * Should be able to be invoked as a build target, ie, 'scons update-trusted-certs'
  * Download the latest CAs from some place on the internet, and then rewrite a sln_trusted_certs.h
-
-* Alert message handling (parsing is done)
- * If Fatal, cleanup to mark the selene_t as dead, return a selene_error_t from all API surfaces.
- * Several TODOs throughout the parse about sending fatal alerts / shutting down the connection, this needs work.
 
 * Implement next protocol negotiation <http://tools.ietf.org/html/draft-agl-tls-nextprotoneg-02>:
  * see NextProtos <http://golang.org/src/pkg/crypto/tls/common.go?s=2940:4315#L97>
