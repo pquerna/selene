@@ -18,6 +18,7 @@
 #include "sln_brigades.h"
 #include "parser.h"
 #include "handshake_messages.h"
+#include "sln_digest.h"
 
 selene_error_t*
 sln_parser_initilize()
@@ -42,6 +43,9 @@ sln_parser_create(selene_t *s)
   sln_brigade_create(s->alloc, &baton->in_alert);
   sln_brigade_create(s->alloc, &baton->in_handshake);
   sln_brigade_create(s->alloc, &baton->in_application);
+
+  sln_digest_create(s, SLN_DIGEST_MD5, &baton->md5_handshake_digest);
+  sln_digest_create(s, SLN_DIGEST_SHA1, &baton->sha1_handshake_digest);
 
   sln_handshake_register_callbacks(s);
 
@@ -100,6 +104,9 @@ sln_parser_destroy(selene_t *s)
   }
 
   s->backend_baton = NULL;
+
+  sln_digest_destroy(baton->md5_handshake_digest);
+  sln_digest_destroy(baton->sha1_handshake_digest);
 
   sln_free(s, baton);
 

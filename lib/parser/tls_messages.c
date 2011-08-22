@@ -17,6 +17,7 @@
 
 #include "parser.h"
 #include "common.h"
+#include "sln_digest.h"
 
 selene_error_t*
 sln_tls_serialize_header(selene_t *s, sln_msg_tls_t *tls, sln_bucket_t **p_b)
@@ -61,6 +62,7 @@ selene_error_t*
 sln_tls_toss_bucket(selene_t *s, sln_content_type_e content_type, sln_bucket_t *bout)
 {
   sln_msg_tls_t tls;
+  sln_parser_baton_t *baton = s->backend_baton;
   sln_bucket_t *btls = NULL;
 
   tls.content_type = content_type;
@@ -71,6 +73,11 @@ sln_tls_toss_bucket(selene_t *s, sln_content_type_e content_type, sln_bucket_t *
 
   SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, btls);
   SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, bout);
+
+  if (content_type == SLN_CONTENT_TYPE_HANDSHAKE) {
+    sln_digest_update(baton->md5_handshake_digest, bout->data, bout->size);
+    sln_digest_update(baton->sha1_handshake_digest, bout->data, bout->size);
+  }
 
   return SELENE_SUCCESS;
 }

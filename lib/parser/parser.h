@@ -111,6 +111,10 @@ struct sln_parser_baton_t {
   sln_params_t  active_send_parameters;
   sln_params_t  active_recv_parameters;
 
+  /* TODO: TLS 1.2, plugable handshake digests */
+  sln_digest_t *md5_handshake_digest;
+  sln_digest_t *sha1_handshake_digest;
+
   union {
     sln_msg_client_hello_t *client_hello;
     sln_msg_server_hello_t *server_hello;
