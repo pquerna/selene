@@ -173,4 +173,12 @@ typedef struct sln_msg_tls_t {
 selene_error_t*
 sln_tls_serialize_header(selene_t *s, sln_msg_tls_t *tls, sln_bucket_t **b);
 
+/**
+ * shortcut method that sends a whole message of the specified type, including dealing with
+ * encryption of the message and hashes as needed. -- this method takes ownership of the bout
+ * bucket, and may of destroyed or consumed it before returning.
+ */
+selene_error_t*
+sln_tls_toss_bucket(selene_t *s, sln_content_type_e content_type, sln_bucket_t *bout);
+
 #endif

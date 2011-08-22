@@ -16,6 +16,7 @@
  */
 
 #include "parser.h"
+#include "common.h"
 
 selene_error_t*
 sln_tls_serialize_header(selene_t *s, sln_msg_tls_t *tls, sln_bucket_t **p_b)
@@ -55,3 +56,21 @@ sln_tls_serialize_header(selene_t *s, sln_msg_tls_t *tls, sln_bucket_t **p_b)
   return SELENE_SUCCESS;
 }
 
+
+selene_error_t*
+sln_tls_toss_bucket(selene_t *s, sln_content_type_e content_type, sln_bucket_t *bout)
+{
+  sln_msg_tls_t tls;
+  sln_bucket_t *btls = NULL;
+
+  tls.content_type = content_type;
+  sln_parser_tls_set_current_version(s, &tls.version_major, &tls.version_minor);
+  tls.length = bout->size;
+
+  SELENE_ERR(sln_tls_serialize_header(s, &tls, &btls));
+
+  SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, btls);
+  SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, bout);
+
+  return SELENE_SUCCESS;
+}

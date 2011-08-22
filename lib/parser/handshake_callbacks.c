@@ -62,8 +62,6 @@ send_server_certs(selene_t *s)
   /* TODO: move to post-finding certificate callback */
   {
     sln_msg_server_hello_t sh;
-    sln_msg_tls_t tls;
-    sln_bucket_t *btls = NULL;
     sln_bucket_t *bhs = NULL;
 
     sln_parser_tls_max_supported_version(s, &sh.version_major, &sh.version_minor);
@@ -76,54 +74,28 @@ send_server_certs(selene_t *s)
     SELENE_ERR(sln_handshake_serialize_server_hello(s, &sh, &bhs));
 
     /* TODO: create certificate message for non-PSK ciphers */
-    tls.content_type = SLN_CONTENT_TYPE_HANDSHAKE;
-    sln_parser_tls_set_current_version(s, &tls.version_major, &tls.version_minor);
-    tls.length = bhs->size;
 
-    SELENE_ERR(sln_tls_serialize_header(s, &tls, &btls));
-
-    SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, btls);
-
-    SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, bhs);
-
+    SELENE_ERR(sln_tls_toss_bucket(s, SLN_CONTENT_TYPE_HANDSHAKE, bhs));
   }
 
   {
     /* TODO: more handshake extensions, client certificate request support */
     sln_msg_certificate_t cert;
-    sln_msg_tls_t tls;
-    sln_bucket_t *btls = NULL;
     sln_bucket_t *bcert = NULL;
 
     cert.chain = s->my_certs;
     SELENE_ERR(sln_handshake_serialize_certificate(s, &cert, &bcert));
 
-    tls.content_type = SLN_CONTENT_TYPE_HANDSHAKE;
-    sln_parser_tls_set_current_version(s, &tls.version_major, &tls.version_minor);
-    tls.length = bcert->size;
-
-    SELENE_ERR(sln_tls_serialize_header(s, &tls, &btls));
-
-    SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, btls);
-    SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, bcert);
+    SELENE_ERR(sln_tls_toss_bucket(s, SLN_CONTENT_TYPE_HANDSHAKE, bcert));
   }
 
   {
-    sln_msg_tls_t tls;
     sln_msg_server_hello_done_t done;
-    sln_bucket_t *btls = NULL;
     sln_bucket_t *bdone = NULL;
 
     SELENE_ERR(sln_handshake_serialize_server_hello_done(s, &done, &bdone));
 
-    tls.content_type = SLN_CONTENT_TYPE_HANDSHAKE;
-    sln_parser_tls_set_current_version(s, &tls.version_major, &tls.version_minor);
-    tls.length = bdone->size;
-
-    SELENE_ERR(sln_tls_serialize_header(s, &tls, &btls));
-
-    SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, btls);
-    SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, bdone);
+    SELENE_ERR(sln_tls_toss_bucket(s, SLN_CONTENT_TYPE_HANDSHAKE, bdone));
   }
 
   baton->handshake = SLN_HANDSHAKE_SERVER_WAIT_CLIENT_FINISHED;
@@ -205,10 +177,8 @@ static selene_error_t*
 send_client_key_exhcnage(selene_t *s)
 {
   sln_parser_baton_t *baton = s->backend_baton;
-  sln_msg_tls_t tls;
   sln_msg_client_key_exchange_t cke;
   sln_pubkey_t *pubkey;
-  sln_bucket_t *btls = NULL;
   sln_bucket_t *bcke = NULL;
   char *output;
   size_t outlen;
@@ -229,14 +199,7 @@ send_client_key_exhcnage(selene_t *s)
   cke.pre_master_secret = output;
 
   SELENE_ERR(sln_handshake_serialize_client_key_exchange(s, &cke, &bcke));
-  tls.content_type = SLN_CONTENT_TYPE_HANDSHAKE;
-  sln_parser_tls_set_current_version(s, &tls.version_major, &tls.version_minor);
-  tls.length = bcke->size;
-
-  SELENE_ERR(sln_tls_serialize_header(s, &tls, &btls));
-
-  SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, btls);
-  SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, bcke);
+  SELENE_ERR(sln_tls_toss_bucket(s, SLN_CONTENT_TYPE_HANDSHAKE, bcke));
 
   sln_free(s, output);
 
@@ -246,22 +209,14 @@ send_client_key_exhcnage(selene_t *s)
 static selene_error_t*
 send_change_cipher_spec(selene_t *s)
 {
-  sln_msg_tls_t tls;
   sln_msg_change_cipher_spec_t ccs;
-  sln_bucket_t *btls = NULL;
   sln_bucket_t *bccs = NULL;
 
   slnDbg(s, "sending change cipher spec");
 
   SELENE_ERR(sln_handshake_serialize_change_cipher_spec(s, &ccs, &bccs));
-  tls.content_type = SLN_CONTENT_TYPE_CHANGE_CIPHER_SPEC;
-  sln_parser_tls_set_current_version(s, &tls.version_major, &tls.version_minor);
-  tls.length = bccs->size;
 
-  SELENE_ERR(sln_tls_serialize_header(s, &tls, &btls));
-
-  SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, btls);
-  SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, bccs);
+  SELENE_ERR(sln_tls_toss_bucket(s, SLN_CONTENT_TYPE_CHANGE_CIPHER_SPEC, bccs));
 
   return SELENE_SUCCESS;
 }
@@ -269,22 +224,14 @@ send_change_cipher_spec(selene_t *s)
 static selene_error_t*
 send_finished(selene_t *s)
 {
-  sln_msg_tls_t tls;
   sln_msg_finished_t fin;
-  sln_bucket_t *btls = NULL;
   sln_bucket_t *bfin = NULL;
 
   slnDbg(s, "sending finished");
 
   SELENE_ERR(sln_handshake_serialize_finished(s, &fin, &bfin));
-  tls.content_type = SLN_CONTENT_TYPE_HANDSHAKE;
-  sln_parser_tls_set_current_version(s, &tls.version_major, &tls.version_minor);
-  tls.length = bfin->size;
 
-  SELENE_ERR(sln_tls_serialize_header(s, &tls, &btls));
-
-  SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, btls);
-  SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, bfin);
+  SELENE_ERR(sln_tls_toss_bucket(s, SLN_CONTENT_TYPE_HANDSHAKE, bfin));
 
   return SELENE_SUCCESS;
 }

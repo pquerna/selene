@@ -39,8 +39,6 @@ selene_error_t*
 sln_io_handshake_client_hello(selene_t *s, sln_parser_baton_t *baton)
 {
   sln_msg_client_hello_t ch;
-  sln_msg_tls_t tls;
-  sln_bucket_t *btls = NULL;
   sln_bucket_t *bhs = NULL;
 
   sln_parser_tls_max_supported_version(s, &ch.version_major, &ch.version_minor);
@@ -56,15 +54,7 @@ sln_io_handshake_client_hello(selene_t *s, sln_parser_baton_t *baton)
   ch.have_ocsp_stapling = 0;
   SELENE_ERR(sln_handshake_serialize_client_hello(s, &ch, &bhs));
 
-  tls.content_type = SLN_CONTENT_TYPE_HANDSHAKE;
-  sln_parser_tls_set_current_version(s, &tls.version_major, &tls.version_minor);
-  tls.length = bhs->size;
-
-  SELENE_ERR(sln_tls_serialize_header(s, &tls, &btls));
-
-  SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, btls);
-
-  SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, bhs);
+  SELENE_ERR(sln_tls_toss_bucket(s, SLN_CONTENT_TYPE_HANDSHAKE, bhs));
 
   return SELENE_SUCCESS;
 }
