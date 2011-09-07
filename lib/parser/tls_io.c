@@ -200,3 +200,40 @@ sln_io_tls_read(selene_t *s, sln_parser_baton_t *baton)
 
   return SELENE_SUCCESS;
 }
+
+
+selene_error_t*
+sln_tls_params_update_mac(selene_t *s, sln_params_t *p, sln_bucket_t *b)
+{
+
+  switch (p->suite) {
+    /* TODO: impl */
+    case SELENE_CS__UNUSED0:
+    case SELENE_CS__MAX:
+    case SELENE_CS_RSA_WITH_RC4_128_SHA:
+    case SELENE_CS_RSA_WITH_AES_128_CBC_SHA:
+    case SELENE_CS_RSA_WITH_AES_256_CBC_SHA:
+      break;
+  }
+
+  return SELENE_SUCCESS;
+}
+
+selene_error_t*
+sln_tls_params_encrypt(selene_t *s, sln_params_t *p, sln_bucket_t *b, sln_bucket_t **out)
+{
+  *out = NULL;
+
+  switch (p->suite) {
+    /* TODO: impl */
+    case SELENE_CS__UNUSED0:
+    case SELENE_CS__MAX:
+    case SELENE_CS_RSA_WITH_RC4_128_SHA:
+    case SELENE_CS_RSA_WITH_AES_128_CBC_SHA:
+    case SELENE_CS_RSA_WITH_AES_256_CBC_SHA:
+      break;
+  }
+
+  return SELENE_SUCCESS;
+}
+

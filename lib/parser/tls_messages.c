@@ -64,19 +64,34 @@ sln_tls_toss_bucket(selene_t *s, sln_content_type_e content_type, sln_bucket_t *
   sln_msg_tls_t tls;
   sln_parser_baton_t *baton = s->backend_baton;
   sln_bucket_t *btls = NULL;
-
-  tls.content_type = content_type;
-  sln_parser_tls_set_current_version(s, &tls.version_major, &tls.version_minor);
-  tls.length = bout->size;
-
-  SELENE_ERR(sln_tls_serialize_header(s, &tls, &btls));
-
-  SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, btls);
-  SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, bout);
+  sln_bucket_t *benc = NULL;
 
   if (content_type == SLN_CONTENT_TYPE_HANDSHAKE) {
     sln_digest_update(baton->md5_handshake_digest, bout->data, bout->size);
     sln_digest_update(baton->sha1_handshake_digest, bout->data, bout->size);
+  }
+
+  SELENE_ERR(sln_tls_params_update_mac(s, &baton->active_send_parameters, bout));
+
+  SELENE_ERR(sln_tls_params_encrypt(s, &baton->active_send_parameters, bout, &benc));
+
+  tls.content_type = content_type;
+  sln_parser_tls_set_current_version(s, &tls.version_major, &tls.version_minor);
+  if (benc != NULL) {
+    tls.length = benc->size;
+  }
+  else {
+    tls.length = bout->size;
+  }
+
+  SELENE_ERR(sln_tls_serialize_header(s, &tls, &btls));
+
+  SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, btls);
+  if (benc != NULL) {
+    SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, benc);
+  }
+  else {
+    SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, bout);
   }
 
   return SELENE_SUCCESS;

@@ -77,7 +77,7 @@ typedef struct sln_params_t {
   char *key;
   char *iv;
   selene_cipher_suite_e suite;
-  unsigned long seq_num;
+  uint64_t seq_num;
 } sln_params_t;
 
 #define SLN_SECRET_LENGTH (48)
@@ -135,6 +135,9 @@ selene_error_t* sln_io_tls_read(selene_t *s, sln_parser_baton_t *baton);
 
 selene_error_t* sln_io_alert_read(selene_t *s, sln_parser_baton_t *baton);
 
+selene_error_t* sln_tls_params_update_mac(selene_t *s, sln_params_t *p, sln_bucket_t *b);
+
+selene_error_t* sln_tls_params_encrypt(selene_t *s, sln_params_t *p, sln_bucket_t *b, sln_bucket_t **out);
 
 /**
  * Client Writing Methods
