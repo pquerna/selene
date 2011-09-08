@@ -18,6 +18,7 @@
 #include "parser.h"
 #include "sln_tok.h"
 #include "alert_messages.h"
+#include "sln_prf.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -201,10 +202,103 @@ sln_io_tls_read(selene_t *s, sln_parser_baton_t *baton)
   return SELENE_SUCCESS;
 }
 
+static selene_error_t*
+init_params(selene_t *s)
+{
+  sln_parser_baton_t *baton = s->backend_baton;
+  sln_params_t *clientp;
+  sln_params_t *serverp;
+  size_t maclen = 0;
+  size_t keylen = 0;
+  size_t ivlen = 0;
+  size_t outlen = 0;
+  size_t off = 0;
+  char buf[64];
+  char kebuf[SLN_PARAMS_KR_MAX_LENGTH];
+
+  if (baton->params_init == 0) {
+    return SELENE_SUCCESS;
+  }
+
+  if (s->mode == SLN_MODE_CLIENT) {
+    clientp = &baton->active_send_parameters;
+    serverp = &baton->active_recv_parameters;
+  }
+  else {
+    serverp = &baton->active_send_parameters;
+    clientp = &baton->active_recv_parameters;
+  }
+
+  switch (serverp->suite) {
+    case SELENE_CS_RSA_WITH_RC4_128_SHA:
+      maclen = 20;
+      keylen = 16;
+      ivlen = 0;
+      break;
+    case SELENE_CS_RSA_WITH_AES_128_CBC_SHA:
+      maclen = 20;
+      keylen = 16;
+      ivlen = 0;
+      break;
+    case SELENE_CS_RSA_WITH_AES_256_CBC_SHA:
+      maclen = 20;
+      keylen = 32;
+      ivlen = 0;
+      break;
+    case SELENE_CS__UNUSED0:
+    case SELENE_CS__MAX:
+      break;
+  }
+
+  outlen = (maclen * 2) + (keylen * 2) + (ivlen * 2);
+
+  SLN_ASSERT(outlen <= SLN_PARAMS_KR_MAX_LENGTH);
+
+  SLN_ASSERT(serverp->suite == clientp->suite);
+
+  memcpy(buf, &baton->server_utc_unix_time, 32);
+  memcpy(buf + 32, &baton->client_utc_unix_time, 32);
+
+  sln_prf(s, "key expansion", strlen("key expansion"),
+    baton->master_secret,
+    SLN_SECRET_LENGTH,
+    buf,
+    64,
+    kebuf,
+    outlen);
+
+  memcpy(clientp->mac_secret, kebuf + off, maclen);
+  off += maclen;
+  memcpy(serverp->mac_secret, kebuf + off, maclen);
+  off += maclen;
+
+  memcpy(clientp->key, kebuf + off, keylen);
+  off += keylen;
+  memcpy(serverp->key, kebuf + off, keylen);
+  off += keylen;
+
+  if (ivlen) {
+    memcpy(clientp->iv, kebuf + off, ivlen);
+    off += ivlen;
+    memcpy(serverp->iv, kebuf + off, ivlen);
+    off += ivlen;
+  }
+
+  // TODO: create HMAC
+  // TODO: create cipher
+
+  baton->params_init = 1;
+
+  return SELENE_SUCCESS;
+}
 
 selene_error_t*
-sln_tls_params_update_mac(selene_t *s, sln_params_t *p, sln_bucket_t *b)
+sln_tls_params_update_mac(selene_t *s, sln_bucket_t *b)
 {
+  sln_parser_baton_t *baton = s->backend_baton;
+  sln_params_t *p = &baton->active_send_parameters;
+
+  init_params(s);
 
   switch (p->suite) {
     /* TODO: impl */
@@ -220,9 +314,14 @@ sln_tls_params_update_mac(selene_t *s, sln_params_t *p, sln_bucket_t *b)
 }
 
 selene_error_t*
-sln_tls_params_encrypt(selene_t *s, sln_params_t *p, sln_bucket_t *b, sln_bucket_t **out)
+sln_tls_params_encrypt(selene_t *s, sln_bucket_t *b, sln_bucket_t **out)
 {
+  sln_parser_baton_t *baton = s->backend_baton;
+  sln_params_t *p = &baton->active_send_parameters;
+
   *out = NULL;
+
+  init_params(s);
 
   switch (p->suite) {
     /* TODO: impl */

@@ -71,9 +71,9 @@ sln_tls_toss_bucket(selene_t *s, sln_content_type_e content_type, sln_bucket_t *
     sln_digest_update(baton->sha1_handshake_digest, bout->data, bout->size);
   }
 
-  SELENE_ERR(sln_tls_params_update_mac(s, &baton->active_send_parameters, bout));
+  SELENE_ERR(sln_tls_params_update_mac(s, bout));
 
-  SELENE_ERR(sln_tls_params_encrypt(s, &baton->active_send_parameters, bout, &benc));
+  SELENE_ERR(sln_tls_params_encrypt(s, bout, &benc));
 
   tls.content_type = content_type;
   sln_parser_tls_set_current_version(s, &tls.version_major, &tls.version_minor);

@@ -72,10 +72,16 @@ typedef enum sln_connstate_e {
   SLN_CONNSTATE_ALERT_FATAL
 } sln_connstate_e;
 
+#define SLN_PARAMS_MAC_SECRET_MAX_LENGTH (20)
+#define SLN_PARAMS_KEY_MAX_LENGTH (32)
+#define SLN_PARAMS_IV_MAX_LENGTH (16)
+#define SLN_PARAMS_KR_MAX_LENGTH ((SLN_PARAMS_MAC_SECRET_MAX_LENGTH * 2) + (SLN_PARAMS_KEY_MAX_LENGTH * 2) + (SLN_PARAMS_IV_MAX_LENGTH * 2))
+
 typedef struct sln_params_t {
-  char *mac_secret;
-  char *key;
-  char *iv;
+  int init;
+  char mac_secret[SLN_PARAMS_MAC_SECRET_MAX_LENGTH];
+  char key[SLN_PARAMS_KEY_MAX_LENGTH];
+  char iv[SLN_PARAMS_IV_MAX_LENGTH];
   selene_cipher_suite_e suite;
   uint64_t seq_num;
 } sln_params_t;
@@ -106,6 +112,7 @@ struct sln_parser_baton_t {
   uint32_t server_utc_unix_time;
   char server_random_bytes[28];
 
+  int params_init;
   sln_params_t  pending_send_parameters;
   sln_params_t  pending_recv_parameters;
   sln_params_t  active_send_parameters;
@@ -135,9 +142,9 @@ selene_error_t* sln_io_tls_read(selene_t *s, sln_parser_baton_t *baton);
 
 selene_error_t* sln_io_alert_read(selene_t *s, sln_parser_baton_t *baton);
 
-selene_error_t* sln_tls_params_update_mac(selene_t *s, sln_params_t *p, sln_bucket_t *b);
+selene_error_t* sln_tls_params_update_mac(selene_t *s, sln_bucket_t *b);
 
-selene_error_t* sln_tls_params_encrypt(selene_t *s, sln_params_t *p, sln_bucket_t *b, sln_bucket_t **out);
+selene_error_t* sln_tls_params_encrypt(selene_t *s, sln_bucket_t *b, sln_bucket_t **out);
 
 /**
  * Client Writing Methods
