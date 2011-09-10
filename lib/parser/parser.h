@@ -84,6 +84,7 @@ typedef struct sln_params_t {
   char iv[SLN_PARAMS_IV_MAX_LENGTH];
   selene_cipher_suite_e suite;
   uint64_t seq_num;
+  sln_hmac_t *hmac;
 } sln_params_t;
 
 #define SLN_SECRET_LENGTH (48)

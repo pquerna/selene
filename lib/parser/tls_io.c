@@ -19,6 +19,7 @@
 #include "sln_tok.h"
 #include "alert_messages.h"
 #include "sln_prf.h"
+#include "sln_hmac.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -284,8 +285,12 @@ init_params(selene_t *s)
     off += ivlen;
   }
 
-  // TODO: create HMAC
-  // TODO: create cipher
+
+  sln_hmac_create(s, SLN_HMAC_SHA1, clientp->mac_secret, maclen, &clientp->hmac);
+
+  sln_hmac_create(s, SLN_HMAC_SHA1, serverp->mac_secret, maclen, &serverp->hmac);
+
+
 
   baton->params_init = 1;
 
