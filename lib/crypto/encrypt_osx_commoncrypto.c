@@ -23,16 +23,24 @@
 
 selene_error_t*
 sln_cryptor_osx_cc_create(selene_t *s,
-                           sln_cipher_e type,
-                           const char* key,
-                           const char* iv,
-                           sln_cryptor_t **p_enc)
+                          int encrypt,
+                          sln_cipher_e type,
+                          const char* key,
+                          const char* iv,
+                          sln_cryptor_t **p_enc)
 {
   CCCryptorStatus rv;
   CCCryptorRef cryptor;
   size_t keylen;
   CCAlgorithm alg;
+  CCOperation op;
 
+  if (encrypt) {
+    op = kCCEncrypt;
+  }
+  else {
+    op = kCCDecrypt;
+  }
   switch (type) {
   case SLN_CIPHER_AES_128_CBC:
     alg = kCCAlgorithmAES128;
@@ -54,7 +62,7 @@ sln_cryptor_osx_cc_create(selene_t *s,
   }
 
 
-  rv = CCCryptorCreate(kCCEncrypt, alg, 0,
+  rv = CCCryptorCreate(op, alg, 0,
                        key, keylen,
                        iv, &cryptor);
 

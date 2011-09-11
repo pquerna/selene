@@ -22,12 +22,12 @@
 
 selene_error_t*
 sln_cryptor_openssl_create(selene_t *s,
+                           int encypt,
                            sln_cipher_e type,
                            const char* key,
                            const char* iv,
                            sln_cryptor_t **p_enc)
 {
-  int mode = 1;
   sln_cryptor_t *enc;
   const EVP_CIPHER *cipherType = NULL;
   EVP_CIPHER_CTX *ctx;
@@ -54,7 +54,7 @@ sln_cryptor_openssl_create(selene_t *s,
 
   /* TODO: engine support (?) */
   /* TODO: encrypt/decrypt mode */
-  EVP_CipherInit_ex(ctx, cipherType, NULL, (const unsigned char *)key, (const unsigned char *)iv, mode);
+  EVP_CipherInit_ex(ctx, cipherType, NULL, (const unsigned char *)key, (const unsigned char *)iv, encypt);
 
   enc = sln_alloc(s, sizeof(sln_cryptor_t));
   enc->s = s;
