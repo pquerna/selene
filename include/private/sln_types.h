@@ -134,6 +134,20 @@ typedef struct {
   void *baton;
 } sln_hmac_t;
 
+typedef enum {
+  SLN_CIPHER_AES_128_CBC,
+  SLN_CIPHER_AES_256_CBC,
+  SLN_CIPHER_RC4
+} sln_cipher_e;
+
+#define SLN_CIPHER_RC4_128_KEY_LENGTH (16)
+
+typedef struct {
+  selene_t *s;
+  sln_cipher_e type;
+  void *baton;
+} sln_cryptor_t;
+
 /* Repersents our parsed version of the TLS record,
  * not really what we send out on the wire */
 typedef struct {

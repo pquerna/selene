@@ -233,7 +233,7 @@ init_params(selene_t *s)
   switch (serverp->suite) {
     case SELENE_CS_RSA_WITH_RC4_128_SHA:
       maclen = 20;
-      keylen = 16;
+      keylen = SLN_CIPHER_RC4_128_KEY_LENGTH;
       ivlen = 0;
       break;
     case SELENE_CS_RSA_WITH_AES_128_CBC_SHA:
@@ -322,22 +322,13 @@ selene_error_t*
 sln_tls_params_encrypt(selene_t *s, sln_bucket_t *b, sln_bucket_t **out)
 {
   sln_parser_baton_t *baton = s->backend_baton;
-  sln_params_t *p = &baton->active_send_parameters;
+/*  sln_params_t *p = &baton->active_send_parameters;*/
 
   *out = NULL;
 
   init_params(s);
 
-  switch (p->suite) {
-    /* TODO: impl */
-    case SELENE_CS__UNUSED0:
-    case SELENE_CS__MAX:
-    case SELENE_CS_RSA_WITH_RC4_128_SHA:
-    case SELENE_CS_RSA_WITH_AES_128_CBC_SHA:
-    case SELENE_CS_RSA_WITH_AES_256_CBC_SHA:
-      break;
-  }
-
+  /* TODO: padding, sln_cryptor_blocksize() */
   return SELENE_SUCCESS;
 }
 
