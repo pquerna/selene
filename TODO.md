@@ -6,6 +6,8 @@ Current TODO:
 
 * Improve debug logging.  If we had bug reports, I couldn't fix the from debug logs right now.
 
+* Finish tls_io.c, so that HMACs are correctly set on messages, and they are encrypted.
+
 * Parse all handshake message types (see lib/parser/handshake_messages.h):
  * hello_request(0) [ignore]
  * client_hello(1) [done]
@@ -21,9 +23,9 @@ Current TODO:
 * Add bindings to various crypto operations, on both OpenSSL and OSX's CommonCrypto:
  * Digest [done]
  * HMAC [done]
- * RSA [wip; need OSX-CommonCrypto]
- * AES
- * RC4
+ * RSA [wip; need OSX CSSM support]
+ * AES [done]
+ * RC4 [done]
 
 # Longer term thoughts
 
