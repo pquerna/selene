@@ -39,7 +39,10 @@ env = Environment(options=opts,
 
 env.SConscript('site_scons/ca_builder.py', exports="env")
 
+prefer_clang = True
+
 if 'coverage' in COMMAND_LINE_TARGETS:
+  prefer_clang = False
   env['profile'] = 'gcov'
   env['build_type'] = 'static'
 
@@ -57,12 +60,12 @@ if not conf.env.get('CLANGXX'):
 
 if os.environ.has_key('CC'):
   conf.env['CC'] = os.environ['CC']
-elif conf.env['CLANG']:
+elif conf.env['CLANG'] and prefer_clang:
   conf.env['CC'] = conf.env['CLANG']
 
 if os.environ.has_key('CXX'):
   conf.env['CXX'] = os.environ['CXX']
-elif conf.env['CLANGXX']:
+elif conf.env['CLANGXX'] and prefer_clang:
   conf.env['CXX'] = conf.env['CLANGXX']
 
 (st, platform) = conf.CheckUname("-sm")
