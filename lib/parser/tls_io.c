@@ -77,6 +77,7 @@ read_tls(sln_tok_value_t *v, void *baton_)
 {
   rtls_baton_t *rtls = (rtls_baton_t*)baton_;
   sln_parser_baton_t *baton = rtls->baton;
+  int ctint;
 
   switch (rtls->state) {
     case TLS_RS__INIT:
@@ -87,8 +88,9 @@ read_tls(sln_tok_value_t *v, void *baton_)
       break;
     case TLS_RS_MAYBE_HTTP_REQUEST:
       /* TODO: send alert breaking connection */
-      if ((rtls->content_type == 'G' && memcmp(&v->v.bytes[0], "ET ", 3) == 0) ||
-          (rtls->content_type == 'P' && memcmp(&v->v.bytes[0], "OST", 3) == 0)) {
+      ctint = rtls->content_type;
+      if ((ctint == 'G' && memcmp(&v->v.bytes[0], "ET ", 3) == 0) ||
+          (ctint == 'P' && memcmp(&v->v.bytes[0], "OST", 3) == 0)) {
         selene_publish(rtls->s, SELENE_EVENT_TLS_GOT_HTTP);
         return selene_error_create(SELENE_EINVAL, "Got possible HTTP request instead of TLS?");
       }
@@ -101,7 +103,8 @@ read_tls(sln_tok_value_t *v, void *baton_)
       rtls->consume += 1;
       if (!is_valid_content_type(rtls->content_type)) {
         /* TODO: accept this ONLY for the very first TLS message we recieve */
-        if (baton->got_first_packet == 0 && (rtls->content_type == 'G' || rtls->content_type == 'P')) {
+        ctint = rtls->content_type;
+        if (baton->got_first_packet == 0 && (ctint == 'G' || ctint == 'P')) {
           rtls->state = TLS_RS_MAYBE_HTTP_REQUEST;
           v->next = TOK_COPY_BYTES;
           v->wantlen = 3;
