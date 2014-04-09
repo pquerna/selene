@@ -36,18 +36,19 @@
 /**
  * 'Simple' TLS Client, connects to a port, pipes stdin to it
  */
-#define SERR(exp) do { \
-    selene_error_t *SERR__err = NULL; \
-    SERR__err = (exp); \
-    if (SERR__err != SELENE_SUCCESS) { \
-      fprintf(stderr, "[%s:%d] Selene Error: (%d) %s\n  Caught at: [%s:%d] %s\n", \
-        SERR__err->file, SERR__err->line, SERR__err->err, SERR__err->msg, \
-        __FILE__, __LINE__, \
-        # exp ); \
-      selene_error_clear(SERR__err); \
-      exit(EXIT_FAILURE); \
-      return EXIT_FAILURE; \
-    } \
+#define SERR(exp)                                                         \
+  do {                                                                    \
+    selene_error_t *SERR__err = NULL;                                     \
+    SERR__err = (exp);                                                    \
+    if (SERR__err != SELENE_SUCCESS) {                                    \
+      fprintf(stderr,                                                     \
+              "[%s:%d] Selene Error: (%d) %s\n  Caught at: [%s:%d] %s\n", \
+              SERR__err->file, SERR__err->line, SERR__err->err,           \
+              SERR__err->msg, __FILE__, __LINE__, #exp);                  \
+      selene_error_clear(SERR__err);                                      \
+      exit(EXIT_FAILURE);                                                 \
+      return EXIT_FAILURE;                                                \
+    }                                                                     \
   } while (0);
 
 typedef struct {
@@ -56,27 +57,22 @@ typedef struct {
   int read_err;
 } client_t;
 
-static void
-setblocking(int fd)
-{
+static void setblocking(int fd) {
   int opts;
   opts = fcntl(fd, F_GETFL);
   opts = (opts ^ O_NONBLOCK);
   fcntl(fd, F_SETFL, opts);
 }
 
-static void
-setnonblocking(int fd)
-{
+static void setnonblocking(int fd) {
   int opts;
   opts = fcntl(fd, F_GETFL);
   opts = (opts | O_NONBLOCK);
   fcntl(fd, F_SETFL, opts);
 }
 
-static selene_error_t*
-have_logline(selene_t *s, selene_event_e event, void *baton)
-{
+static selene_error_t *have_logline(selene_t *s, selene_event_e event,
+                                    void *baton) {
   const char *p = NULL;
   size_t len = 0;
   selene_log_msg_get(s, &p, &len);
@@ -87,40 +83,36 @@ have_logline(selene_t *s, selene_event_e event, void *baton)
   return SELENE_SUCCESS;
 }
 
-static selene_error_t*
-have_cleartext(selene_t *s, selene_event_e event, void *baton)
-{
+static selene_error_t *have_cleartext(selene_t *s, selene_event_e event,
+                                      void *baton) {
   char buf[8096];
   size_t blen = 0;
   size_t remaining = 0;
 
   do {
-    SELENE_ERR(selene_io_out_clear_bytes(s,
-                                 &buf[0], sizeof(buf),
-                                 &blen, &remaining));
+    SELENE_ERR(
+        selene_io_out_clear_bytes(s, &buf[0], sizeof(buf), &blen, &remaining));
 
     if (blen > 0) {
       fwrite(buf, blen, 1, stdout);
       fflush(stdout);
     }
-  } while(remaining > 0);
+  } while (remaining > 0);
 
   return SELENE_SUCCESS;
 }
 
-static selene_error_t*
-want_pull(selene_t *s, selene_event_e event, void *baton)
-{
+static selene_error_t *want_pull(selene_t *s, selene_event_e event,
+                                 void *baton) {
   int rv = 0;
   char buf[8096];
   size_t blen = 0;
   size_t remaining = 0;
-  client_t *c = (client_t*) baton;
+  client_t *c = (client_t *)baton;
 
   do {
-    SELENE_ERR(selene_io_out_enc_bytes(s,
-                                 &buf[0], sizeof(buf),
-                                 &blen, &remaining));
+    SELENE_ERR(
+        selene_io_out_enc_bytes(s, &buf[0], sizeof(buf), &blen, &remaining));
 
     if (blen > 0) {
       setblocking(c->sock);
@@ -130,14 +122,12 @@ want_pull(selene_t *s, selene_event_e event, void *baton)
         break;
       }
     }
-  } while(remaining > 0);
+  } while (remaining > 0);
 
   return SELENE_SUCCESS;
 }
 
-static int
-read_from_sock(client_t *c, selene_t *s)
-{
+static int read_from_sock(client_t *c, selene_t *s) {
   int err;
   ssize_t rv = 0;
   do {
@@ -162,14 +152,12 @@ read_from_sock(client_t *c, selene_t *s)
     if (rv > 0) {
       SERR(selene_io_in_enc_bytes(s, buf, rv));
     }
-  } while(rv > 0);
+  } while (rv > 0);
 
   return 0;
 }
 
-static int
-connect_to(selene_t *s, const char *host, int port, FILE *fp)
-{
+static int connect_to(selene_t *s, const char *host, int port, FILE *fp) {
   fd_set readers;
   int rv = 0;
   client_t client;
@@ -180,11 +168,9 @@ connect_to(selene_t *s, const char *host, int port, FILE *fp)
 
   memset(&client, 0, sizeof(client));
 
-  SERR(selene_subscribe(s, SELENE_EVENT_IO_OUT_ENC,
-                        want_pull, &client));
+  SERR(selene_subscribe(s, SELENE_EVENT_IO_OUT_ENC, want_pull, &client));
 
-  SERR(selene_subscribe(s, SELENE_EVENT_IO_OUT_CLEAR,
-                        have_cleartext, &client));
+  SERR(selene_subscribe(s, SELENE_EVENT_IO_OUT_CLEAR, have_cleartext, &client));
 
   snprintf(port_str, sizeof(port_str), "%i", port);
   memset(&hints, 0, sizeof(hints));
@@ -192,16 +178,14 @@ connect_to(selene_t *s, const char *host, int port, FILE *fp)
   hints.ai_socktype = SOCK_STREAM;
   rv = getaddrinfo(host, port_str, &hints, &res0);
   if (rv != 0) {
-    fprintf(stderr, "TCP getaddrinfo(%s:%d) failed: (%d) %s\n",
-            host, port,
-            rv, gai_strerror(rv));
+    fprintf(stderr, "TCP getaddrinfo(%s:%d) failed: (%d) %s\n", host, port, rv,
+            gai_strerror(rv));
     exit(EXIT_FAILURE);
   }
 
   client.sock = -1;
   for (res = res0; res; res = res->ai_next) {
-    client.sock = socket(res->ai_family, res->ai_socktype,
-                         res->ai_protocol);
+    client.sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
     if (client.sock < 0) {
       continue;
     }
@@ -225,8 +209,7 @@ connect_to(selene_t *s, const char *host, int port, FILE *fp)
 
   SERR(selene_start(s));
 
-  while (client.write_err == 0)
-  {
+  while (client.write_err == 0) {
     FD_ZERO(&readers);
 
     FD_SET(client.sock, &readers);
@@ -243,31 +226,27 @@ connect_to(selene_t *s, const char *host, int port, FILE *fp)
         }
 
         SERR(selene_io_in_clear_bytes(s, p, strlen(p)));
-      }
-      else if (FD_ISSET(client.sock, &readers)) {
+      } else if (FD_ISSET(client.sock, &readers)) {
         read_from_sock(&client, s);
       }
     }
   }
 
   if (client.write_err != 0) {
-    fprintf(stderr, "TCP write to %s:%d failed: (%d) %s\n",
-            host, port,
+    fprintf(stderr, "TCP write to %s:%d failed: (%d) %s\n", host, port,
             client.write_err, strerror(client.write_err));
     exit(EXIT_FAILURE);
   }
 
   if (client.read_err != 0) {
-    fprintf(stderr, "TCP read from %s:%d failed: (%d) %s\n",
-            host, port,
+    fprintf(stderr, "TCP read from %s:%d failed: (%d) %s\n", host, port,
             client.read_err, strerror(client.read_err));
     exit(EXIT_FAILURE);
   }
   return 0;
 }
 
-void usage()
-{
+void usage() {
   fprintf(stderr, "usage: selene_client args\n");
   fprintf(stderr, "\n");
   fprintf(stderr, " -host host\n");
@@ -276,8 +255,7 @@ void usage()
   exit(EXIT_SUCCESS);
 }
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char *argv[]) {
   const char *host = SELENE_CLIENT_DEFAULT_HOST;
   int port = SELENE_CLIENT_DEFAULT_PORT;
   selene_t *s = NULL;
@@ -289,25 +267,22 @@ int main(int argc, char* argv[])
   for (i = 1; i < argc; i++) {
     /* TODO: s_client compat */
     if (!strcmp("-host", argv[i]) && argc > i + 1) {
-      host = argv[i+1];
+      host = argv[i + 1];
       i++;
-    }
-    else if (!strcmp("-port", argv[i]) && argc > i + 1) {
-      port = atoi(argv[i+1]);
+    } else if (!strcmp("-port", argv[i]) && argc > i + 1) {
+      port = atoi(argv[i + 1]);
       i++;
-    }
-    else if (!strcmp("-connect", argv[i]) && argc > i + 1) {
+    } else if (!strcmp("-connect", argv[i]) && argc > i + 1) {
       char *p;
-      host = argv[i+1];
-      if ((p = strstr(host,":")) == NULL) {
+      host = argv[i + 1];
+      if ((p = strstr(host, ":")) == NULL) {
         fprintf(stderr, "no port found\n");
         exit(EXIT_FAILURE);
       }
       *(p++) = '\0';
       port = atoi(p);
       i++;
-    }
-    else {
+    } else {
       fprintf(stderr, "Invalid args\n");
       usage();
       exit(EXIT_FAILURE);
@@ -323,7 +298,6 @@ int main(int argc, char* argv[])
     fprintf(stderr, "-port must be set\n");
     exit(EXIT_FAILURE);
   }
-
 
   SERR(selene_conf_create(&conf));
 

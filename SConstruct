@@ -246,9 +246,12 @@ denv.AlwaysBuild(doxy)
 
 
 fenv = env.Clone()
+
 all_source_files = _get_files(fenv, 'lib', ['*.c', '*.h']) + \
                    _get_files(fenv, 'include', ['*.c', '*.h']) + \
-                   _get_files(fenv, 'test', ['*.c', '*.h'])
+                   _get_files(fenv, 'test', ['*.c', '*.h']) + \
+                   _get_files(fenv, 'tools', ['*.c', '*.h'])
+
 fenv['CLANG_FORMAT'] = 'clang-format'
 fenv['CLANG_FORMAT_OPTIONS'] = '-style=Google -i'
 formatit = fenv.Command('.clang-format-all-source', all_source_files,
