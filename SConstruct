@@ -23,6 +23,23 @@ import os, sys, fnmatch
 from site_scons import ac
 from os.path import join as pjoin
 
+def _get_files(env, source, globs, reldir=os.curdir):
+  results = []
+  if not os.path.isdir(source):
+    return results
+  for entry in os.listdir(source):
+    fullpath = os.path.join(source, entry)
+    if os.path.islink(fullpath):
+      continue
+    if os.path.isfile(fullpath):
+      if any((fnmatch.fnmatchcase(fullpath, i) for i in globs)):
+        results.append(fullpath)
+    elif os.path.isdir(fullpath):
+      newrel = os.path.join(reldir, entry)
+      results.extend(_get_files(env, fullpath, globs, newrel))
+  return results
+
+
 opts = Variables('build.py')
 
 opts.Add(PathVariable('with_openssl',
@@ -225,28 +242,23 @@ denv['DOXYGEN'] = 'doxygen'
 doxy = denv.Command(env.Dir('#/api-docs'), env.Glob("include/**"),
                    ['rm -rf api-docs',
                     '$DOXYGEN'])
-
 denv.AlwaysBuild(doxy)
+
+
+fenv = env.Clone()
+all_source_files = _get_files(fenv, 'lib', ['*.c', '*.h']) + \
+                   _get_files(fenv, 'include', ['*.c', '*.h']) + \
+                   _get_files(fenv, 'test', ['*.c', '*.h'])
+fenv['CLANG_FORMAT'] = 'clang-format'
+fenv['CLANG_FORMAT_OPTIONS'] = '-style=Google -i'
+formatit = fenv.Command('.clang-format-all-source', all_source_files,
+                    '$CLANG_FORMAT $CLANG_FORMAT_OPTIONS $SOURCES')
+fenv.AlwaysBuild(formatit)
+
 env.Alias('docs', doxy)
 env.Alias('test', all_test_targets[selected_variant])
 env.Alias('coverage', cov_targets)
-
-
-def _get_files(env, source, globs, reldir=os.curdir):
-  results = []
-  if not os.path.isdir(source):
-    return results
-  for entry in os.listdir(source):
-    fullpath = os.path.join(source, entry)
-    if os.path.islink(fullpath):
-      continue
-    if os.path.isfile(fullpath):
-      if any((fnmatch.fnmatchcase(fullpath, i) for i in globs)):
-        results.append(fullpath)
-    elif os.path.isdir(fullpath):
-      newrel = os.path.join(reldir, entry)
-      results.extend(_get_files(env, fullpath, globs, newrel))
-  return results
+env.Alias('format', formatit)
 
 if env.GetOption('clean'):
   env.Clean(all_targets.values()[0], _get_files(env, 'build', ['*.gcda', '*.gcno']))
