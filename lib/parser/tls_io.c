@@ -312,9 +312,27 @@ selene_error_t*
 sln_tls_params_update_mac(selene_t *s, sln_bucket_t *b)
 {
   sln_parser_baton_t *baton = s->backend_baton;
-  sln_params_t *p = &baton->active_send_parameters;
+  sln_params_t *p;
 
   init_params(s);
+
+  p = &baton->active_send_parameters;
+
+  /* TODO: impl */
+  return SELENE_SUCCESS;
+}
+
+selene_error_t*
+sln_tls_params_encrypt(selene_t *s, sln_bucket_t *b, sln_bucket_t **out)
+{
+  sln_parser_baton_t *baton = s->backend_baton;
+  sln_params_t *p;
+
+  *out = NULL;
+
+  init_params(s);
+
+  p = &baton->active_send_parameters;
 
   switch (p->suite) {
     /* TODO: impl */
@@ -326,18 +344,6 @@ sln_tls_params_update_mac(selene_t *s, sln_bucket_t *b)
       break;
   }
 
-  return SELENE_SUCCESS;
-}
-
-selene_error_t*
-sln_tls_params_encrypt(selene_t *s, sln_bucket_t *b, sln_bucket_t **out)
-{
-  sln_parser_baton_t *baton = s->backend_baton;
-/*  sln_params_t *p = &baton->active_send_parameters;*/
-
-  *out = NULL;
-
-  init_params(s);
 
   /* TODO: padding, sln_cryptor_blocksize() */
   return SELENE_SUCCESS;
