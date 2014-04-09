@@ -21,13 +21,11 @@
 #include "sln_prf.h"
 #include <string.h>
 
-unsigned char ssl_test_vector[] = {
-0xb5, 0xba, 0xf4, 0x72, 0x2b, 0x91, 0x85, 0x1a, 0x88, 0x16,
-0xd2, 0x2e, 0xbd, 0x8c, 0x1d, 0x8c, 0xa0, 0x33, 0x25, 0x85};
+unsigned char ssl_test_vector[] = {0xb5, 0xba, 0xf4, 0x72, 0x2b, 0x91, 0x85,
+                                   0x1a, 0x88, 0x16, 0xd2, 0x2e, 0xbd, 0x8c,
+                                   0x1d, 0x8c, 0xa0, 0x33, 0x25, 0x85};
 
-static void
-prf_vector_from_book(void **state)
-{
+static void prf_vector_from_book(void **state) {
   selene_conf_t *conf = NULL;
   selene_t *s = NULL;
   char buf[20];
@@ -42,15 +40,8 @@ prf_vector_from_book(void **state)
    * inputs: secret label seed 20
    * output: b5baf4722b91851a8816d22ebd8c1d8cc2e94d55
    */
-  SLN_ERR(sln_prf(s,
-    "label",
-    strlen("label"),
-    "secret",
-    strlen("secret"),
-    "seed",
-    strlen("seed"),
-    buf,
-    sizeof(buf)));
+  SLN_ERR(sln_prf(s, "label", strlen("label"), "secret", strlen("secret"),
+                  "seed", strlen("seed"), buf, sizeof(buf)));
 
   assert_memory_equal(buf, ssl_test_vector, 20);
 
@@ -59,5 +50,5 @@ prf_vector_from_book(void **state)
 }
 
 SLN_TESTS_START(crypto_prf)
-  SLN_TESTS_ENTRY(prf_vector_from_book)
+SLN_TESTS_ENTRY(prf_vector_from_book)
 SLN_TESTS_END()

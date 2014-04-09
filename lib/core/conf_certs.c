@@ -28,10 +28,10 @@
 /* All Certificate related configuration APIs */
 
 /* Based on Node's SSL_CTX_use_certificate_chain, in src/node_crypto.cc */
-selene_error_t*
-read_certificate_chain(selene_conf_t *conf, BIO *in, selene_cert_chain_t** p_certs) {
+selene_error_t *read_certificate_chain(selene_conf_t *conf, BIO *in,
+                                       selene_cert_chain_t **p_certs) {
   X509 *x = NULL;
-  selene_cert_chain_t* chain;
+  selene_cert_chain_t *chain;
   selene_cert_t *tmpc;
 
   x = PEM_read_bio_X509_AUX(in, NULL, NULL, NULL);
@@ -62,7 +62,7 @@ read_certificate_chain(selene_conf_t *conf, BIO *in, selene_cert_chain_t** p_cer
     if (ERR_GET_LIB(err) == ERR_LIB_PEM &&
         ERR_GET_REASON(err) == PEM_R_NO_START_LINE) {
       ERR_clear_error();
-    } else  {
+    } else {
       /* some real error */
       /* TODO: handle parse errors of the ca certs */
       ERR_clear_error();
@@ -74,44 +74,50 @@ read_certificate_chain(selene_conf_t *conf, BIO *in, selene_cert_chain_t** p_cer
   return SELENE_SUCCESS;
 }
 
-selene_error_t*
-selene_conf_cert_chain_add(selene_conf_t *conf, const char *certificate, const char *pkey)
-{
+selene_error_t *selene_conf_cert_chain_add(selene_conf_t *conf,
+                                           const char *certificate,
+                                           const char *pkey) {
   selene_cert_chain_t *certs = NULL;
   BIO *bio = BIO_new(BIO_s_mem());
 
   int r = BIO_write(bio, certificate, strlen(certificate));
   if (r <= 0) {
     BIO_free(bio);
-    return selene_error_createf(SELENE_ENOMEM, "Attempting to parse Cert Chain certificate, BIO_write returned: %d", r);
+    return selene_error_createf(
+        SELENE_ENOMEM,
+        "Attempting to parse Cert Chain certificate, BIO_write returned: %d",
+        r);
   }
 
   /* TODO: private key */
   SELENE_ERR(read_certificate_chain(conf, bio, &certs));
 
-  SLN_ARRAY_PUSH(conf->certs, selene_cert_chain_t*) = certs;
+  SLN_ARRAY_PUSH(conf->certs, selene_cert_chain_t *) = certs;
 
   return SELENE_SUCCESS;
 }
 
-selene_error_t*
-selene_conf_ca_trusted_cert_add(selene_conf_t *conf, const char *certificate)
-{
+selene_error_t *selene_conf_ca_trusted_cert_add(selene_conf_t *conf,
+                                                const char *certificate) {
   /* TOOD: replace with native x509 :( ) */
-  X509* x509;
+  X509 *x509;
   BIO *bio = BIO_new(BIO_s_mem());
 
   int r = BIO_write(bio, certificate, strlen(certificate));
   if (r <= 0) {
     BIO_free(bio);
-    return selene_error_createf(SELENE_ENOMEM, "Attempting to parse CA certificate, BIO_write returned: %d", r);
+    return selene_error_createf(
+        SELENE_ENOMEM,
+        "Attempting to parse CA certificate, BIO_write returned: %d", r);
   }
 
   x509 = PEM_read_bio_X509(bio, NULL, NULL, NULL);
   if (!x509) {
     BIO_free(bio);
     /* TODO: better error messages */
-    return selene_error_create(SELENE_ENOMEM, "Attempting to parse CA certificate, PEM_read_bio_X509 failed.");
+    return selene_error_create(
+        SELENE_ENOMEM,
+        "Attempting to parse CA certificate, PEM_read_bio_X509 failed.");
   }
 
   BIO_free(bio);

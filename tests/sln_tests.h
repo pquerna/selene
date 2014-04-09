@@ -31,32 +31,32 @@
 
 #ifdef SLN_TEST_ALL
 #define SLN_TESTS_START(module) \
- int sln_tests_ ## module () { \
-    int rv = 0; \
-    const UnitTest tests [] = {
+  int sln_tests_##module() {    \
+    int rv = 0;                 \
+  const UnitTest tests[] = {
 
-#define SLN_TESTS_ENTRY(entry) \
-        unit_test(entry), \
+#define SLN_TESTS_ENTRY(entry) unit_test(entry),
 
-#define SLN_TESTS_END() \
-        }; \
-      rv = run_tests(tests); \
-      return rv; \
-    }
+#define SLN_TESTS_END()  \
+  }                      \
+  ;                      \
+  rv = run_tests(tests); \
+  return rv;             \
+  }
 
 #else
 
-#define SLN_TESTS_START(module) \
-  int main(int argc, char* argv[]) { \
-    const UnitTest tests[] = {
+#define SLN_TESTS_START(module)      \
+  int main(int argc, char *argv[]) { \
+  const UnitTest tests[] = {
 
-#define SLN_TESTS_ENTRY(entry) \
-        unit_test(entry), \
+#define SLN_TESTS_ENTRY(entry) unit_test(entry),
 
-#define SLN_TESTS_END() \
-    }; \
-    sln_tests_setup(); \
-    return run_tests(tests); \
+#define SLN_TESTS_END()    \
+  }                        \
+  ;                        \
+  sln_tests_setup();       \
+  return run_tests(tests); \
   }
 #endif
 
@@ -65,27 +65,27 @@
   mock_assert((int)(expression), #expression, __FILE__, __LINE__);
 
 #undef SLN_ERR
-#define SLN_ERR(expression) \
-  do { \
-    selene_error_t *selene__xx__err = (expression); \
-    if (selene__xx__err != SELENE_SUCCESS) { \
+#define SLN_ERR(expression)                                                \
+  do {                                                                     \
+    selene_error_t *selene__xx__err = (expression);                        \
+    if (selene__xx__err != SELENE_SUCCESS) {                               \
       fprintf(stderr, "fatal error: (%d) %s from %s:%d caught at %s:%d\n", \
-              selene__xx__err->err, selene__xx__err->msg, \
-              selene__xx__err->file, selene__xx__err->line, \
-              __FILE__, __LINE__); \
-    } \
-    mock_assert((int)(selene__xx__err == SELENE_SUCCESS), #expression, __FILE__, __LINE__); \
+              selene__xx__err->err, selene__xx__err->msg,                  \
+              selene__xx__err->file, selene__xx__err->line, __FILE__,      \
+              __LINE__);                                                   \
+    }                                                                      \
+    mock_assert((int)(selene__xx__err == SELENE_SUCCESS), #expression,     \
+                __FILE__, __LINE__);                                       \
   } while (0)
 
-#define SLN_FAIL(expression) \
-  do { \
-    selene_error_t *selene__xx__err; \
-    /* TODO: print the error in test case mode */ \
+#define SLN_FAIL(expression)                                        \
+  do {                                                              \
+    selene_error_t *selene__xx__err;                                \
+    /* TODO: print the error in test case mode */                   \
     SLN_ASSERT((selene__xx__err = (expression)) != SELENE_SUCCESS); \
   } while (0)
 
-#define SLN_TEST_MODULE(name) \
-  int sln_tests_ ## name ();
+#define SLN_TEST_MODULE(name) int sln_tests_##name();
 
 SLN_TEST_MODULE(logging)
 SLN_TEST_MODULE(crypto_digest)
@@ -101,7 +101,6 @@ SLN_TEST_MODULE(handshake_io)
 SLN_TEST_MODULE(alert_io)
 SLN_TEST_MODULE(loopback)
 
-
 selene_alloc_t *sln_test_alloc;
 
 #define PATHMAX 1024
@@ -109,7 +108,6 @@ extern char executable_path[PATHMAX];
 extern char testdir_path[PATHMAX];
 void sln_tests_setup();
 
-const char* sln_tests_load_cert(const char *fname);
+const char *sln_tests_load_cert(const char *fname);
 
 #endif
-

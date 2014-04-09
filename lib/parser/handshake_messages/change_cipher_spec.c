@@ -18,9 +18,8 @@
 #include "../parser.h"
 #include "../handshake_messages.h"
 
-selene_error_t*
-sln_handshake_serialize_change_cipher_spec(selene_t *s, sln_msg_change_cipher_spec_t *ccs, sln_bucket_t **p_b)
-{
+selene_error_t *sln_handshake_serialize_change_cipher_spec(
+    selene_t *s, sln_msg_change_cipher_spec_t *ccs, sln_bucket_t **p_b) {
   sln_bucket_t *b = NULL;
   size_t len = 0;
 
@@ -35,4 +34,3 @@ sln_handshake_serialize_change_cipher_spec(selene_t *s, sln_msg_change_cipher_sp
 
   return SELENE_SUCCESS;
 }
-

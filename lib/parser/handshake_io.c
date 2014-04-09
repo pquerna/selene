@@ -35,9 +35,8 @@
  *      } HandshakeType;
  */
 
-selene_error_t*
-sln_io_handshake_client_hello(selene_t *s, sln_parser_baton_t *baton)
-{
+selene_error_t *sln_io_handshake_client_hello(selene_t *s,
+                                              sln_parser_baton_t *baton) {
   sln_msg_client_hello_t ch;
   sln_bucket_t *bhs = NULL;
 
@@ -49,7 +48,7 @@ sln_io_handshake_client_hello(selene_t *s, sln_parser_baton_t *baton)
 
   ch.session_id_len = 0;
   ch.ciphers = &s->conf->ciphers;
-  ch.server_name = (char*)s->client_sni;
+  ch.server_name = (char *)s->client_sni;
   ch.have_npn = 0;
   ch.have_ocsp_stapling = 0;
   SELENE_ERR(sln_handshake_serialize_client_hello(s, &ch, &bhs));
@@ -59,27 +58,20 @@ sln_io_handshake_client_hello(selene_t *s, sln_parser_baton_t *baton)
   return SELENE_SUCCESS;
 }
 
-
-static int
-is_valid_message_type(uint8_t input) {
-  if (input == SLN_HS_MT_HELLO_REQUEST ||
-      input == SLN_HS_MT_CLIENT_HELLO ||
-      input == SLN_HS_MT_SERVER_HELLO ||
-      input == SLN_HS_MT_CERTIFICATE ||
+static int is_valid_message_type(uint8_t input) {
+  if (input == SLN_HS_MT_HELLO_REQUEST || input == SLN_HS_MT_CLIENT_HELLO ||
+      input == SLN_HS_MT_SERVER_HELLO || input == SLN_HS_MT_CERTIFICATE ||
       input == SLN_HS_MT_SERVER_KEY_EXCHANGE ||
       input == SLN_HS_MT_CERTIFICATE_REQUEST ||
       input == SLN_HS_MT_SERVER_HELLO_DONE ||
       input == SLN_HS_MT_CERTIFICATE_VERIFY ||
-      input == SLN_HS_MT_CLIENT_KEY_EXCHANGE ||
-      input == SLN_HS_MT_FINISHED) {
+      input == SLN_HS_MT_CLIENT_KEY_EXCHANGE || input == SLN_HS_MT_FINISHED) {
     return 1;
   }
   return 0;
 }
 
-static selene_error_t*
-setup_mt_parser(sln_tok_value_t *v, sln_hs_baton_t *hs)
-{
+static selene_error_t *setup_mt_parser(sln_tok_value_t *v, sln_hs_baton_t *hs) {
   selene_t *s = hs->s;
 
   slnDbg(s, "GOT MESSAGE TYPE SETUP: %d", hs->message_type);
@@ -87,7 +79,8 @@ setup_mt_parser(sln_tok_value_t *v, sln_hs_baton_t *hs)
   switch (hs->message_type) {
     case SLN_HS_MT_CLIENT_HELLO:
       hs->state = SLN_HS_MESSAGE_PARSER;
-      return sln_handshake_parse_client_hello_setup(hs, v, &hs->current_msg_baton);
+      return sln_handshake_parse_client_hello_setup(hs, v,
+                                                    &hs->current_msg_baton);
       break;
     case SLN_HS_MT_HELLO_REQUEST:
       /* TODO: fatal alert (?) */
@@ -95,17 +88,20 @@ setup_mt_parser(sln_tok_value_t *v, sln_hs_baton_t *hs)
     case SLN_HS_MT_SERVER_HELLO:
       slnDbg(s, "parsing server hello..");
       hs->state = SLN_HS_MESSAGE_PARSER;
-      return sln_handshake_parse_server_hello_setup(hs, v, &hs->current_msg_baton);
+      return sln_handshake_parse_server_hello_setup(hs, v,
+                                                    &hs->current_msg_baton);
       break;
     case SLN_HS_MT_CERTIFICATE:
       slnDbg(s, "parsing the certificate...");
       hs->state = SLN_HS_MESSAGE_PARSER;
-      return sln_handshake_parse_certificate_setup(hs, v, &hs->current_msg_baton);
+      return sln_handshake_parse_certificate_setup(hs, v,
+                                                   &hs->current_msg_baton);
       break;
     case SLN_HS_MT_SERVER_HELLO_DONE:
       slnDbg(s, "parsing server hello done...");
       hs->state = SLN_HS_MESSAGE_PARSER;
-      return sln_handshake_parse_server_hello_done_setup(hs, v, &hs->current_msg_baton);
+      return sln_handshake_parse_server_hello_done_setup(
+          hs, v, &hs->current_msg_baton);
       break;
     case SLN_HS_MT_SERVER_KEY_EXCHANGE:
     case SLN_HS_MT_CERTIFICATE_REQUEST:
@@ -121,11 +117,9 @@ setup_mt_parser(sln_tok_value_t *v, sln_hs_baton_t *hs)
   return SELENE_SUCCESS;
 }
 
-static selene_error_t*
-read_handshake_parser(sln_tok_value_t *v, void *baton_)
-{
-  selene_error_t* err = SELENE_SUCCESS;
-  sln_hs_baton_t *hs = (sln_hs_baton_t*)baton_;
+static selene_error_t *read_handshake_parser(sln_tok_value_t *v, void *baton_) {
+  selene_error_t *err = SELENE_SUCCESS;
+  sln_hs_baton_t *hs = (sln_hs_baton_t *)baton_;
   selene_t *s = hs->s;
 
   slnDbg(s, "IN HANDSHAKE PARSER, STATE: %d", hs->state);
@@ -139,9 +133,10 @@ read_handshake_parser(sln_tok_value_t *v, void *baton_)
     case SLN_HS_MESSAGE_TYPE:
       hs->message_type = v->v.bytes[0];
       if (!is_valid_message_type(hs->message_type)) {
-        err = selene_error_createf(SELENE_EINVAL, "Invalid handshake message type: %u", hs->message_type);
-      }
-      else {
+        err = selene_error_createf(SELENE_EINVAL,
+                                   "Invalid handshake message type: %u",
+                                   hs->message_type);
+      } else {
         hs->current_msg_consume += 1;
         hs->state = SLN_HS_LENGTH;
         v->next = TOK_UINT24;
@@ -185,9 +180,7 @@ read_handshake_parser(sln_tok_value_t *v, void *baton_)
   return err;
 }
 
-selene_error_t*
-sln_io_handshake_read(selene_t *s, sln_parser_baton_t *baton)
-{
+selene_error_t *sln_io_handshake_read(selene_t *s, sln_parser_baton_t *baton) {
   sln_hs_baton_t hs;
   selene_error_t *err = SELENE_SUCCESS;
   do {
@@ -210,8 +203,7 @@ sln_io_handshake_read(selene_t *s, sln_parser_baton_t *baton)
       slnDbg(s, "handshake chomping: %d", (int)hs.current_msg_consume);
       sln_brigade_chomp(baton->in_handshake, hs.current_msg_consume);
     }
-  } while (err == SELENE_SUCCESS &&
-           hs.state == SLN_HS__DONE &&
+  } while (err == SELENE_SUCCESS && hs.state == SLN_HS__DONE &&
            !SLN_BRIGADE_EMPTY(baton->in_handshake));
 
   return err;

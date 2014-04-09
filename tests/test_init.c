@@ -18,16 +18,14 @@
 #include "selene.h"
 #include "sln_tests.h"
 
-static void init_conf(void **state)
-{
+static void init_conf(void **state) {
   selene_conf_t *conf = NULL;
   SLN_ERR(selene_conf_create(&conf));
   SLN_ASSERT_CONF(conf);
   selene_conf_destroy(conf);
 }
 
-static void init_client(void **state)
-{
+static void init_client(void **state) {
   selene_conf_t *conf = NULL;
   selene_t *ctxt = NULL;
   selene_conf_create(&conf);
@@ -38,8 +36,7 @@ static void init_client(void **state)
   selene_conf_destroy(conf);
 }
 
-static void init_server(void **state)
-{
+static void init_server(void **state) {
   selene_conf_t *conf = NULL;
   selene_t *ctxt = NULL;
   selene_conf_create(&conf);
@@ -50,8 +47,7 @@ static void init_server(void **state)
   selene_conf_destroy(conf);
 }
 
-static void errors(void **state)
-{
+static void errors(void **state) {
   selene_error_t *err = selene_error_create_impl(1, "test", 42, "filename");
   assert_int_equal(err->err, 1);
   assert_int_equal(err->line, 42);
@@ -65,12 +61,11 @@ static void errors(void **state)
   assert_string_equal(err->msg, "foo:test");
   assert_string_equal(err->file, "xfilename");
   selene_error_clear(err);
-
 }
 
 SLN_TESTS_START(init)
-  SLN_TESTS_ENTRY(init_conf)
-  SLN_TESTS_ENTRY(init_client)
-  SLN_TESTS_ENTRY(init_server)
-  SLN_TESTS_ENTRY(errors)
+SLN_TESTS_ENTRY(init_conf)
+SLN_TESTS_ENTRY(init_client)
+SLN_TESTS_ENTRY(init_server)
+SLN_TESTS_ENTRY(errors)
 SLN_TESTS_END()

@@ -25,57 +25,51 @@ typedef struct s_baton_t {
   int ecount[SELENE_EVENT__MAX];
 } s_baton_t;
 
-static selene_error_t*
-want_pull(selene_t *s, selene_event_e event, void *baton)
-{
+static selene_error_t *want_pull(selene_t *s, selene_event_e event,
+                                 void *baton) {
   char buf[8096];
   size_t blen = 0;
   size_t remaining = 0;
-  s_baton_t *c = (s_baton_t*) baton;
+  s_baton_t *c = (s_baton_t *)baton;
 
   do {
-    SLN_ERR(selene_io_out_enc_bytes(s,
-                                 &buf[0], sizeof(buf),
-                                 &blen, &remaining));
+    SLN_ERR(
+        selene_io_out_enc_bytes(s, &buf[0], sizeof(buf), &blen, &remaining));
     if (blen > 0) {
       SLN_ERR(selene_io_in_enc_bytes(c->sendto, buf, blen));
     }
-  } while(remaining > 0);
+  } while (remaining > 0);
 
   return SELENE_SUCCESS;
 }
 
-static selene_error_t*
-have_cleartext(selene_t *s, selene_event_e event, void *baton)
-{
+static selene_error_t *have_cleartext(selene_t *s, selene_event_e event,
+                                      void *baton) {
   char buf[8096];
   size_t blen = 0;
   size_t remaining = 0;
 
   do {
-    SLN_ERR(selene_io_out_clear_bytes(s,
-                                 &buf[0], sizeof(buf),
-                                 &blen, &remaining));
+    SLN_ERR(
+        selene_io_out_clear_bytes(s, &buf[0], sizeof(buf), &blen, &remaining));
 
     if (blen > 0) {
       fwrite(buf, blen, 1, stdout);
       fflush(stdout);
     }
-  } while(remaining > 0);
+  } while (remaining > 0);
 
   return SELENE_SUCCESS;
 }
 
-static selene_error_t*
-inc_counter(selene_t *s, selene_event_e event, void *baton)
-{
-  s_baton_t* b = baton;
+static selene_error_t *inc_counter(selene_t *s, selene_event_e event,
+                                   void *baton) {
+  s_baton_t *b = baton;
   b->ecount[event]++;
   return SELENE_SUCCESS;
 }
 
-static void loopback_basic(void **state)
-{
+static void loopback_basic(void **state) {
   selene_conf_t *sconf = NULL;
   selene_conf_t *cconf = NULL;
   selene_t *server = NULL;
@@ -111,29 +105,31 @@ static void loopback_basic(void **state)
 
   SLN_ERR(selene_client_next_protocol_add(client, "http/1.1"));
 
+  SLN_ERR(selene_subscribe(client, SELENE__EVENT_HS_GOT_CERTIFICATE,
+                           inc_counter, &clientb));
+  SLN_ERR(selene_subscribe(client, SELENE_EVENT_VALIDATE_CERTIFICATE,
+                           inc_counter, &clientb));
+  SLN_ERR(selene_subscribe(server, SELENE__EVENT_HS_GOT_CLIENT_HELLO,
+                           inc_counter, &serverb));
+  SLN_ERR(selene_subscribe(server, SELENE_EVENT_SELECT_CERTIFICATES,
+                           inc_counter, &serverb));
 
-  SLN_ERR(selene_subscribe(client, SELENE__EVENT_HS_GOT_CERTIFICATE, inc_counter, &clientb));
-  SLN_ERR(selene_subscribe(client, SELENE_EVENT_VALIDATE_CERTIFICATE, inc_counter, &clientb));
-  SLN_ERR(selene_subscribe(server, SELENE__EVENT_HS_GOT_CLIENT_HELLO, inc_counter, &serverb));
-  SLN_ERR(selene_subscribe(server, SELENE_EVENT_SELECT_CERTIFICATES, inc_counter, &serverb));
+  SLN_ERR(
+      selene_subscribe(server, SELENE_EVENT_IO_OUT_ENC, want_pull, &serverb));
+  SLN_ERR(selene_subscribe(server, SELENE_EVENT_IO_OUT_CLEAR, have_cleartext,
+                           &serverb));
 
-  SLN_ERR(selene_subscribe(server, SELENE_EVENT_IO_OUT_ENC,
-                        want_pull, &serverb));
-  SLN_ERR(selene_subscribe(server, SELENE_EVENT_IO_OUT_CLEAR,
-                        have_cleartext, &serverb));
-
-  SLN_ERR(selene_subscribe(client, SELENE_EVENT_IO_OUT_ENC,
-                        want_pull, &clientb));
-  SLN_ERR(selene_subscribe(client, SELENE_EVENT_IO_OUT_CLEAR,
-                        have_cleartext, &clientb));
-
+  SLN_ERR(
+      selene_subscribe(client, SELENE_EVENT_IO_OUT_ENC, want_pull, &clientb));
+  SLN_ERR(selene_subscribe(client, SELENE_EVENT_IO_OUT_CLEAR, have_cleartext,
+                           &clientb));
 
   SLN_ERR(selene_start(server));
   SLN_ERR(selene_start(client));
 
-  free((void*)ca);
-  free((void*)cert);
-  free((void*)pkey);
+  free((void *)ca);
+  free((void *)cert);
+  free((void *)pkey);
 
   assert_int_equal(serverb.ecount[SELENE__EVENT_HS_GOT_CERTIFICATE], 0);
   assert_int_equal(serverb.ecount[SELENE_EVENT_VALIDATE_CERTIFICATE], 0);
@@ -152,5 +148,5 @@ static void loopback_basic(void **state)
 }
 
 SLN_TESTS_START(loopback)
-  SLN_TESTS_ENTRY(loopback_basic)
+SLN_TESTS_ENTRY(loopback_basic)
 SLN_TESTS_END()

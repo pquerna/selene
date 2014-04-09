@@ -21,8 +21,8 @@
 #include "sln_assert.h"
 #include <string.h>
 
-static void create_sized(selene_alloc_t *alloc, sln_bucket_t *parent, size_t size, sln_bucket_t **out_b)
-{
+static void create_sized(selene_alloc_t *alloc, sln_bucket_t *parent,
+                         size_t size, sln_bucket_t **out_b) {
   sln_bucket_t *b = alloc->calloc(alloc->baton, sizeof(sln_bucket_t));
 
   b->alloc = alloc;
@@ -33,10 +33,10 @@ static void create_sized(selene_alloc_t *alloc, sln_bucket_t *parent, size_t siz
       e->refcount++;
       e = e->parent;
     }
-    /* TODO: perhaps have a CAS version for multi-threaded operation, but, no.... no. */
+    /* TODO: perhaps have a CAS version for multi-threaded operation, but,
+     * no.... no. */
     b->memory_is_mine = 0;
-  }
-  else {
+  } else {
     b->memory_is_mine = 1;
   }
   b->refcount = 1;
@@ -47,9 +47,8 @@ static void create_sized(selene_alloc_t *alloc, sln_bucket_t *parent, size_t siz
   *out_b = b;
 }
 
-selene_error_t*
-sln_bucket_create_empty(selene_alloc_t *alloc, sln_bucket_t **out_b, size_t size)
-{
+selene_error_t *sln_bucket_create_empty(selene_alloc_t *alloc,
+                                        sln_bucket_t **out_b, size_t size) {
   sln_bucket_t *b = NULL;
 
   create_sized(alloc, NULL, size, &b);
@@ -62,9 +61,10 @@ sln_bucket_create_empty(selene_alloc_t *alloc, sln_bucket_t **out_b, size_t size
   return SELENE_SUCCESS;
 }
 
-selene_error_t*
-sln_bucket_create_from_bucket(selene_alloc_t *alloc, sln_bucket_t **out_b, sln_bucket_t *parent, size_t offset, size_t length)
-{
+selene_error_t *sln_bucket_create_from_bucket(selene_alloc_t *alloc,
+                                              sln_bucket_t **out_b,
+                                              sln_bucket_t *parent,
+                                              size_t offset, size_t length) {
   sln_bucket_t *b = NULL;
 
   SLN_ASSERT(parent->size >= offset + length);
@@ -78,9 +78,9 @@ sln_bucket_create_from_bucket(selene_alloc_t *alloc, sln_bucket_t **out_b, sln_b
   return SELENE_SUCCESS;
 }
 
-selene_error_t*
-sln_bucket_create_copy_bytes(selene_alloc_t *alloc, sln_bucket_t **out_b, const char* bytes, size_t size)
-{
+selene_error_t *sln_bucket_create_copy_bytes(selene_alloc_t *alloc,
+                                             sln_bucket_t **out_b,
+                                             const char *bytes, size_t size) {
   sln_bucket_t *b = NULL;
 
   SELENE_ERR(sln_bucket_create_empty(alloc, &b, size));
@@ -92,9 +92,9 @@ sln_bucket_create_copy_bytes(selene_alloc_t *alloc, sln_bucket_t **out_b, const 
   return SELENE_SUCCESS;
 }
 
-selene_error_t*
-sln_bucket_create_with_bytes(selene_alloc_t *alloc, sln_bucket_t **out_b, char* bytes, size_t size)
-{
+selene_error_t *sln_bucket_create_with_bytes(selene_alloc_t *alloc,
+                                             sln_bucket_t **out_b, char *bytes,
+                                             size_t size) {
   sln_bucket_t *b = NULL;
 
   create_sized(alloc, NULL, size, &b);
@@ -108,12 +108,12 @@ sln_bucket_create_with_bytes(selene_alloc_t *alloc, sln_bucket_t **out_b, char* 
   return SELENE_SUCCESS;
 }
 
-void bucket_try_destroy(sln_bucket_t *b)
-{
+void bucket_try_destroy(sln_bucket_t *b) {
   sln_bucket_t *parent = b->parent;
   b->refcount--;
 
-  /* fprintf(stderr, "bucket_try_destroy: b: %p ref: %d  parent: %p\n", (void*)b, b->refcount, (void*)parent); */
+  /* fprintf(stderr, "bucket_try_destroy: b: %p ref: %d  parent: %p\n",
+   * (void*)b, b->refcount, (void*)parent); */
   if (b->refcount <= 0) {
     if (b->memory_is_mine == 1 && b->data != NULL) {
       b->alloc->free(b->alloc->baton, b->data);
@@ -129,9 +129,7 @@ void bucket_try_destroy(sln_bucket_t *b)
   }
 }
 
-void
-sln_bucket_destroy(sln_bucket_t *b)
-{
+void sln_bucket_destroy(sln_bucket_t *b) {
   SLN_BUCKET_REMOVE(b);
 
   bucket_try_destroy(b);

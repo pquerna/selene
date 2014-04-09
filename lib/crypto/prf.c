@@ -21,16 +21,10 @@
 
 #include <string.h>
 
-static selene_error_t*
-prf_hash(selene_t *s,
-         sln_hmac_e htype,
-         const char *secret,
-         size_t secretlen,
-         const char *seed,
-         size_t seedlen,
-         char *output,
-         size_t outlen)
-{
+static selene_error_t *prf_hash(selene_t *s, sln_hmac_e htype,
+                                const char *secret, size_t secretlen,
+                                const char *seed, size_t seedlen, char *output,
+                                size_t outlen) {
   sln_hmac_t *a_hmac;
   unsigned char a_hmac_buf[SLN_BIG_DIGEST_LENGTH];
   char *a_buf = NULL;
@@ -73,8 +67,7 @@ prf_hash(selene_t *s,
 
     if (hashlen < outlen) {
       adv = hashlen;
-    }
-    else {
+    } else {
       adv = outlen;
     }
 
@@ -102,18 +95,9 @@ prf_hash(selene_t *s,
   return err;
 }
 
-
-selene_error_t*
-sln_prf(selene_t *s,
-  const char *label,
-  size_t labellen,
-  const char *secret,
-  size_t secretlen,
-  const char *seed,
-  size_t seedlen,
-  char *output,
-  size_t outlen)
-{
+selene_error_t *sln_prf(selene_t *s, const char *label, size_t labellen,
+                        const char *secret, size_t secretlen, const char *seed,
+                        size_t seedlen, char *output, size_t outlen) {
   selene_error_t *err = SELENE_SUCCESS;
   size_t i;
   size_t half_secretlen;
@@ -126,24 +110,19 @@ sln_prf(selene_t *s,
 
   half_secretlen = (secretlen / 2) + (secretlen % 2);
 
-  
   /* We store the MD5 HMAC in the initial output, and need to allocate
    * a temp area for the SHA1 HMAC, to then XOR them together.
    */
 
-  err = prf_hash(s, SLN_HMAC_MD5,
-                 secret, half_secretlen,
-                 concat, concatlen,
+  err = prf_hash(s, SLN_HMAC_MD5, secret, half_secretlen, concat, concatlen,
                  output, outlen);
 
   if (err) {
     goto out;
   }
 
-  err = prf_hash(s, SLN_HMAC_SHA1,
-                 secret + (secretlen / 2), half_secretlen,
-                 concat, concatlen,
-                 tmpout, outlen);
+  err = prf_hash(s, SLN_HMAC_SHA1, secret + (secretlen / 2), half_secretlen,
+                 concat, concatlen, tmpout, outlen);
   if (err) {
     goto out;
   }

@@ -22,11 +22,9 @@
 #include "sln_tok.h"
 #include "sln_assert.h"
 
-selene_error_t*
-sln_tok_parser(sln_brigade_t *bb, sln_tok_cb cb, void *baton)
-{
+selene_error_t *sln_tok_parser(sln_brigade_t *bb, sln_tok_cb cb, void *baton) {
   int keepgoing = 1;
-  selene_error_t* err = SELENE_SUCCESS;
+  selene_error_t *err = SELENE_SUCCESS;
   sln_tok_value_t tvalue;
   size_t rlen;
   size_t offset = 0;
@@ -63,7 +61,8 @@ sln_tok_parser(sln_brigade_t *bb, sln_tok_cb cb, void *baton)
       case TOK_UINT16:
         SLN_ASSERT(tvalue.wantlen == 2);
 
-        err = sln_brigade_pread_bytes(bb, offset, tvalue.wantlen, &tvalue.v.bytes[0], &rlen);
+        err = sln_brigade_pread_bytes(bb, offset, tvalue.wantlen,
+                                      &tvalue.v.bytes[0], &rlen);
         if (err) {
           keepgoing = 0;
           break;
@@ -74,12 +73,14 @@ sln_tok_parser(sln_brigade_t *bb, sln_tok_cb cb, void *baton)
           break;
         }
 
-        tvalue.v.uint16 = (((unsigned char)tvalue.v.bytes[0]) << 8 | ((unsigned char)tvalue.v.bytes[1]));
+        tvalue.v.uint16 = (((unsigned char)tvalue.v.bytes[0]) << 8 |
+                           ((unsigned char)tvalue.v.bytes[1]));
         break;
       case TOK_UINT24:
         SLN_ASSERT(tvalue.wantlen == 3);
 
-        err = sln_brigade_pread_bytes(bb, offset, tvalue.wantlen, &tvalue.v.bytes[0], &rlen);
+        err = sln_brigade_pread_bytes(bb, offset, tvalue.wantlen,
+                                      &tvalue.v.bytes[0], &rlen);
         if (err) {
           keepgoing = 0;
           break;
@@ -98,7 +99,8 @@ sln_tok_parser(sln_brigade_t *bb, sln_tok_cb cb, void *baton)
       case TOK_COPY_BYTES:
         SLN_ASSERT(tvalue.wantlen <= SLN_TOK_VALUE_MAX_BYTE_COPY_LEN);
 
-        err = sln_brigade_pread_bytes(bb, offset, tvalue.wantlen, &tvalue.v.bytes[0], &rlen);
+        err = sln_brigade_pread_bytes(bb, offset, tvalue.wantlen,
+                                      &tvalue.v.bytes[0], &rlen);
         if (err) {
           keepgoing = 0;
           break;
@@ -121,8 +123,7 @@ sln_tok_parser(sln_brigade_t *bb, sln_tok_cb cb, void *baton)
             keepgoing = 0;
             break;
           }
-        }
-        else {
+        } else {
           sln_brigade_clear(tmpbb);
         }
 

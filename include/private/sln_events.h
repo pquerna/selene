@@ -21,7 +21,7 @@
 #include "selene.h"
 #include "sln_types.h"
 
-selene_error_t* sln_events_create(selene_t *s);
+selene_error_t *sln_events_create(selene_t *s);
 
 void sln_events_destroy(selene_t *s);
 

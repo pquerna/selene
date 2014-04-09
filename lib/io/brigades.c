@@ -21,10 +21,9 @@
 
 #include <string.h>
 
-selene_error_t*
-sln_brigade_create(selene_alloc_t *alloc, sln_brigade_t **out_bb)
-{
-  sln_brigade_t* bb = alloc->calloc(alloc->baton, sizeof(sln_brigade_t));
+selene_error_t *sln_brigade_create(selene_alloc_t *alloc,
+                                   sln_brigade_t **out_bb) {
+  sln_brigade_t *bb = alloc->calloc(alloc->baton, sizeof(sln_brigade_t));
 
   SLN_RING_INIT(&bb->list, sln_bucket_t, link);
 
@@ -35,51 +34,37 @@ sln_brigade_create(selene_alloc_t *alloc, sln_brigade_t **out_bb)
   return SELENE_SUCCESS;
 }
 
-void
-sln_brigade_destroy(sln_brigade_t *bb)
-{
+void sln_brigade_destroy(sln_brigade_t *bb) {
   sln_brigade_clear(bb);
 
   bb->alloc->free(bb->alloc->baton, bb);
 }
 
-void
-sln_brigade_clear(sln_brigade_t *bb)
-{
+void sln_brigade_clear(sln_brigade_t *bb) {
   sln_bucket_t *e;
 
   while (!SLN_BRIGADE_EMPTY(bb)) {
-      e = SLN_BRIGADE_FIRST(bb);
-      sln_bucket_destroy(e);
+    e = SLN_BRIGADE_FIRST(bb);
+    sln_bucket_destroy(e);
   }
 }
 
-size_t
-sln_brigade_size(sln_brigade_t *bb)
-{
+size_t sln_brigade_size(sln_brigade_t *bb) {
   /* TODO: cache current value inside the sln_brigade_t structure */
   size_t total = 0;
   sln_bucket_t *b = NULL;
 
-  SLN_RING_FOREACH(b, &(bb)->list, sln_bucket_t, link)
-  {
-    total += b->size;
-  }
+  SLN_RING_FOREACH(b, &(bb)->list, sln_bucket_t, link) { total += b->size; }
 
   return total;
 }
 
-int
-sln_brigade_bucket_count(sln_brigade_t *bb)
-{
+int sln_brigade_bucket_count(sln_brigade_t *bb) {
   /* TODO: cache current value inside the sln_brigade_t structure */
   int total = 0;
   sln_bucket_t *b;
 
-  SLN_RING_FOREACH(b, &(bb)->list, sln_bucket_t, link)
-  {
-    total++;
-  }
+  SLN_RING_FOREACH(b, &(bb)->list, sln_bucket_t, link) { total++; }
 
   return total;
 }
@@ -91,11 +76,13 @@ static size_t sln_min(size_t x, size_t y) {
   return y;
 }
 
-selene_error_t*
-sln_brigade_pread_bytes(sln_brigade_t *bb, size_t want_offset, size_t want_length, char *buffer, size_t *got_len)
-{
-  /* Read into an offset into a buffer, crossing buckets as needed.  This produces
-   * a copy of the data -- it is intended to be used for short reads where we are avoiding a malloc,
+selene_error_t *sln_brigade_pread_bytes(sln_brigade_t *bb, size_t want_offset,
+                                        size_t want_length, char *buffer,
+                                        size_t *got_len) {
+  /* Read into an offset into a buffer, crossing buckets as needed.  This
+   * produces
+   * a copy of the data -- it is intended to be used for short reads where we
+   * are avoiding a malloc,
    * for long reads your should probally use BRIGADE_SLICE, to cut up buckets.
    */
   size_t got = 0;
@@ -103,8 +90,7 @@ sln_brigade_pread_bytes(sln_brigade_t *bb, size_t want_offset, size_t want_lengt
   size_t buffer_offset = 0;
   sln_bucket_t *b = NULL;
 
-  SLN_RING_FOREACH(b, &(bb)->list, sln_bucket_t, link)
-  {
+  SLN_RING_FOREACH(b, &(bb)->list, sln_bucket_t, link) {
     if (got == want_length) {
       break;
     }
@@ -119,11 +105,10 @@ sln_brigade_pread_bytes(sln_brigade_t *bb, size_t want_offset, size_t want_lengt
 
       tocopy = sln_min(b->size - startpoint, want_length - got);
       got += tocopy;
-      memcpy(buffer+buffer_offset, b->data+startpoint, tocopy);
+      memcpy(buffer + buffer_offset, b->data + startpoint, tocopy);
       buffer_offset += tocopy;
       offset += tocopy;
-    }
-    else {
+    } else {
       offset += b->size;
       continue;
     }
@@ -133,12 +118,10 @@ sln_brigade_pread_bytes(sln_brigade_t *bb, size_t want_offset, size_t want_lengt
   return SELENE_SUCCESS;
 }
 
-selene_error_t*
-sln_brigade_flatten(sln_brigade_t *bb, char *c, size_t *len)
-{
+selene_error_t *sln_brigade_flatten(sln_brigade_t *bb, char *c, size_t *len) {
   /**
    * This is very similiar to APR's, and based upon apr_brigade_flatten.
-   * The fundamental difference is that we consume buckets as they are 
+   * The fundamental difference is that we consume buckets as they are
    * stored into the output buffer.
    */
 
@@ -146,8 +129,7 @@ sln_brigade_flatten(sln_brigade_t *bb, char *c, size_t *len)
   sln_bucket_t *b = NULL;
   sln_bucket_t *iter = NULL;
 
-  SLN_RING_FOREACH_SAFE(b, iter, &(bb)->list, sln_bucket_t, link)
-  {
+  SLN_RING_FOREACH_SAFE(b, iter, &(bb)->list, sln_bucket_t, link) {
     size_t data_len = b->size;
 
     /* If we would overflow. */
@@ -167,7 +149,8 @@ sln_brigade_flatten(sln_brigade_t *bb, char *c, size_t *len)
     if (b->size != data_len) {
       sln_bucket_t *tmpe;
 
-      SELENE_ERR(sln_bucket_create_from_bucket(bb->alloc, &tmpe, b, data_len, b->size - data_len));
+      SELENE_ERR(sln_bucket_create_from_bucket(bb->alloc, &tmpe, b, data_len,
+                                               b->size - data_len));
       SLN_BRIGADE_INSERT_HEAD(bb, tmpe);
     }
 
@@ -176,7 +159,7 @@ sln_brigade_flatten(sln_brigade_t *bb, char *c, size_t *len)
     /* This could probably be actual == *len, but be safe from stray
      * photons. */
     if (actual >= *len) {
-        break;
+      break;
     }
   }
 
@@ -185,17 +168,16 @@ sln_brigade_flatten(sln_brigade_t *bb, char *c, size_t *len)
   return SELENE_SUCCESS;
 }
 
-selene_error_t*
-sln_brigade_copy_into(sln_brigade_t *source_bb, size_t want_offset, size_t want_length, sln_brigade_t *into_bb)
-{
+selene_error_t *sln_brigade_copy_into(sln_brigade_t *source_bb,
+                                      size_t want_offset, size_t want_length,
+                                      sln_brigade_t *into_bb) {
   size_t got = 0;
   size_t offset = 0;
   size_t buffer_offset = 0;
   sln_bucket_t *b = NULL;
   sln_bucket_t *e = NULL;
 
-  SLN_RING_FOREACH(b, &(source_bb)->list, sln_bucket_t, link)
-  {
+  SLN_RING_FOREACH(b, &(source_bb)->list, sln_bucket_t, link) {
     if (got == want_length) {
       break;
     }
@@ -210,14 +192,14 @@ sln_brigade_copy_into(sln_brigade_t *source_bb, size_t want_offset, size_t want_
 
       tocopy = sln_min(b->size - startpoint, want_length - got);
       got += tocopy;
-      SELENE_ERR(sln_bucket_create_from_bucket(into_bb->alloc, &e, b, startpoint, tocopy));
+      SELENE_ERR(sln_bucket_create_from_bucket(into_bb->alloc, &e, b,
+                                               startpoint, tocopy));
 
       SLN_BRIGADE_INSERT_HEAD(into_bb, e);
 
       buffer_offset += tocopy;
       offset += tocopy;
-    }
-    else {
+    } else {
       offset += b->size;
       continue;
     }
@@ -226,15 +208,12 @@ sln_brigade_copy_into(sln_brigade_t *source_bb, size_t want_offset, size_t want_
   return SELENE_SUCCESS;
 }
 
-selene_error_t*
-sln_brigade_chomp(sln_brigade_t *bb, size_t len)
-{
+selene_error_t *sln_brigade_chomp(sln_brigade_t *bb, size_t len) {
   size_t actual = 0;
   sln_bucket_t *b = NULL;
   sln_bucket_t *iter = NULL;
 
-  SLN_RING_FOREACH_SAFE(b, iter, &(bb)->list, sln_bucket_t, link)
-  {
+  SLN_RING_FOREACH_SAFE(b, iter, &(bb)->list, sln_bucket_t, link) {
     size_t data_len = b->size;
 
     /* If we would overflow. */
@@ -246,7 +225,8 @@ sln_brigade_chomp(sln_brigade_t *bb, size_t len)
 
     if (b->size != data_len) {
       sln_bucket_t *tmpe = NULL;
-      SELENE_ERR(sln_bucket_create_from_bucket(bb->alloc, &tmpe, b, data_len, b->size - data_len));
+      SELENE_ERR(sln_bucket_create_from_bucket(bb->alloc, &tmpe, b, data_len,
+                                               b->size - data_len));
       SLN_BRIGADE_INSERT_HEAD(bb, tmpe);
     }
 
@@ -255,7 +235,7 @@ sln_brigade_chomp(sln_brigade_t *bb, size_t len)
     /* This could probably be actual == *len, but be safe from stray
      * photons. */
     if (actual >= len) {
-        break;
+      break;
     }
   }
 

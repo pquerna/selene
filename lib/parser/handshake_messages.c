@@ -20,9 +20,8 @@
 #include "handshake_messages.h"
 
 /* TODO: all other cipher suites */
-selene_cipher_suite_e
-sln_parser_hs_bytes_to_cipher_suite(uint8_t first, uint8_t second)
-{
+selene_cipher_suite_e sln_parser_hs_bytes_to_cipher_suite(uint8_t first,
+                                                          uint8_t second) {
   selene_cipher_suite_e suite = SELENE_CS__UNUSED0;
   switch (first) {
     case 0x00:
@@ -47,9 +46,7 @@ sln_parser_hs_bytes_to_cipher_suite(uint8_t first, uint8_t second)
   return suite;
 }
 
-selene_compression_method_e
-sln_parser_hs_bytes_to_comp_method(uint8_t in)
-{
+selene_compression_method_e sln_parser_hs_bytes_to_comp_method(uint8_t in) {
   selene_compression_method_e comp = SELENE_COMP_NULL;
 
   switch (in) {
@@ -66,4 +63,3 @@ sln_parser_hs_bytes_to_comp_method(uint8_t in)
 
   return comp;
 }
-

@@ -19,8 +19,7 @@
 #include "sln_tests.h"
 #include <stdio.h>
 
-static void logging_levels(void **state)
-{
+static void logging_levels(void **state) {
   selene_conf_t *conf = NULL;
   selene_t *ctxt = NULL;
   selene_conf_create(&conf);
@@ -32,7 +31,6 @@ static void logging_levels(void **state)
   assert_int_equal(SLN_LOG_NOTHING, sln_log_level_get(ctxt));
   sln_log_level_set(ctxt, SLN_LOG_EVERYTHING);
   assert_int_equal(SLN_LOG_EVERYTHING, sln_log_level_get(ctxt));
-  
 
   selene_destroy(ctxt);
   selene_conf_destroy(conf);
@@ -42,22 +40,19 @@ typedef struct log_cb_t {
   const char *cmp;
 } log_cb_t;
 
-static selene_error_t*
-log_cb(selene_t *s, selene_event_e event, void *baton)
-{
+static selene_error_t *log_cb(selene_t *s, selene_event_e event, void *baton) {
   const char *log_msg;
   size_t len;
-  log_cb_t *b = (log_cb_t*) baton;
+  log_cb_t *b = (log_cb_t *)baton;
 
   selene_log_msg_get(s, &log_msg, &len);
   assert_int_equal(38, len);
-  assert_string_equal(b->cmp, log_msg+25);
+  assert_string_equal(b->cmp, log_msg + 25);
 
   return SELENE_SUCCESS;
 }
 
-static void logging_types(void **state)
-{
+static void logging_types(void **state) {
   selene_conf_t *conf = NULL;
   selene_t *s = NULL;
   log_cb_t b;
@@ -98,6 +93,6 @@ static void logging_types(void **state)
 }
 
 SLN_TESTS_START(logging)
-  SLN_TESTS_ENTRY(logging_levels)
-  SLN_TESTS_ENTRY(logging_types)
+SLN_TESTS_ENTRY(logging_levels)
+SLN_TESTS_ENTRY(logging_types)
 SLN_TESTS_END()

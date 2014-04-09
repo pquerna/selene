@@ -19,14 +19,18 @@
 #define _sln_digest_h_
 
 #ifdef SLN_HAVE_OSX_COMMONCRYPTO
-selene_error_t* sln_digest_osx_cc_create(selene_t *s, sln_digest_e type, sln_digest_t **p_digest);
-void sln_digest_osx_cc_update(sln_digest_t *digest, const void *data, size_t len);
+selene_error_t *sln_digest_osx_cc_create(selene_t *s, sln_digest_e type,
+                                         sln_digest_t **p_digest);
+void sln_digest_osx_cc_update(sln_digest_t *digest, const void *data,
+                              size_t len);
 void sln_digest_osx_cc_final(sln_digest_t *digest, unsigned char *md);
 void sln_digest_osx_cc_destroy(sln_digest_t *d);
 #endif
 
-selene_error_t* sln_digest_openssl_create(selene_t *s, sln_digest_e type, sln_digest_t **p_digest);
-void sln_digest_openssl_update(sln_digest_t *digest, const void *data, size_t len);
+selene_error_t *sln_digest_openssl_create(selene_t *s, sln_digest_e type,
+                                          sln_digest_t **p_digest);
+void sln_digest_openssl_update(sln_digest_t *digest, const void *data,
+                               size_t len);
 void sln_digest_openssl_final(sln_digest_t *digest, unsigned char *md);
 void sln_digest_openssl_destroy(sln_digest_t *d);
 

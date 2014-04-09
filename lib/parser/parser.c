@@ -17,22 +17,14 @@
 
 #include "sln_backends.h"
 
-selene_error_t*
-sln_backend_initialize()
-{
+selene_error_t* sln_backend_initialize() {
   SELENE_ERR(sln_parser_initilize());
   return SELENE_SUCCESS;
 }
 
-void
-sln_backend_terminate()
-{
-  sln_parser_terminate();
-}
+void sln_backend_terminate() { sln_parser_terminate(); }
 
-selene_error_t*
-sln_backend_create(selene_t *s, sln_backend_e be)
-{
+selene_error_t* sln_backend_create(selene_t* s, sln_backend_e be) {
   s->backend.name = "native parser";
   s->backend.create = sln_parser_create;
   s->backend.start = sln_parser_start;

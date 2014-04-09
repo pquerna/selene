@@ -21,23 +21,20 @@
 #include "sln_digest.h"
 #include <CommonCrypto/CommonDigest.h>
 
-selene_error_t*
-sln_digest_osx_cc_create(selene_t *s, sln_digest_e type, sln_digest_t **p_digest)
-{
+selene_error_t *sln_digest_osx_cc_create(selene_t *s, sln_digest_e type,
+                                         sln_digest_t **p_digest) {
   sln_digest_t *d = sln_alloc(s, sizeof(sln_digest_t));
   d->s = s;
   d->type = type;
 
   switch (type) {
-    case SLN_DIGEST_MD5:
-    {
+    case SLN_DIGEST_MD5: {
       CC_MD5_CTX *c = sln_alloc(s, sizeof(CC_MD5_CTX));
       CC_MD5_Init(c);
       d->baton = c;
       break;
     }
-    case SLN_DIGEST_SHA1:
-    {
+    case SLN_DIGEST_SHA1: {
       CC_SHA1_CTX *c = sln_alloc(s, sizeof(CC_SHA1_CTX));
       CC_SHA1_Init(c);
       d->baton = c;
@@ -49,43 +46,33 @@ sln_digest_osx_cc_create(selene_t *s, sln_digest_e type, sln_digest_t **p_digest
   return SELENE_SUCCESS;
 }
 
-void
-sln_digest_osx_cc_update(sln_digest_t *d, const void *data, size_t len)
-{
+void sln_digest_osx_cc_update(sln_digest_t *d, const void *data, size_t len) {
   switch (d->type) {
-    case SLN_DIGEST_MD5:
-    {
+    case SLN_DIGEST_MD5: {
       CC_MD5_Update((CC_MD5_CTX *)d->baton, data, len);
       break;
     }
-    case SLN_DIGEST_SHA1:
-    {
+    case SLN_DIGEST_SHA1: {
       CC_SHA1_Update((CC_SHA1_CTX *)d->baton, data, len);
       break;
     }
   }
 }
 
-void
-sln_digest_osx_cc_final(sln_digest_t *d, unsigned char *md)
-{
+void sln_digest_osx_cc_final(sln_digest_t *d, unsigned char *md) {
   switch (d->type) {
-    case SLN_DIGEST_MD5:
-    {
+    case SLN_DIGEST_MD5: {
       CC_MD5_Final(md, (CC_MD5_CTX *)d->baton);
       break;
     }
-    case SLN_DIGEST_SHA1:
-    {
+    case SLN_DIGEST_SHA1: {
       CC_SHA1_Final(md, (CC_SHA1_CTX *)d->baton);
       break;
     }
   }
 }
 
-void
-sln_digest_osx_cc_destroy(sln_digest_t *d)
-{
+void sln_digest_osx_cc_destroy(sln_digest_t *d) {
   selene_t *s = d->s;
   sln_free(s, d->baton);
   sln_free(s, d);

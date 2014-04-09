@@ -21,31 +21,16 @@
 #include "sln_certs.h"
 #include <string.h>
 
-static void*
-malloc_cb(void *baton, size_t len) {
-  return malloc(len);
-}
+static void *malloc_cb(void *baton, size_t len) { return malloc(len); }
 
-static void*
-calloc_cb(void *baton, size_t len) {
-  return calloc(1, len);
-}
+static void *calloc_cb(void *baton, size_t len) { return calloc(1, len); }
 
-static void
-free_cb(void *baton, void *ptr) {
-  free(ptr);
-}
+static void free_cb(void *baton, void *ptr) { free(ptr); }
 
-static selene_alloc_t default_alloc = {
-  NULL,
-  malloc_cb,
-  calloc_cb,
-  free_cb
-};
+static selene_alloc_t default_alloc = {NULL, malloc_cb, calloc_cb, free_cb};
 
-selene_error_t*
-selene_conf_create_with_allloc(selene_conf_t **p_conf, selene_alloc_t *alloc)
-{
+selene_error_t *selene_conf_create_with_allloc(selene_conf_t **p_conf,
+                                               selene_alloc_t *alloc) {
   selene_conf_t *conf;
 
   if (alloc == NULL) {
@@ -58,28 +43,24 @@ selene_conf_create_with_allloc(selene_conf_t **p_conf, selene_alloc_t *alloc)
 
   conf->trusted_cert_store = X509_STORE_new();
 
-  conf->certs = sln_array_make(alloc, 2, sizeof(void*));
+  conf->certs = sln_array_make(alloc, 2, sizeof(void *));
 
   *p_conf = conf;
-
 
   return SELENE_SUCCESS;
 }
 
-selene_error_t*
-selene_conf_create(selene_conf_t **p_conf)
-{
+selene_error_t *selene_conf_create(selene_conf_t **p_conf) {
   return selene_conf_create_with_allloc(p_conf, NULL);
 }
 
-void
-selene_conf_destroy(selene_conf_t *conf)
-{
+void selene_conf_destroy(selene_conf_t *conf) {
   int i;
   selene_alloc_t *alloc = conf->alloc;
 
   for (i = 0; i < conf->certs->nelts; i++) {
-    selene_cert_chain_t *chain = SLN_ARRAY_IDX(conf->certs, i, selene_cert_chain_t*);
+    selene_cert_chain_t *chain =
+        SLN_ARRAY_IDX(conf->certs, i, selene_cert_chain_t *);
     sln_cert_chain_destroy(conf, chain);
   }
 
@@ -89,39 +70,37 @@ selene_conf_destroy(selene_conf_t *conf)
   alloc->free(alloc->baton, conf);
 }
 
-selene_error_t *
-selene_conf_use_reasonable_defaults(selene_conf_t *conf)
-{
+selene_error_t *selene_conf_use_reasonable_defaults(selene_conf_t *conf) {
   selene_cipher_suite_list_t *ciphers = NULL;
   SELENE_ERR(selene_cipher_suite_list_create(conf->alloc, &ciphers));
 
-  SELENE_ERR(selene_cipher_suite_list_add(ciphers, SELENE_CS_RSA_WITH_RC4_128_SHA));
-  SELENE_ERR(selene_cipher_suite_list_add(ciphers, SELENE_CS_RSA_WITH_AES_128_CBC_SHA));
-  SELENE_ERR(selene_cipher_suite_list_add(ciphers, SELENE_CS_RSA_WITH_AES_256_CBC_SHA));
+  SELENE_ERR(
+      selene_cipher_suite_list_add(ciphers, SELENE_CS_RSA_WITH_RC4_128_SHA));
+  SELENE_ERR(selene_cipher_suite_list_add(ciphers,
+                                          SELENE_CS_RSA_WITH_AES_128_CBC_SHA));
+  SELENE_ERR(selene_cipher_suite_list_add(ciphers,
+                                          SELENE_CS_RSA_WITH_AES_256_CBC_SHA));
 
   SELENE_ERR(selene_conf_cipher_suites(conf, ciphers));
 
   selene_cipher_suite_list_destroy(ciphers);
 
-  SELENE_ERR(selene_conf_protocols(conf, SELENE_PROTOCOL_SSL30 | 
-                                         SELENE_PROTOCOL_TLS10 |
-                                         SELENE_PROTOCOL_TLS11 |
-                                         SELENE_PROTOCOL_TLS12));
+  SELENE_ERR(selene_conf_protocols(
+      conf, SELENE_PROTOCOL_SSL30 | SELENE_PROTOCOL_TLS10 |
+                SELENE_PROTOCOL_TLS11 | SELENE_PROTOCOL_TLS12));
 
   return SELENE_SUCCESS;
 }
 
-selene_error_t *
-selene_conf_cipher_suites(selene_conf_t *conf, selene_cipher_suite_list_t *ciphers)
-{
+selene_error_t *selene_conf_cipher_suites(selene_conf_t *conf,
+                                          selene_cipher_suite_list_t *ciphers) {
   memcpy(&conf->ciphers, ciphers, sizeof(selene_cipher_suite_list_t));
 
   return SELENE_SUCCESS;
 }
 
-selene_error_t*
-selene_cipher_suite_list_create(selene_alloc_t *alloc, selene_cipher_suite_list_t **p_ciphers)
-{
+selene_error_t *selene_cipher_suite_list_create(
+    selene_alloc_t *alloc, selene_cipher_suite_list_t **p_ciphers) {
   selene_cipher_suite_list_t *ciphers;
 
   ciphers = alloc->calloc(alloc->baton, sizeof(selene_cipher_suite_list_t));
@@ -133,9 +112,8 @@ selene_cipher_suite_list_create(selene_alloc_t *alloc, selene_cipher_suite_list_
   return SELENE_SUCCESS;
 }
 
-selene_error_t*
-selene_cipher_suite_list_add(selene_cipher_suite_list_t *ciphers, selene_cipher_suite_e suite)
-{
+selene_error_t *selene_cipher_suite_list_add(
+    selene_cipher_suite_list_t *ciphers, selene_cipher_suite_e suite) {
   int i;
   for (i = 0; i < ciphers->used; i++) {
     if (ciphers->ciphers[i] == suite) {
@@ -149,15 +127,12 @@ selene_cipher_suite_list_add(selene_cipher_suite_list_t *ciphers, selene_cipher_
   return SELENE_SUCCESS;
 }
 
-void selene_cipher_suite_list_destroy(selene_cipher_suite_list_t *ciphers)
-{
+void selene_cipher_suite_list_destroy(selene_cipher_suite_list_t *ciphers) {
   selene_alloc_t *alloc = ciphers->alloc;
   alloc->free(alloc->baton, ciphers);
 }
 
-selene_error_t *
-selene_conf_protocols(selene_conf_t *conf, int protocols)
-{
+selene_error_t *selene_conf_protocols(selene_conf_t *conf, int protocols) {
   /* TODO: assert on inalid protocols */
   conf->protocols = protocols;
   return SELENE_SUCCESS;

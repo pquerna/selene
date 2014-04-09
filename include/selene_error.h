@@ -38,11 +38,11 @@ extern "C" {
  * Check if the @c selene_error_t returned by @a expression is equal to
  * @c SELENE_SUCCESS.  If it is, do nothing, if not, then return it.
  */
-#define SELENE_ERR(expression) do {                      \
-          selene_error_t *selene__xx__err = (expression);  \
-          if (selene__xx__err)                           \
-            return selene__xx__err;                      \
-        } while (0)
+#define SELENE_ERR(expression)                      \
+  do {                                              \
+    selene_error_t *selene__xx__err = (expression); \
+    if (selene__xx__err) return selene__xx__err;    \
+  } while (0)
 
 /** A low level error code. */
 typedef int selene_status_t;
@@ -54,13 +54,13 @@ typedef int selene_status_t;
 #define SELENE_ENOSPACE -1
 
 /** The input was invalid. */
-#define SELENE_EINVAL   -2
+#define SELENE_EINVAL -2
 
 /** The requested functionality has not been implemented. */
 #define SELENE_ENOTIMPL -3
 
 /** The I/O operation in question failed. */
-#define SELENE_EIO      -4
+#define SELENE_EIO -4
 
 /* Unable to allocate memory */
 #define SELENE_ENOMEM -5
@@ -84,10 +84,8 @@ typedef struct {
  * Return a new @c selene_error_t with underlying @c selene_status_t @a err
  * and message @a msg.
  */
-#define selene_error_create(err, msg) selene_error_create_impl(err,    \
-                                                           msg,        \
-                                                           __LINE__,   \
-                                                           __FILE__)
+#define selene_error_create(err, msg) \
+  selene_error_create_impl(err, msg, __LINE__, __FILE__)
 
 /**
  * The underlying function that implements @c selene_error_t_error_create.
@@ -96,19 +94,15 @@ typedef struct {
  * by users.
  */
 SELENE_API(selene_error_t *)
-selene_error_create_impl(selene_status_t err, const char *msg,
-                          uint32_t line,
-                          const char *file);
+selene_error_create_impl(selene_status_t err, const char *msg, uint32_t line,
+                         const char *file);
 
 /**
  * Return a new @c selene_error_t with underlying @c selene_status_t @a err
  * and message created @c printf style with @a fmt and varargs.
  */
-#define selene_error_createf(err, fmt, ...) selene_error_createf_impl(err,         \
-                                                                  __LINE__,    \
-                                                                  __FILE__,    \
-                                                                  fmt,         \
-                                                                  __VA_ARGS__)
+#define selene_error_createf(err, fmt, ...) \
+  selene_error_createf_impl(err, __LINE__, __FILE__, fmt, __VA_ARGS__)
 
 /**
  * The underlying function that implements @c selene_error_createf.
@@ -117,11 +111,8 @@ selene_error_create_impl(selene_status_t err, const char *msg,
  * by users.
  */
 SELENE_API(selene_error_t *)
-selene_error_createf_impl(selene_status_t err,
-                         uint32_t line,
-                         const char *file,
-                         const char *fmt,
-                         ...);
+selene_error_createf_impl(selene_status_t err, uint32_t line, const char *file,
+                          const char *fmt, ...);
 
 /** Destroy @a err. */
 SELENE_API(void)

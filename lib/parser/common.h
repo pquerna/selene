@@ -22,9 +22,11 @@
 
 #define SLN_PARSER_VERSION_MAJOR_MIN (3)
 
-void sln_parser_tls_set_current_version(selene_t *s, uint8_t *major, uint8_t *minor);
+void sln_parser_tls_set_current_version(selene_t *s, uint8_t *major,
+                                        uint8_t *minor);
 
-void sln_parser_tls_max_supported_version(selene_t *s, uint8_t *major, uint8_t *minor);
+void sln_parser_tls_max_supported_version(selene_t *s, uint8_t *major,
+                                          uint8_t *minor);
 
 void sln_parser_rand_bytes_secure(char *bytes, size_t len);
 

@@ -21,9 +21,9 @@
 #include "sln_hmac.h"
 #include <CommonCrypto/CommonHMAC.h>
 
-selene_error_t*
-sln_hmac_osx_cc_create(selene_t *s, sln_hmac_e type, const char* key, size_t klen, sln_hmac_t **p_hmac)
-{
+selene_error_t *sln_hmac_osx_cc_create(selene_t *s, sln_hmac_e type,
+                                       const char *key, size_t klen,
+                                       sln_hmac_t **p_hmac) {
   sln_hmac_t *h = sln_alloc(s, sizeof(sln_hmac_t));
   CCHmacAlgorithm alg;
   CCHmacContext *c;
@@ -31,13 +31,11 @@ sln_hmac_osx_cc_create(selene_t *s, sln_hmac_e type, const char* key, size_t kle
   h->type = type;
 
   switch (type) {
-    case SLN_HMAC_MD5:
-    {
+    case SLN_HMAC_MD5: {
       alg = kCCHmacAlgMD5;
       break;
     }
-    case SLN_HMAC_SHA1:
-    {
+    case SLN_HMAC_SHA1: {
       alg = kCCHmacAlgSHA1;
       break;
     }
@@ -52,21 +50,15 @@ sln_hmac_osx_cc_create(selene_t *s, sln_hmac_e type, const char* key, size_t kle
   return SELENE_SUCCESS;
 }
 
-void
-sln_hmac_osx_cc_update(sln_hmac_t *h, const void *data, size_t len)
-{
-  CCHmacUpdate((CCHmacContext*)h->baton, data, len);
+void sln_hmac_osx_cc_update(sln_hmac_t *h, const void *data, size_t len) {
+  CCHmacUpdate((CCHmacContext *)h->baton, data, len);
 }
 
-void
-sln_hmac_osx_cc_final(sln_hmac_t *h, unsigned char *md)
-{
-  CCHmacFinal((CCHmacContext*)h->baton, md);
+void sln_hmac_osx_cc_final(sln_hmac_t *h, unsigned char *md) {
+  CCHmacFinal((CCHmacContext *)h->baton, md);
 }
 
-void
-sln_hmac_osx_cc_destroy(sln_hmac_t *h)
-{
+void sln_hmac_osx_cc_destroy(sln_hmac_t *h) {
   selene_t *s = h->s;
   sln_free(s, h->baton);
   sln_free(s, h);

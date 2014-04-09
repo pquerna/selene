@@ -19,9 +19,9 @@
 #include "sln_hmac.h"
 #include <openssl/hmac.h>
 
-selene_error_t*
-sln_hmac_openssl_create(selene_t *s, sln_hmac_e type, const char* key, size_t klen, sln_hmac_t **p_hmac)
-{
+selene_error_t *sln_hmac_openssl_create(selene_t *s, sln_hmac_e type,
+                                        const char *key, size_t klen,
+                                        sln_hmac_t **p_hmac) {
   sln_hmac_t *h = sln_alloc(s, sizeof(sln_hmac_t));
   HMAC_CTX *hctx = sln_alloc(s, sizeof(HMAC_CTX));
   const EVP_MD *mt = NULL;
@@ -31,13 +31,11 @@ sln_hmac_openssl_create(selene_t *s, sln_hmac_e type, const char* key, size_t kl
   h->baton = hctx;
 
   switch (h->type) {
-    case SLN_HMAC_MD5:
-    {
+    case SLN_HMAC_MD5: {
       mt = EVP_md5();
       break;
     }
-    case SLN_HMAC_SHA1:
-    {
+    case SLN_HMAC_SHA1: {
       mt = EVP_sha1();
       break;
     }
@@ -51,23 +49,17 @@ sln_hmac_openssl_create(selene_t *s, sln_hmac_e type, const char* key, size_t kl
   return SELENE_SUCCESS;
 }
 
-void
-sln_hmac_openssl_update(sln_hmac_t *h, const void *data, size_t len)
-{
+void sln_hmac_openssl_update(sln_hmac_t *h, const void *data, size_t len) {
   HMAC_CTX *hctx = h->baton;
   HMAC_Update(hctx, data, len);
 }
 
-void
-sln_hmac_openssl_final(sln_hmac_t *h, unsigned char *md)
-{
+void sln_hmac_openssl_final(sln_hmac_t *h, unsigned char *md) {
   HMAC_CTX *hctx = h->baton;
   HMAC_Final(hctx, md, NULL);
 }
 
-void
-sln_hmac_openssl_destroy(sln_hmac_t *h)
-{
+void sln_hmac_openssl_destroy(sln_hmac_t *h) {
   selene_t *s = h->s;
   HMAC_CTX *hctx = h->baton;
 
@@ -76,4 +68,3 @@ sln_hmac_openssl_destroy(sln_hmac_t *h)
   sln_free(s, hctx);
   sln_free(s, h);
 }
-

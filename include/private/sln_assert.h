@@ -27,43 +27,51 @@
 
 #ifdef WANT_SLN_ASSERTS
 
-  #include <assert.h>
+#include <assert.h>
 
-  #define SLN_ASSERT(exp) assert(exp)
+#define SLN_ASSERT(exp) assert(exp)
 
-  #define SLN_ASSERT_RANGE(start, end, target) SLN_ASSERT(target > start); SLN_ASSERT(target < end);
+#define SLN_ASSERT_RANGE(start, end, target) \
+  SLN_ASSERT(target > start);                \
+  SLN_ASSERT(target < end);
 
-  #define SLN_ASSERT_ENUM(type, target) SLN_ASSERT_RANGE(type ## __UNUSED0, type ## __MAX, target)
+#define SLN_ASSERT_ENUM(type, target) \
+  SLN_ASSERT_RANGE(type##__UNUSED0, type##__MAX, target)
 
-  #define SLN_ASSERT_FLAGS(type, value) SLN_ASSERT((type | (value)) == (value))
+#define SLN_ASSERT_FLAGS(type, value) SLN_ASSERT((type | (value)) == (value))
 
-  #define SLN_ASSERT_CONF(conf) do { \
-    SLN_ASSERT(conf != NULL); \
-    SLN_ASSERT_RANGE(SELENE_CS__UNUSED0-1, SELENE_CS__MAX, conf->ciphers.used) \
-    SLN_ASSERT_FLAGS(conf->protocols, SELENE_PROTOCOL_SSL30|SELENE_PROTOCOL_TLS10|SELENE_PROTOCOL_TLS11|SELENE_PROTOCOL_TLS12); \
+#define SLN_ASSERT_CONF(conf)                                                \
+  do {                                                                       \
+    SLN_ASSERT(conf != NULL);                                                \
+    SLN_ASSERT_RANGE(SELENE_CS__UNUSED0 - 1, SELENE_CS__MAX,                 \
+                     conf->ciphers.used)                                     \
+        SLN_ASSERT_FLAGS(conf->protocols,                                    \
+                         SELENE_PROTOCOL_SSL30 | SELENE_PROTOCOL_TLS10 |     \
+                             SELENE_PROTOCOL_TLS11 | SELENE_PROTOCOL_TLS12); \
   } while (0);
 
-  #define SLN_ASSERT_CONTEXT(ctxt) do { \
-    SLN_ASSERT(ctxt != NULL); \
-    SLN_ASSERT_CONF(ctxt->conf); \
-    SLN_ASSERT_ENUM(SLN_STATE, ctxt->state); \
-    SLN_ASSERT_ENUM(SLN_LOG, ctxt->log_level); \
-    SLN_ASSERT(ctxt->log_msg_len >= 0); \
-    SLN_ASSERT(ctxt->log_msg_len <= 2048); \
+#define SLN_ASSERT_CONTEXT(ctxt)                   \
+  do {                                             \
+    SLN_ASSERT(ctxt != NULL);                      \
+    SLN_ASSERT_CONF(ctxt->conf);                   \
+    SLN_ASSERT_ENUM(SLN_STATE, ctxt->state);       \
+    SLN_ASSERT_ENUM(SLN_LOG, ctxt->log_level);     \
+    SLN_ASSERT(ctxt->log_msg_len >= 0);            \
+    SLN_ASSERT(ctxt->log_msg_len <= 2048);         \
     SLN_ASSERT_ENUM(SLN_LOG, ctxt->log_msg_level); \
   } while (0);
 
 #else /* !WANT_SLN_ASSERTS */
 
-  #define SLN_ASSERT(exp)
+#define SLN_ASSERT(exp)
 
-  #define SLN_ASSERT_RANGE(start, end, target)
+#define SLN_ASSERT_RANGE(start, end, target)
 
-  #define SLN_ASSERT_ENUM(type, target)
+#define SLN_ASSERT_ENUM(type, target)
 
-  #define SLN_ASSERT_CONF(conf)
+#define SLN_ASSERT_CONF(conf)
 
-  #define SLN_ASSERT_CONTEXT(ctxt)
+#define SLN_ASSERT_CONTEXT(ctxt)
 
 #endif
 

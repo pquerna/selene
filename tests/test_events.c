@@ -23,16 +23,15 @@ typedef struct baton_t {
   int count;
 } baton_t;
 
-static selene_error_t* event_cb(selene_t *ctxt, selene_event_e event, void *baton_)
-{
+static selene_error_t *event_cb(selene_t *ctxt, selene_event_e event,
+                                void *baton_) {
   baton_t *baton = (baton_t *)baton_;
   assert_int_equal(event, baton->etype);
   baton->count++;
   return SELENE_SUCCESS;
 }
 
-static void event_handlers(void **state)
-{
+static void event_handlers(void **state) {
   selene_conf_t *conf = NULL;
   selene_t *ctxt = NULL;
   selene_event_e e = SELENE_EVENT_IOWANT_CHANGED;
@@ -70,5 +69,5 @@ static void event_handlers(void **state)
 }
 
 SLN_TESTS_START(events)
-  SLN_TESTS_ENTRY(event_handlers)
+SLN_TESTS_ENTRY(event_handlers)
 SLN_TESTS_END()

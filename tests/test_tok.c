@@ -24,18 +24,15 @@ typedef struct baton_t {
   int count;
 } baton_t;
 
-static selene_error_t*
-tok_nowork_cb(sln_tok_value_t *v, void *baton_)
-{
+static selene_error_t *tok_nowork_cb(sln_tok_value_t *v, void *baton_) {
   baton_t *baton = (baton_t *)baton_;
   baton->count++;
-  //v->next = TOK_SINGLE_BYTE;
+  // v->next = TOK_SINGLE_BYTE;
   v->next = TOK_DONE;
   return SELENE_SUCCESS;
 }
 
-static void tok_nowork(void **state)
-{
+static void tok_nowork(void **state) {
   sln_brigade_t *bb;
   baton_t baton;
   baton.count = 0;
@@ -47,9 +44,7 @@ static void tok_nowork(void **state)
   sln_brigade_destroy(bb);
 }
 
-static selene_error_t*
-tok_bytes_cb(sln_tok_value_t *v, void *baton_)
-{
+static selene_error_t *tok_bytes_cb(sln_tok_value_t *v, void *baton_) {
   baton_t *baton = (baton_t *)baton_;
   if (baton->count == 0) {
     v->next = TOK_COPY_BYTES;
@@ -63,8 +58,7 @@ tok_bytes_cb(sln_tok_value_t *v, void *baton_)
   return SELENE_SUCCESS;
 }
 
-static void tok_bytes(void **state)
-{
+static void tok_bytes(void **state) {
   sln_brigade_t *bb;
   sln_bucket_t *e1;
   baton_t baton;
@@ -79,10 +73,7 @@ static void tok_bytes(void **state)
   sln_brigade_destroy(bb);
 }
 
-
-static selene_error_t*
-tok_copy_brigade_cb(sln_tok_value_t *v, void *baton_)
-{
+static selene_error_t *tok_copy_brigade_cb(sln_tok_value_t *v, void *baton_) {
   baton_t *baton = (baton_t *)baton_;
   if (baton->count == 0) {
     v->next = TOK_COPY_BRIGADE;
@@ -99,8 +90,7 @@ tok_copy_brigade_cb(sln_tok_value_t *v, void *baton_)
   return SELENE_SUCCESS;
 }
 
-static void tok_copy_brigade(void **state)
-{
+static void tok_copy_brigade(void **state) {
   sln_brigade_t *bb;
   sln_bucket_t *e1;
   baton_t baton;
@@ -116,7 +106,7 @@ static void tok_copy_brigade(void **state)
 }
 
 SLN_TESTS_START(tok)
-  SLN_TESTS_ENTRY(tok_nowork)
-  SLN_TESTS_ENTRY(tok_bytes)
-  SLN_TESTS_ENTRY(tok_copy_brigade)
+SLN_TESTS_ENTRY(tok_nowork)
+SLN_TESTS_ENTRY(tok_bytes)
+SLN_TESTS_ENTRY(tok_copy_brigade)
 SLN_TESTS_END()

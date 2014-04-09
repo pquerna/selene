@@ -19,13 +19,17 @@
 #define _sln_hmac_h_
 
 #ifdef SLN_HAVE_OSX_COMMONCRYPTO
-selene_error_t* sln_hmac_osx_cc_create(selene_t *s, sln_hmac_e type, const char* key, size_t klen, sln_hmac_t **p_hmac);
+selene_error_t *sln_hmac_osx_cc_create(selene_t *s, sln_hmac_e type,
+                                       const char *key, size_t klen,
+                                       sln_hmac_t **p_hmac);
 void sln_hmac_osx_cc_update(sln_hmac_t *digest, const void *data, size_t len);
 void sln_hmac_osx_cc_final(sln_hmac_t *digest, unsigned char *md);
 void sln_hmac_osx_cc_destroy(sln_hmac_t *d);
 #endif
 
-selene_error_t* sln_hmac_openssl_create(selene_t *s, sln_hmac_e type, const char* key, size_t klen, sln_hmac_t **p_hmac);
+selene_error_t *sln_hmac_openssl_create(selene_t *s, sln_hmac_e type,
+                                        const char *key, size_t klen,
+                                        sln_hmac_t **p_hmac);
 void sln_hmac_openssl_update(sln_hmac_t *digest, const void *data, size_t len);
 void sln_hmac_openssl_final(sln_hmac_t *digest, unsigned char *md);
 void sln_hmac_openssl_destroy(sln_hmac_t *d);

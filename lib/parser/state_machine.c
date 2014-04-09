@@ -18,15 +18,14 @@
 #include "sln_brigades.h"
 #include "parser.h"
 
-selene_error_t*
-sln_state_machine(selene_t *s, sln_parser_baton_t *baton)
-{
+selene_error_t* sln_state_machine(selene_t* s, sln_parser_baton_t* baton) {
   selene_error_t* err = SELENE_SUCCESS;
 
 enter_state_machine:
   slnDbg(s, "enter handshake_state_machine=%d", baton->handshake);
 
-  if (baton->fatal_err != SELENE_SUCCESS || baton->connstate == SLN_CONNSTATE_ALERT_FATAL) {
+  if (baton->fatal_err != SELENE_SUCCESS ||
+      baton->connstate == SLN_CONNSTATE_ALERT_FATAL) {
     /* TODO: better error */
     slnDbg(s, "connection previously aborted");
     return selene_error_dup(baton->fatal_err);

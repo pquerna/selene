@@ -20,8 +20,7 @@
 
 #include <stdarg.h>
 
-typedef enum
-{
+typedef enum {
   SLN_LOG__UNUSED0,
   SLN_LOG_NOTHING,
   SLN_LOG_CRITICAL,
@@ -38,20 +37,22 @@ void sln_log_level_set(selene_t *s, sln_log_level_e level);
 sln_log_level_e sln_log_level_get(selene_t *s);
 
 void sln_log(selene_t *s, sln_log_level_e level, const char *str);
-void sln_log_fmtv(selene_t *s, sln_log_level_e level, const char* fmt, va_list ap);
+void sln_log_fmtv(selene_t *s, sln_log_level_e level, const char *fmt,
+                  va_list ap);
 #if !defined(SWIG) && !defined(_MSC_VER)
-#define SLN_FMT_FUNC(x,y) __attribute__((format(printf,x,y)))
+#define SLN_FMT_FUNC(x, y) __attribute__((format(printf, x, y)))
 #else
-#define SLN_FMT_FUNC(x,y)
+#define SLN_FMT_FUNC(x, y)
 #endif
 
-void sln_log_fmt(selene_t *s, sln_log_level_e level, const char* fmt, ...) SLN_FMT_FUNC(3,4);
-void sln_log_criticalf(selene_t *s, const char *fmt, ...) SLN_FMT_FUNC(2,3);
-void sln_log_errorf(selene_t *s, const char *fmt, ...) SLN_FMT_FUNC(2,3);
-void sln_log_warningf(selene_t *s, const char *fmt, ...) SLN_FMT_FUNC(2,3);
-void sln_log_infof(selene_t *s, const char *fmt, ...) SLN_FMT_FUNC(2,3);
-void sln_log_debugf(selene_t *s, const char *fmt, ...) SLN_FMT_FUNC(2,3);
-void sln_log_tracef(selene_t *s, const char *fmt, ...) SLN_FMT_FUNC(2,3);
+void sln_log_fmt(selene_t *s, sln_log_level_e level, const char *fmt, ...)
+    SLN_FMT_FUNC(3, 4);
+void sln_log_criticalf(selene_t *s, const char *fmt, ...) SLN_FMT_FUNC(2, 3);
+void sln_log_errorf(selene_t *s, const char *fmt, ...) SLN_FMT_FUNC(2, 3);
+void sln_log_warningf(selene_t *s, const char *fmt, ...) SLN_FMT_FUNC(2, 3);
+void sln_log_infof(selene_t *s, const char *fmt, ...) SLN_FMT_FUNC(2, 3);
+void sln_log_debugf(selene_t *s, const char *fmt, ...) SLN_FMT_FUNC(2, 3);
+void sln_log_tracef(selene_t *s, const char *fmt, ...) SLN_FMT_FUNC(2, 3);
 
 #ifndef slnCrit
 #define slnCrit sln_log_criticalf

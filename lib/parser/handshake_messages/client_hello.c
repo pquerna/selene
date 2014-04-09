@@ -19,9 +19,9 @@
 #include "../handshake_messages.h"
 #include <string.h>
 
-selene_error_t*
-sln_handshake_serialize_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sln_bucket_t **p_b)
-{
+selene_error_t *sln_handshake_serialize_client_hello(selene_t *s,
+                                                     sln_msg_client_hello_t *ch,
+                                                     sln_bucket_t **p_b) {
   sln_bucket_t *b = NULL;
   size_t off = 0;
 
@@ -77,13 +77,13 @@ sln_handshake_serialize_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sl
     /* TODO: npn support */
   }
 
-/*
-  TODO: ocsp support
-  if (ch->have_ocsp_stapling) {
-    num_extensions++;
-    abort();
-  }
-*/
+  /*
+    TODO: ocsp support
+    if (ch->have_ocsp_stapling) {
+      num_extensions++;
+      abort();
+    }
+  */
 
   /* len of extensions */
   len += 2;
@@ -102,13 +102,13 @@ sln_handshake_serialize_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sl
   off = 4;
 
   b->data[off] = ch->version_major;
-  b->data[off+1] = ch->version_minor;
+  b->data[off + 1] = ch->version_minor;
   off += 2;
 
   b->data[off] = ch->utc_unix_time >> 24;
-  b->data[off+1] = ch->utc_unix_time >> 16;
-  b->data[off+2] = ch->utc_unix_time >> 8;
-  b->data[off+3] = ch->utc_unix_time;
+  b->data[off + 1] = ch->utc_unix_time >> 16;
+  b->data[off + 2] = ch->utc_unix_time >> 8;
+  b->data[off + 3] = ch->utc_unix_time;
   off += 4;
 
   memcpy(b->data + off, &ch->random_bytes[0], sizeof(ch->random_bytes));
@@ -124,7 +124,7 @@ sln_handshake_serialize_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sl
 
   /* Length of the Cipher Suites in bytes */
   b->data[off] = ch->ciphers->used * 2 >> 8;
-  b->data[off+1] = ch->ciphers->used * 2;
+  b->data[off + 1] = ch->ciphers->used * 2;
   off += 2;
 
   for (i = 0; i < ch->ciphers->used; i++) {
@@ -132,15 +132,15 @@ sln_handshake_serialize_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sl
       /* TODO: move a better utility place */
       case SELENE_CS_RSA_WITH_RC4_128_SHA:
         b->data[off] = 0x00;
-        b->data[off+1] = 0x05;
+        b->data[off + 1] = 0x05;
         break;
       case SELENE_CS_RSA_WITH_AES_128_CBC_SHA:
         b->data[off] = 0x00;
-        b->data[off+1] = 0x2F;
+        b->data[off + 1] = 0x2F;
         break;
       case SELENE_CS_RSA_WITH_AES_256_CBC_SHA:
         b->data[off] = 0x00;
-        b->data[off+1] = 0x35;
+        b->data[off + 1] = 0x35;
         break;
       default:
         /* TODO: handle this */
@@ -159,23 +159,23 @@ sln_handshake_serialize_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sl
   off += 1;
 
   b->data[off] = extlen >> 8;
-  b->data[off+1] = extlen;
+  b->data[off + 1] = extlen;
   off += 2;
 
   if (ch->server_name != NULL) {
     /* type 0 */
     b->data[off] = 0;
-    b->data[off+1] = 0;
+    b->data[off + 1] = 0;
     off += 2;
 
     /* whole extension length */
     b->data[off] = snilen >> 8;
-    b->data[off+1] = snilen;
+    b->data[off + 1] = snilen;
     off += 2;
 
     /* Size of whole list */
     b->data[off] = (sninamelen + 3) >> 8;
-    b->data[off+1] = (sninamelen + 3);
+    b->data[off + 1] = (sninamelen + 3);
     off += 2;
 
     /* dnsName type */
@@ -184,7 +184,7 @@ sln_handshake_serialize_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sl
 
     /* Size of the current entry */
     b->data[off] = (sninamelen) >> 8;
-    b->data[off+1] = (sninamelen);
+    b->data[off + 1] = (sninamelen);
     off += 2;
 
     /* actual string! */
@@ -199,7 +199,6 @@ sln_handshake_serialize_client_hello(selene_t *s, sln_msg_client_hello_t *ch, sl
   return SELENE_SUCCESS;
 }
 
-
 typedef struct ch_baton_t {
   sln_handshake_client_hello_state_e state;
   sln_msg_client_hello_t ch;
@@ -209,17 +208,16 @@ typedef struct ch_baton_t {
   uint16_t sni_name_len;
 } ch_baton_t;
 
-static selene_error_t*
-parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
-{
+static selene_error_t *parse_client_hello_step(sln_hs_baton_t *hs,
+                                               sln_tok_value_t *v,
+                                               void *baton) {
   selene_error_t *err = SELENE_SUCCESS;
-  ch_baton_t *chb = (ch_baton_t*)baton;
+  ch_baton_t *chb = (ch_baton_t *)baton;
   sln_msg_client_hello_t *ch = &chb->ch;
   selene_t *s = hs->s;
 
   switch (chb->state) {
-    case SLN_HS_CLIENT_HELLO_VERSION:
-    {
+    case SLN_HS_CLIENT_HELLO_VERSION: {
       ch->version_major = v->v.bytes[0];
       ch->version_minor = v->v.bytes[1];
 
@@ -229,8 +227,7 @@ parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
       break;
     }
 
-    case SLN_HS_CLIENT_HELLO_UTC:
-    {
+    case SLN_HS_CLIENT_HELLO_UTC: {
       memcpy(&ch->utc_unix_time, &v->v.bytes[0], 4);
       chb->state = SLN_HS_CLIENT_HELLO_RANDOM;
       v->next = TOK_COPY_BYTES;
@@ -238,8 +235,7 @@ parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
       break;
     }
 
-    case SLN_HS_CLIENT_HELLO_RANDOM:
-    {
+    case SLN_HS_CLIENT_HELLO_RANDOM: {
       memcpy(&ch->random_bytes[0], &v->v.bytes[0], 28);
       chb->state = SLN_HS_CLIENT_HELLO_SESSION_LENGTH;
       v->next = TOK_COPY_BYTES;
@@ -247,8 +243,7 @@ parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
       break;
     }
 
-    case SLN_HS_CLIENT_HELLO_SESSION_LENGTH:
-    {
+    case SLN_HS_CLIENT_HELLO_SESSION_LENGTH: {
       ch->session_id_len = v->v.bytes[0];
       if (ch->session_id_len > 32) {
         /* TODO: session id errors*/
@@ -259,8 +254,7 @@ parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
         chb->state = SLN_HS_CLIENT_HELLO_CIPHER_SUITES_LENGTH;
         v->next = TOK_UINT16;
         v->wantlen = 2;
-      }
-      else {
+      } else {
         chb->state = SLN_HS_CLIENT_HELLO_SESSION_ID;
         v->next = TOK_COPY_BYTES;
         v->wantlen = ch->session_id_len;
@@ -268,8 +262,7 @@ parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
       break;
     }
 
-    case SLN_HS_CLIENT_HELLO_SESSION_ID:
-    {
+    case SLN_HS_CLIENT_HELLO_SESSION_ID: {
       memcpy(&ch->session_id[0], &v->v.bytes[0], ch->session_id_len);
       chb->state = SLN_HS_CLIENT_HELLO_CIPHER_SUITES_LENGTH;
       v->next = TOK_UINT16;
@@ -277,8 +270,7 @@ parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
       break;
     }
 
-    case SLN_HS_CLIENT_HELLO_CIPHER_SUITES_LENGTH:
-    {
+    case SLN_HS_CLIENT_HELLO_CIPHER_SUITES_LENGTH: {
       uint16_t cipher_suites_len = v->v.uint16;
       chb->state = SLN_HS_CLIENT_HELLO_CIPHER_SUITES;
       v->next = TOK_COPY_BYTES;
@@ -289,16 +281,17 @@ parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
 
       /* TODO: max number of cipher suites? */
       chb->cipher_suites_num = cipher_suites_len / 2;
-      slnDbg(s, "got cipher suites length: %d numCiphers: %d", cipher_suites_len, chb->cipher_suites_num);
+      slnDbg(s, "got cipher suites length: %d numCiphers: %d",
+             cipher_suites_len, chb->cipher_suites_num);
       if (ch->ciphers == NULL) {
         err = selene_cipher_suite_list_create(s->alloc, &ch->ciphers);
       }
       break;
     }
 
-    case SLN_HS_CLIENT_HELLO_CIPHER_SUITES:
-    {
-      selene_cipher_suite_e suite = sln_parser_hs_bytes_to_cipher_suite(v->v.bytes[0], v->v.bytes[1]);
+    case SLN_HS_CLIENT_HELLO_CIPHER_SUITES: {
+      selene_cipher_suite_e suite =
+          sln_parser_hs_bytes_to_cipher_suite(v->v.bytes[0], v->v.bytes[1]);
       chb->cipher_suites_num--;
 
       if (suite != SELENE_CS__UNUSED0) {
@@ -309,8 +302,7 @@ parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
         chb->state = SLN_HS_CLIENT_HELLO_COMPRESSION_LENGTH;
         v->next = TOK_COPY_BYTES;
         v->wantlen = 1;
-      }
-      else {
+      } else {
         chb->state = SLN_HS_CLIENT_HELLO_CIPHER_SUITES;
         v->next = TOK_COPY_BYTES;
         v->wantlen = 2;
@@ -318,8 +310,7 @@ parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
       break;
     }
 
-    case SLN_HS_CLIENT_HELLO_COMPRESSION_LENGTH:
-    {
+    case SLN_HS_CLIENT_HELLO_COMPRESSION_LENGTH: {
       /* TODO: validate max compression */
       chb->compression_num = v->v.bytes[0];
       chb->state = SLN_HS_CLIENT_HELLO_COMPRESSION;
@@ -336,29 +327,28 @@ parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
         chb->state = SLN_HS_CLIENT_HELLO_EXT_DEF;
         v->next = TOK_COPY_BYTES;
         v->wantlen = 4;
-      }
-      else {
+      } else {
         chb->state = SLN_HS_CLIENT_HELLO_COMPRESSION;
         v->next = TOK_COPY_BYTES;
         v->wantlen = 1;
       }
       break;
 
-    case SLN_HS_CLIENT_HELLO_EXT_DEF:
-    {
+    case SLN_HS_CLIENT_HELLO_EXT_DEF: {
       /* Extensions Registry:
        *   <http://www.iana.org/assignments/tls-extensiontype-values/tls-extensiontype-values.xml>
       */
-      uint16_t ext_len = (((unsigned char)v->v.bytes[0]) << 8 |  ((unsigned char)v->v.bytes[1]));
-      uint16_t ext_type = (((unsigned char)v->v.bytes[2]) << 8 |  ((unsigned char)v->v.bytes[3]));
+      uint16_t ext_len = (((unsigned char)v->v.bytes[0]) << 8 |
+                          ((unsigned char)v->v.bytes[1]));
+      uint16_t ext_type = (((unsigned char)v->v.bytes[2]) << 8 |
+                           ((unsigned char)v->v.bytes[3]));
       slnDbg(s, "extension: %u len: %u\n", ext_type, ext_len);
       if (ext_type == 0) {
         /* SNI */
         chb->state = SLN_HS_CLIENT_HELLO_EXT_SNI_LENGTH;
         v->next = TOK_UINT16;
         v->wantlen = 2;
-      }
-      else {
+      } else {
         chb->state = SLN_HS_CLIENT_HELLO_EXT_SKIP;
         v->next = TOK_SKIP;
         v->wantlen = ext_len - 4;
@@ -366,16 +356,14 @@ parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
       break;
     }
 
-    case SLN_HS_CLIENT_HELLO_EXT_SKIP:
-    {
+    case SLN_HS_CLIENT_HELLO_EXT_SKIP: {
       chb->state = SLN_HS_CLIENT_HELLO_EXT_DEF;
       v->next = TOK_COPY_BYTES;
       v->wantlen = 4;
       break;
     }
 
-    case SLN_HS_CLIENT_HELLO_EXT_SNI_LENGTH:
-    {
+    case SLN_HS_CLIENT_HELLO_EXT_SNI_LENGTH: {
       /* TODO: is this variable actually ever needed? */
       /* uint16_t sni_len = v->v.uint16; */
       chb->state = SLN_HS_CLIENT_HELLO_EXT_SNI_NUM_NAMES;
@@ -384,8 +372,7 @@ parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
       break;
     }
 
-    case SLN_HS_CLIENT_HELLO_EXT_SNI_NUM_NAMES:
-    {
+    case SLN_HS_CLIENT_HELLO_EXT_SNI_NUM_NAMES: {
       chb->sni_num = v->v.uint16;
       chb->state = SLN_HS_CLIENT_HELLO_EXT_SNI_NAME_TYPE;
       v->next = TOK_COPY_BYTES;
@@ -393,8 +380,7 @@ parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
       break;
     }
 
-    case SLN_HS_CLIENT_HELLO_EXT_SNI_NAME_TYPE:
-    {
+    case SLN_HS_CLIENT_HELLO_EXT_SNI_NAME_TYPE: {
       /* TODO: alert on unknown name type? */
       chb->state = SLN_HS_CLIENT_HELLO_EXT_SNI_NAME_LENGTH;
       v->next = TOK_UINT16;
@@ -402,8 +388,7 @@ parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
       break;
     }
 
-    case SLN_HS_CLIENT_HELLO_EXT_SNI_NAME_LENGTH:
-    {
+    case SLN_HS_CLIENT_HELLO_EXT_SNI_NAME_LENGTH: {
       chb->sni_name_len = v->v.uint16;
       chb->state = SLN_HS_CLIENT_HELLO_EXT_SNI_NAME_VALUE;
       v->next = TOK_COPY_BRIGADE;
@@ -411,8 +396,7 @@ parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
       break;
     }
 
-    case SLN_HS_CLIENT_HELLO_EXT_SNI_NAME_VALUE:
-    {
+    case SLN_HS_CLIENT_HELLO_EXT_SNI_NAME_VALUE: {
       size_t l = sln_brigade_size(v->v.bb);
 
       if (l != chb->sni_name_len) {
@@ -423,7 +407,7 @@ parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
       }
 
       if (ch->server_name != NULL) {
-        sln_free(s, (char*)ch->server_name);
+        sln_free(s, (char *)ch->server_name);
       }
 
       ch->server_name = sln_alloc(s, l + 1);
@@ -436,8 +420,7 @@ parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
         chb->state = SLN_HS_CLIENT_HELLO_EXT_DEF;
         v->next = TOK_COPY_BYTES;
         v->wantlen = 4;
-      }
-      else {
+      } else {
         chb->state = SLN_HS_CLIENT_HELLO_EXT_SNI_NUM_NAMES;
         v->next = TOK_COPY_BYTES;
         v->wantlen = 1;
@@ -449,20 +432,17 @@ parse_client_hello_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
   return err;
 }
 
-static selene_error_t*
-parse_client_hello_finish(sln_hs_baton_t *hs, void *baton)
-{
+static selene_error_t *parse_client_hello_finish(sln_hs_baton_t *hs,
+                                                 void *baton) {
   return selene_publish(hs->s, SELENE__EVENT_HS_GOT_CLIENT_HELLO);
 }
 
-static void
-parse_client_hello_destroy(sln_hs_baton_t *hs, void *baton)
-{
-  ch_baton_t *chb = (ch_baton_t*)baton;
+static void parse_client_hello_destroy(sln_hs_baton_t *hs, void *baton) {
+  ch_baton_t *chb = (ch_baton_t *)baton;
 
   if (chb->ch.server_name != NULL) {
     /* TODO: centralize */
-    sln_free(hs->s, (char*)chb->ch.server_name);
+    sln_free(hs->s, (char *)chb->ch.server_name);
   }
 
   if (chb->ch.ciphers != NULL) {
@@ -472,9 +452,9 @@ parse_client_hello_destroy(sln_hs_baton_t *hs, void *baton)
   sln_free(hs->s, chb);
 }
 
-selene_error_t*
-sln_handshake_parse_client_hello_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, void **baton)
-{
+selene_error_t *sln_handshake_parse_client_hello_setup(sln_hs_baton_t *hs,
+                                                       sln_tok_value_t *v,
+                                                       void **baton) {
   ch_baton_t *chb = sln_calloc(hs->s, sizeof(ch_baton_t));
   chb->state = SLN_HS_CLIENT_HELLO_VERSION;
   hs->current_msg_step = parse_client_hello_step;
@@ -483,6 +463,6 @@ sln_handshake_parse_client_hello_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, v
   hs->baton->msg.client_hello = &chb->ch;
   v->next = TOK_COPY_BYTES;
   v->wantlen = 2;
-  *baton = (void*)chb;
+  *baton = (void *)chb;
   return SELENE_SUCCESS;
 }

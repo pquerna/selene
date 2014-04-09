@@ -30,10 +30,10 @@ typedef enum tls_ct_e {
    * 0x16 22 Handshake
    * 0x17 23 Application
    */
-   TLS_CT_CHANGE_CIPHER_SPEC = 20,
-   TLS_CT_ALERT = 21,
-   TLS_CT_HANDSHAKE = 22,
-   TLS_CT_APPLICATION = 23
+  TLS_CT_CHANGE_CIPHER_SPEC = 20,
+  TLS_CT_ALERT = 21,
+  TLS_CT_HANDSHAKE = 22,
+  TLS_CT_APPLICATION = 23
 } tls_ct_e;
 
 typedef enum tls_record_state_e {
@@ -61,21 +61,16 @@ typedef struct rtls_baton_t {
   size_t consume;
 } rtls_baton_t;
 
-static int
-is_valid_content_type(uint8_t input) {
-  if (input == TLS_CT_CHANGE_CIPHER_SPEC ||
-      input == TLS_CT_ALERT ||
-      input == TLS_CT_HANDSHAKE ||
-      input == TLS_CT_APPLICATION) {
+static int is_valid_content_type(uint8_t input) {
+  if (input == TLS_CT_CHANGE_CIPHER_SPEC || input == TLS_CT_ALERT ||
+      input == TLS_CT_HANDSHAKE || input == TLS_CT_APPLICATION) {
     return 1;
   }
   return 0;
 }
 
-static selene_error_t*
-read_tls(sln_tok_value_t *v, void *baton_)
-{
-  rtls_baton_t *rtls = (rtls_baton_t*)baton_;
+static selene_error_t *read_tls(sln_tok_value_t *v, void *baton_) {
+  rtls_baton_t *rtls = (rtls_baton_t *)baton_;
   sln_parser_baton_t *baton = rtls->baton;
   int ctint;
 
@@ -92,10 +87,11 @@ read_tls(sln_tok_value_t *v, void *baton_)
       if ((ctint == 'G' && memcmp(&v->v.bytes[0], "ET ", 3) == 0) ||
           (ctint == 'P' && memcmp(&v->v.bytes[0], "OST", 3) == 0)) {
         selene_publish(rtls->s, SELENE_EVENT_TLS_GOT_HTTP);
-        return selene_error_create(SELENE_EINVAL, "Got possible HTTP request instead of TLS?");
-      }
-      else {
-        return selene_error_createf(SELENE_EINVAL, "Invalid content type: %u", rtls->content_type);
+        return selene_error_create(SELENE_EINVAL,
+                                   "Got possible HTTP request instead of TLS?");
+      } else {
+        return selene_error_createf(SELENE_EINVAL, "Invalid content type: %u",
+                                    rtls->content_type);
       }
       break;
     case TLS_RS_CONTENT_TYPE:
@@ -109,10 +105,10 @@ read_tls(sln_tok_value_t *v, void *baton_)
           v->next = TOK_COPY_BYTES;
           v->wantlen = 3;
           break;
-        }
-        else {
+        } else {
           /* TODO: send alert breaking connection */
-          return selene_error_createf(SELENE_EINVAL, "Invalid content type: %u", rtls->content_type);
+          return selene_error_createf(SELENE_EINVAL, "Invalid content type: %u",
+                                      rtls->content_type);
         }
       }
       baton->got_first_packet = 1;
@@ -129,7 +125,8 @@ read_tls(sln_tok_value_t *v, void *baton_)
       v->wantlen = 2;
       break;
     case TLS_RS_LENGTH:
-      rtls->length = (((unsigned char)v->v.bytes[0]) << 8 |  ((unsigned char)v->v.bytes[1]));
+      rtls->length = (((unsigned char)v->v.bytes[0]) << 8 |
+                      ((unsigned char)v->v.bytes[1]));
       rtls->state = TLS_RS_MESSAGE;
       rtls->consume += 2;
       v->next = TOK_COPY_BRIGADE;
@@ -169,11 +166,9 @@ read_tls(sln_tok_value_t *v, void *baton_)
   return SELENE_SUCCESS;
 }
 
-selene_error_t*
-sln_io_tls_read(selene_t *s, sln_parser_baton_t *baton)
-{
+selene_error_t *sln_io_tls_read(selene_t *s, sln_parser_baton_t *baton) {
   rtls_baton_t rtls;
-  selene_error_t* err;
+  selene_error_t *err;
 
   do {
     slnDbg(s, "tls read pending: %d", (int)sln_brigade_size(s->bb.in_enc));
@@ -199,18 +194,14 @@ sln_io_tls_read(selene_t *s, sln_parser_baton_t *baton)
       baton->peer_version_major = rtls.version_major;
       baton->peer_version_minor = rtls.version_minor;
     }
-  } while (err == SELENE_SUCCESS &&
-           rtls.state == TLS_RS__DONE &&
+  } while (err == SELENE_SUCCESS && rtls.state == TLS_RS__DONE &&
            !SLN_BRIGADE_EMPTY(s->bb.in_enc));
 
   return SELENE_SUCCESS;
 }
 
-static void get_suite_info(selene_cipher_suite_e suite,
-                           size_t *maclen,
-                           size_t *keylen,
-                           size_t *ivlen)
-{
+static void get_suite_info(selene_cipher_suite_e suite, size_t *maclen,
+                           size_t *keylen, size_t *ivlen) {
   switch (suite) {
     case SELENE_CS_RSA_WITH_RC4_128_SHA:
       *maclen = 20;
@@ -234,9 +225,7 @@ static void get_suite_info(selene_cipher_suite_e suite,
   }
 }
 
-static selene_error_t*
-init_params(selene_t *s)
-{
+static selene_error_t *init_params(selene_t *s) {
   sln_parser_baton_t *baton = s->backend_baton;
 
   if (baton->params_init == 1) {
@@ -257,12 +246,10 @@ init_params(selene_t *s)
     if (s->mode == SLN_MODE_CLIENT) {
       clientp = &baton->active_send_parameters;
       serverp = &baton->active_recv_parameters;
-    }
-    else {
+    } else {
       serverp = &baton->active_send_parameters;
       clientp = &baton->active_recv_parameters;
     }
-
 
     outlen = (maclen * 2) + (keylen * 2) + (ivlen * 2);
 
@@ -275,13 +262,8 @@ init_params(selene_t *s)
     memcpy(buf, &baton->server_utc_unix_time, 32);
     memcpy(buf + 32, &baton->client_utc_unix_time, 32);
 
-    sln_prf(s, "key expansion", strlen("key expansion"),
-      baton->master_secret,
-      SLN_SECRET_LENGTH,
-      buf,
-      64,
-      kebuf,
-      outlen);
+    sln_prf(s, "key expansion", strlen("key expansion"), baton->master_secret,
+            SLN_SECRET_LENGTH, buf, 64, kebuf, outlen);
 
     memcpy(clientp->mac_secret, kebuf + off, maclen);
     off += maclen;
@@ -300,10 +282,11 @@ init_params(selene_t *s)
       off += ivlen;
     }
 
+    sln_hmac_create(s, SLN_HMAC_SHA1, clientp->mac_secret, maclen,
+                    &clientp->hmac);
 
-    sln_hmac_create(s, SLN_HMAC_SHA1, clientp->mac_secret, maclen, &clientp->hmac);
-
-    sln_hmac_create(s, SLN_HMAC_SHA1, serverp->mac_secret, maclen, &serverp->hmac);
+    sln_hmac_create(s, SLN_HMAC_SHA1, serverp->mac_secret, maclen,
+                    &serverp->hmac);
 
     baton->params_init = 1;
   }
@@ -311,9 +294,7 @@ init_params(selene_t *s)
   return SELENE_SUCCESS;
 }
 
-selene_error_t*
-sln_tls_params_update_mac(selene_t *s, sln_bucket_t *b)
-{
+selene_error_t *sln_tls_params_update_mac(selene_t *s, sln_bucket_t *b) {
   sln_parser_baton_t *baton = s->backend_baton;
   sln_params_t *p;
 
@@ -325,9 +306,8 @@ sln_tls_params_update_mac(selene_t *s, sln_bucket_t *b)
   return SELENE_SUCCESS;
 }
 
-selene_error_t*
-sln_tls_params_encrypt(selene_t *s, sln_bucket_t *b, sln_bucket_t **out)
-{
+selene_error_t *sln_tls_params_encrypt(selene_t *s, sln_bucket_t *b,
+                                       sln_bucket_t **out) {
   sln_parser_baton_t *baton = s->backend_baton;
   sln_params_t *p;
 
@@ -347,8 +327,6 @@ sln_tls_params_encrypt(selene_t *s, sln_bucket_t *b, sln_bucket_t **out)
       break;
   }
 
-
   /* TODO: padding, sln_cryptor_blocksize() */
   return SELENE_SUCCESS;
 }
-

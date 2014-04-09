@@ -20,13 +20,12 @@
 #include "sln_tok.h"
 #include "common.h"
 
-static selene_error_t *
-sln_io_alert(selene_t *s, sln_alert_level_e level, sln_alert_description_e desc)
-{
+static selene_error_t *sln_io_alert(selene_t *s, sln_alert_level_e level,
+                                    sln_alert_description_e desc) {
   sln_bucket_t *balert = NULL;
   sln_msg_alert_t alert;
 
-  alert.level =  level;
+  alert.level = level;
   alert.description = desc;
 
   SELENE_ERR(sln_alert_serialize(s, &alert, &balert));
@@ -36,22 +35,16 @@ sln_io_alert(selene_t *s, sln_alert_level_e level, sln_alert_description_e desc)
   return SELENE_SUCCESS;
 }
 
-selene_error_t *
-sln_io_alert_fatal(selene_t *s, sln_alert_description_e desc)
-{
+selene_error_t *sln_io_alert_fatal(selene_t *s, sln_alert_description_e desc) {
   return sln_io_alert(s, SLN_ALERT_LEVEL_FATAL, desc);
 }
 
-selene_error_t *
-sln_io_alert_warning(selene_t *s, sln_alert_description_e desc)
-{
+selene_error_t *sln_io_alert_warning(selene_t *s,
+                                     sln_alert_description_e desc) {
   return sln_io_alert(s, SLN_ALERT_LEVEL_WARNING, desc);
 }
 
-
-selene_error_t*
-sln_io_alert_read(selene_t *s, sln_parser_baton_t *baton)
-{
+selene_error_t *sln_io_alert_read(selene_t *s, sln_parser_baton_t *baton) {
   sln_alert_baton_t ab;
 
   ab.s = s;
@@ -65,7 +58,9 @@ sln_io_alert_read(selene_t *s, sln_parser_baton_t *baton)
     /* TODO: emit event for alert */
     /* TODO: handle close notify */
     baton->connstate = SLN_CONNSTATE_ALERT_FATAL;
-    baton->fatal_err = selene_error_createf(SELENE_EINVAL, "TLS Alert: type:%d  msg:%d", ab.alert->level, ab.alert->description);
+    baton->fatal_err =
+        selene_error_createf(SELENE_EINVAL, "TLS Alert: type:%d  msg:%d",
+                             ab.alert->level, ab.alert->description);
     sln_free(s, ab.alert);
     return selene_error_dup(baton->fatal_err);
   }

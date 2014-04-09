@@ -18,17 +18,10 @@
 #include "sln_types.h"
 #include "sln_hmac.h"
 
-size_t sln_hmac_length(sln_hmac_t *h)
-{
+size_t sln_hmac_length(sln_hmac_t *h) {
   switch (h->type) {
-    case SLN_HMAC_MD5:
-    {
-      return SLN_MD5_DIGEST_LENGTH;
-    }
-    case SLN_HMAC_SHA1:
-    {
-      return SLN_SHA1_DIGEST_LENGTH;
-    }
+    case SLN_HMAC_MD5: { return SLN_MD5_DIGEST_LENGTH; }
+    case SLN_HMAC_SHA1: { return SLN_SHA1_DIGEST_LENGTH; }
   }
 
   /* unreached */

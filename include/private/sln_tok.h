@@ -48,8 +48,8 @@ typedef struct sln_tok_value_t {
   } v;
 } sln_tok_value_t;
 
-typedef selene_error_t* (sln_tok_cb)(sln_tok_value_t *v, void *baton);
+typedef selene_error_t *(sln_tok_cb)(sln_tok_value_t *v, void *baton);
 
-selene_error_t* sln_tok_parser(sln_brigade_t *bb, sln_tok_cb cb, void *baton);
+selene_error_t *sln_tok_parser(sln_brigade_t *bb, sln_tok_cb cb, void *baton);
 
 #endif

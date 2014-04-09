@@ -18,19 +18,24 @@
 #ifndef _sln_encrypt_h_
 #define _sln_encrypt_h_
 
-
 size_t sln_cryptor_blocksize(sln_cryptor_t *enc);
 
 #ifdef SLN_HAVE_OSX_COMMONCRYPTO
-selene_error_t* sln_cryptor_osx_cc_create(selene_t *s, int encrypt,
-                                          sln_cipher_e type, const char* key, const char* iv, sln_cryptor_t **p_enc);
-void sln_cryptor_osx_cc_encrypt(sln_cryptor_t *enc, const void *data, size_t len, char *buf, size_t *blen);
+selene_error_t *sln_cryptor_osx_cc_create(selene_t *s, int encrypt,
+                                          sln_cipher_e type, const char *key,
+                                          const char *iv,
+                                          sln_cryptor_t **p_enc);
+void sln_cryptor_osx_cc_encrypt(sln_cryptor_t *enc, const void *data,
+                                size_t len, char *buf, size_t *blen);
 void sln_cryptor_osx_cc_destroy(sln_cryptor_t *enc);
 #endif
 
-selene_error_t* sln_cryptor_openssl_create(selene_t *s, int encrypt,
-                                           sln_cipher_e type, const char* key, const char* iv, sln_cryptor_t **p_enc);
-void sln_cryptor_openssl_encrypt(sln_cryptor_t *enc, const void *data, size_t len, char *buf, size_t *blen);
+selene_error_t *sln_cryptor_openssl_create(selene_t *s, int encrypt,
+                                           sln_cipher_e type, const char *key,
+                                           const char *iv,
+                                           sln_cryptor_t **p_enc);
+void sln_cryptor_openssl_encrypt(sln_cryptor_t *enc, const void *data,
+                                 size_t len, char *buf, size_t *blen);
 void sln_cryptor_openssl_destroy(sln_cryptor_t *enc);
 
 /* TODO: windows */

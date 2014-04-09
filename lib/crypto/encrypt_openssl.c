@@ -20,41 +20,41 @@
 #include <openssl/aes.h>
 #include <openssl/obj_mac.h>
 
-selene_error_t*
-sln_cryptor_openssl_create(selene_t *s,
-                           int encypt,
-                           sln_cipher_e type,
-                           const char* key,
-                           const char* iv,
-                           sln_cryptor_t **p_enc)
-{
+selene_error_t *sln_cryptor_openssl_create(selene_t *s, int encypt,
+                                           sln_cipher_e type, const char *key,
+                                           const char *iv,
+                                           sln_cryptor_t **p_enc) {
   sln_cryptor_t *enc;
   const EVP_CIPHER *cipherType = NULL;
   EVP_CIPHER_CTX *ctx;
 
   switch (type) {
-  case SLN_CIPHER_AES_128_CBC:
-    cipherType = EVP_get_cipherbyname(SN_aes_128_cbc);
-    break;
-  case SLN_CIPHER_AES_256_CBC:
-    cipherType = EVP_get_cipherbyname(SN_aes_256_cbc);
-    break;
-  case SLN_CIPHER_RC4:
-	  cipherType = EVP_get_cipherbyname(SN_rc4);
-    break;
-  default:
-    return selene_error_createf(SELENE_ENOTIMPL, "Unsupported cipher type: %d", type);
+    case SLN_CIPHER_AES_128_CBC:
+      cipherType = EVP_get_cipherbyname(SN_aes_128_cbc);
+      break;
+    case SLN_CIPHER_AES_256_CBC:
+      cipherType = EVP_get_cipherbyname(SN_aes_256_cbc);
+      break;
+    case SLN_CIPHER_RC4:
+      cipherType = EVP_get_cipherbyname(SN_rc4);
+      break;
+    default:
+      return selene_error_createf(SELENE_ENOTIMPL,
+                                  "Unsupported cipher type: %d", type);
   }
 
   if (cipherType == NULL) {
-    return selene_error_createf(SELENE_ENOTIMPL, "Unsupported cipher type (even though it should be): %d", type);
+    return selene_error_createf(
+        SELENE_ENOTIMPL,
+        "Unsupported cipher type (even though it should be): %d", type);
   }
 
   ctx = sln_alloc(s, sizeof(EVP_CIPHER_CTX));
 
   /* TODO: engine support (?) */
   /* TODO: encrypt/decrypt mode */
-  EVP_CipherInit_ex(ctx, cipherType, NULL, (const unsigned char *)key, (const unsigned char *)iv, encypt);
+  EVP_CipherInit_ex(ctx, cipherType, NULL, (const unsigned char *)key,
+                    (const unsigned char *)iv, encypt);
 
   enc = sln_alloc(s, sizeof(sln_cryptor_t));
   enc->s = s;
@@ -65,9 +65,8 @@ sln_cryptor_openssl_create(selene_t *s,
   return SELENE_SUCCESS;
 }
 
-void
-sln_cryptor_openssl_encrypt(sln_cryptor_t *enc, const void *data, size_t len, char *buf, size_t *blen)
-{
+void sln_cryptor_openssl_encrypt(sln_cryptor_t *enc, const void *data,
+                                 size_t len, char *buf, size_t *blen) {
   EVP_CIPHER_CTX *ctx = enc->baton;
   int outl = *blen;
 
@@ -76,9 +75,7 @@ sln_cryptor_openssl_encrypt(sln_cryptor_t *enc, const void *data, size_t len, ch
   *blen = outl;
 }
 
-void
-sln_cryptor_openssl_destroy(sln_cryptor_t *enc)
-{
+void sln_cryptor_openssl_destroy(sln_cryptor_t *enc) {
   selene_t *s = enc->s;
   EVP_CIPHER_CTX *ctx = enc->baton;
 
@@ -86,5 +83,3 @@ sln_cryptor_openssl_destroy(sln_cryptor_t *enc)
 
   sln_free(s, enc);
 }
-
-

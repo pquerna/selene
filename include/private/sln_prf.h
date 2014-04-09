@@ -19,15 +19,8 @@
 #define _sln_prf_h_
 
 /* TODO: think about interface more */
-selene_error_t*
-sln_prf(selene_t *s,
-        const char *label,
-        size_t labellen,
-        const char *secret,
-        size_t secretlen,
-        const char *seed,
-        size_t seedlen,
-        char *output,
-        size_t outlen);
+selene_error_t *sln_prf(selene_t *s, const char *label, size_t labellen,
+                        const char *secret, size_t secretlen, const char *seed,
+                        size_t seedlen, char *output, size_t outlen);
 
 #endif

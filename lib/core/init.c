@@ -25,9 +25,7 @@
 
 static int initialized = 0;
 
-static selene_error_t*
-sln_initialize(void)
-{
+static selene_error_t *sln_initialize(void) {
   /* TODO: Atomics ? */
   if (initialized++) {
     return SELENE_SUCCESS;
@@ -39,9 +37,7 @@ sln_initialize(void)
   return SELENE_SUCCESS;
 }
 
-static void
-sln_terminate(void)
-{
+static void sln_terminate(void) {
   initialized--;
   if (initialized) {
     return;
@@ -52,9 +48,8 @@ sln_terminate(void)
   return;
 }
 
-static selene_error_t*
-sln_create(selene_conf_t *conf, sln_mode_e mode, selene_t **p_sel)
-{
+static selene_error_t *sln_create(selene_conf_t *conf, sln_mode_e mode,
+                                  selene_t **p_sel) {
   selene_t *s;
 
   SELENE_ERR(sln_initialize());
@@ -87,21 +82,15 @@ sln_create(selene_conf_t *conf, sln_mode_e mode, selene_t **p_sel)
   return SELENE_SUCCESS;
 }
 
-selene_error_t*
-selene_client_create(selene_conf_t *conf, selene_t **p_sel)
-{
+selene_error_t *selene_client_create(selene_conf_t *conf, selene_t **p_sel) {
   return sln_create(conf, SLN_MODE_CLIENT, p_sel);
 }
 
-selene_error_t*
-selene_server_create(selene_conf_t *conf, selene_t **p_sel)
-{
+selene_error_t *selene_server_create(selene_conf_t *conf, selene_t **p_sel) {
   return sln_create(conf, SLN_MODE_SERVER, p_sel);
 }
 
-void 
-selene_destroy(selene_t *s)
-{
+void selene_destroy(selene_t *s) {
   s->state = SLN_STATE_DEAD;
 
   sln_iobb_destroy(&s->bb);
@@ -111,7 +100,7 @@ selene_destroy(selene_t *s)
   s->backend.destroy(s);
 
   if (s->client_sni != NULL) {
-    sln_free(s, (void*)s->client_sni);
+    sln_free(s, (void *)s->client_sni);
     s->client_sni = NULL;
   }
 
@@ -127,12 +116,6 @@ selene_destroy(selene_t *s)
   sln_free(s, s);
 
   sln_terminate();
-
 }
 
-
-selene_error_t*
-selene_start(selene_t *s)
-{
-  return s->backend.start(s);
-}
+selene_error_t *selene_start(selene_t *s) { return s->backend.start(s); }

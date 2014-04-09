@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 /**
  * @file selene_visibility.h
  */

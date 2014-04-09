@@ -21,10 +21,11 @@
 #define _sln_arrays_h_
 
 int aln_is_empty_array(const sln_array_header_t *a);
-sln_array_header_t* sln_array_make(selene_alloc_t *alloc, int nelts, int elt_size);
+sln_array_header_t *sln_array_make(selene_alloc_t *alloc, int nelts,
+                                   int elt_size);
 void sln_array_clear(sln_array_header_t *arr);
-void* sln_array_pop(sln_array_header_t *arr);
-void* sln_array_push(sln_array_header_t *arr);
+void *sln_array_pop(sln_array_header_t *arr);
+void *sln_array_push(sln_array_header_t *arr);
 void sln_array_destroy(sln_array_header_t *arr);
 
 /** A helper macro for accessing a member of an APR array.
@@ -35,7 +36,7 @@ void sln_array_destroy(sln_array_header_t *arr);
  *
  * @return the item at index i
  */
-#define SLN_ARRAY_IDX(ary,i,type) (((type *)(ary)->elts)[i])
+#define SLN_ARRAY_IDX(ary, i, type) (((type *)(ary)->elts)[i])
 
 /** A helper macro for pushing elements into an APR array.
  *
@@ -44,6 +45,6 @@ void sln_array_destroy(sln_array_header_t *arr);
  *
  * @return the location where the new object should be placed
  */
-#define SLN_ARRAY_PUSH(ary,type) (*((type *)sln_array_push(ary)))
+#define SLN_ARRAY_PUSH(ary, type) (*((type *)sln_array_push(ary)))
 
 #endif

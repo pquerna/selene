@@ -18,17 +18,17 @@
 #ifndef _sln_rsa_h_
 #define _sln_rsa_h_
 
-
 #ifdef SLN_HAVE_OSX_COMMONCRYPTO
-selene_error_t* sln_rsa_osx_cc_public_encrypt(selene_t *s, sln_pubkey_t *key,
-                                              const char *input, size_t inputlen, char *output);
+selene_error_t *sln_rsa_osx_cc_public_encrypt(selene_t *s, sln_pubkey_t *key,
+                                              const char *input,
+                                              size_t inputlen, char *output);
 size_t sln_rsa_osx_cc_size(sln_pubkey_t *key);
 #endif
 
-selene_error_t* sln_rsa_openssl_public_encrypt(selene_t *s, sln_pubkey_t *key,
-                                               const char *input, size_t inputlen, char *output);
+selene_error_t *sln_rsa_openssl_public_encrypt(selene_t *s, sln_pubkey_t *key,
+                                               const char *input,
+                                               size_t inputlen, char *output);
 size_t sln_rsa_openssl_size(sln_pubkey_t *key);
-
 
 #if defined(SLN_HAVE_OSX_COMMONCRYPTO) && defined(__never__)
 #define sln_rsa_public_encrypt sln_rsa_osx_cc_public_encrypt

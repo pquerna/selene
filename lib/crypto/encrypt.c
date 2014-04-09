@@ -18,8 +18,7 @@
 #include "sln_types.h"
 #include "sln_hmac.h"
 
-size_t sln_cryptor_blocksize(sln_cryptor_t *enc)
-{
+size_t sln_cryptor_blocksize(sln_cryptor_t *enc) {
   switch (enc->type) {
     case SLN_CIPHER_AES_128_CBC:
     case SLN_CIPHER_AES_256_CBC:

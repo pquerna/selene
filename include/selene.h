@@ -19,7 +19,7 @@
  * @file selene.h
  */
 
-#include <stdlib.h> /* for size_t */
+#include <stdlib.h>     /* for size_t */
 #include <sys/socket.h> /* for iovec */
 
 #include "selene_visibility.h"
@@ -42,12 +42,14 @@ typedef struct selene_t selene_t;
 /**
  * Creates a Client SSL/TLS Context.
  */
-SELENE_API(selene_error_t*) selene_client_create(selene_conf_t *conf, selene_t **ctxt);
+SELENE_API(selene_error_t *)
+    selene_client_create(selene_conf_t *conf, selene_t **ctxt);
 
 /**
  * Creates a Server SSL/TLS Context.
  */
-SELENE_API(selene_error_t*) selene_server_create(selene_conf_t *conf, selene_t **ctxt);
+SELENE_API(selene_error_t *)
+    selene_server_create(selene_conf_t *conf, selene_t **ctxt);
 
 /**
  * Destroys a SSL/TLS Context of any type.  After this
@@ -59,17 +61,17 @@ SELENE_API(void) selene_destroy(selene_t *ctxt);
  * Starts processing, call after you have Subscribed to events,
  * and set any options on a created context.
  */
-SELENE_API(selene_error_t*) selene_start(selene_t *ctxt);
+SELENE_API(selene_error_t *) selene_start(selene_t *ctxt);
 
-/* (client only) Set Server name indication extension. Must be called before selene_start. */
-SELENE_API(selene_error_t*)
-selene_client_name_indication(selene_t *ctxt, const char* sni);
+/* (client only) Set Server name indication extension. Must be called before
+ * selene_start. */
+SELENE_API(selene_error_t *)
+selene_client_name_indication(selene_t *ctxt, const char *sni);
 
-/* (client only) Add a protocol to the next protocol negotiation list, like 
+/* (client only) Add a protocol to the next protocol negotiation list, like
  *  'spdy/2' or 'http/1.1'. Must be called before selene_start. */
-SELENE_API(selene_error_t*)
-selene_client_next_protocol_add(selene_t *ctxt, const char* protocol);
-
+SELENE_API(selene_error_t *)
+selene_client_next_protocol_add(selene_t *ctxt, const char *protocol);
 
 /* Possible Event Types */
 typedef enum {
@@ -97,13 +99,12 @@ typedef enum {
 
 typedef enum {
   SELENE_IOWANT__UNUSED0 = 0,
-  SELENE_IOWANT_READ = (1U<<1),
-  SELENE_IOWANT_WRITE = (1U<<2),
-  SELENE_IOWANT__MAX = (1U<<3)
+  SELENE_IOWANT_READ = (1U << 1),
+  SELENE_IOWANT_WRITE = (1U << 2),
+  SELENE_IOWANT__MAX = (1U << 3)
 } selene_iowant_e;
 
-typedef selene_error_t* (selene_event_cb)(selene_t *ctxt,
-                                          selene_event_e event,
+typedef selene_error_t *(selene_event_cb)(selene_t *ctxt, selene_event_e event,
                                           void *baton);
 
 /**
@@ -117,82 +118,66 @@ typedef selene_error_t* (selene_event_cb)(selene_t *ctxt,
  * on success or failure -- see the documenation about a specific event
  * for details.
  */
-SELENE_API(selene_error_t*) selene_handler_set(selene_t *ctxt,
-                                               selene_event_e event,
-                                               selene_event_cb cb,
-                                               void *baton);
+SELENE_API(selene_error_t *)
+    selene_handler_set(selene_t *ctxt, selene_event_e event, selene_event_cb cb,
+                       void *baton);
 /**
  * Subscribe to an Event.
  */
-SELENE_API(selene_error_t*) selene_subscribe(selene_t *ctxt,
-                                             selene_event_e event,
-                                             selene_event_cb cb,
-                                             void *baton);
+SELENE_API(selene_error_t *)
+    selene_subscribe(selene_t *ctxt, selene_event_e event, selene_event_cb cb,
+                     void *baton);
 /**
  * Removes Subscribtion to an Event, searching for both a matching cb and baton.
  */
-SELENE_API(selene_error_t*) selene_unsubscribe(selene_t *ctxt,
-                                               selene_event_e event,
-                                               selene_event_cb cb,
-                                               void *baton);
+SELENE_API(selene_error_t *)
+    selene_unsubscribe(selene_t *ctxt, selene_event_e event, selene_event_cb cb,
+                       void *baton);
 /**
- * Publishes an event. Note that this is used by the internals of 
+ * Publishes an event. Note that this is used by the internals of
  * the library to do its own processing, so don't blindly publish
  * events.
  */
-SELENE_API(selene_error_t*) selene_publish(selene_t *ctxt,
-                                           selene_event_e event);
+SELENE_API(selene_error_t *)
+    selene_publish(selene_t *ctxt, selene_event_e event);
 
 /* maybe not temp api*/
-SELENE_API(selene_error_t*) selene_io_want(selene_t *ctxt, selene_iowant_e *want);
+SELENE_API(selene_error_t *)
+    selene_io_want(selene_t *ctxt, selene_iowant_e *want);
 
 /* Hand cleartext bytes to Selene */
-SELENE_API(selene_error_t*)
-selene_io_in_clear_bytes(selene_t *ctxt,
-                         const char* bytes,
-                         size_t length);
+SELENE_API(selene_error_t *)
+selene_io_in_clear_bytes(selene_t *ctxt, const char *bytes, size_t length);
 
-SELENE_API(selene_error_t*)
-selene_io_in_clear_iovec(selene_t *s,
-                          const struct iovec *vec,
-                          int iovcnt);
+SELENE_API(selene_error_t *)
+selene_io_in_clear_iovec(selene_t *s, const struct iovec *vec, int iovcnt);
 
 /* Hand encrypted input bytes to Selene */
-SELENE_API(selene_error_t*)
-selene_io_in_enc_bytes(selene_t *ctxt,
-                       const char* bytes,
-                       size_t length);
+SELENE_API(selene_error_t *)
+selene_io_in_enc_bytes(selene_t *ctxt, const char *bytes, size_t length);
 
 /* Read cleartext bytes out of Selene and parse by your application */
-SELENE_API(selene_error_t*)
-selene_io_out_clear_bytes(selene_t *ctxt,
-                          char* buffer,
-                          size_t blen,
-                          size_t *length,
-                          size_t *remaining);
-
+SELENE_API(selene_error_t *)
+selene_io_out_clear_bytes(selene_t *ctxt, char *buffer, size_t blen,
+                          size_t *length, size_t *remaining);
 
 /* Take encrypted bytes out of Selene, and send to the destination */
-SELENE_API(selene_error_t*)
-selene_io_out_enc_bytes(selene_t *ctxt,
-                        char* buffer,
-                        size_t blen,
-                        size_t *length,
-                        size_t *remaining);
-
+SELENE_API(selene_error_t *)
+selene_io_out_enc_bytes(selene_t *ctxt, char *buffer, size_t blen,
+                        size_t *length, size_t *remaining);
 
 SELENE_API(void)
-selene_log_msg_get(selene_t *ctxt, const char **log_msg,
-                   size_t *log_msg_len);
+selene_log_msg_get(selene_t *ctxt, const char **log_msg, size_t *log_msg_len);
 
 /**
  * May return NULL until SELENE_EVENT_VALIDATE_CERTIFICATE event has fired.
  */
-SELENE_API(selene_cert_chain_t*)
+SELENE_API(selene_cert_chain_t *)
 selene_peer_certchain(selene_t *ctxt);
 
 /**
- * Mark a the peer cert chain as trusted (1) or untrusted (0).  Must be called for
+ * Mark a the peer cert chain as trusted (1) or untrusted (0).  Must be called
+ * for
  * SELENE_EVENT_VALIDATE_CERTIFICATE event to complete.  If untrusted,
  * a TLS alert will be sent, and the connection will be closed.
  */
@@ -201,7 +186,6 @@ selene_complete_validate_certificate(selene_t *ctxt, int valid);
 
 SELENE_API(void)
 selene_complete_select_certificates(selene_t *s, selene_cert_chain_t *chain);
-
 
 #ifdef __cplusplus
 }

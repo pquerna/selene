@@ -18,9 +18,8 @@
 #include "sln_types.h"
 #include "sln_digest.h"
 
-selene_error_t*
-sln_digest_openssl_create(selene_t *s, sln_digest_e type, sln_digest_t **p_digest)
-{
+selene_error_t *sln_digest_openssl_create(selene_t *s, sln_digest_e type,
+                                          sln_digest_t **p_digest) {
   sln_digest_t *d = sln_alloc(s, sizeof(sln_digest_t));
   EVP_MD_CTX *mdctx = EVP_MD_CTX_create();
   const EVP_MD *mt = NULL;
@@ -30,13 +29,11 @@ sln_digest_openssl_create(selene_t *s, sln_digest_e type, sln_digest_t **p_diges
   d->baton = mdctx;
 
   switch (d->type) {
-    case SLN_DIGEST_MD5:
-    {
+    case SLN_DIGEST_MD5: {
       mt = EVP_md5();
       break;
     }
-    case SLN_DIGEST_SHA1:
-    {
+    case SLN_DIGEST_SHA1: {
       mt = EVP_sha1();
       break;
     }
@@ -50,23 +47,17 @@ sln_digest_openssl_create(selene_t *s, sln_digest_e type, sln_digest_t **p_diges
   return SELENE_SUCCESS;
 }
 
-void
-sln_digest_openssl_update(sln_digest_t *d, const void *data, size_t len)
-{
+void sln_digest_openssl_update(sln_digest_t *d, const void *data, size_t len) {
   EVP_MD_CTX *mdctx = d->baton;
   EVP_DigestUpdate(mdctx, data, len);
 }
 
-void
-sln_digest_openssl_final(sln_digest_t *d, unsigned char *md)
-{
+void sln_digest_openssl_final(sln_digest_t *d, unsigned char *md) {
   EVP_MD_CTX *mdctx = d->baton;
   EVP_DigestFinal_ex(mdctx, md, NULL);
 }
 
-void
-sln_digest_openssl_destroy(sln_digest_t *d)
-{
+void sln_digest_openssl_destroy(sln_digest_t *d) {
   selene_t *s = d->s;
   EVP_MD_CTX *mdctx = d->baton;
 
@@ -74,4 +65,3 @@ sln_digest_openssl_destroy(sln_digest_t *d)
 
   sln_free(s, d);
 }
-

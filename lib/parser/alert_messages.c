@@ -18,9 +18,8 @@
 #include "parser.h"
 #include "alert_messages.h"
 
-selene_error_t*
-sln_alert_serialize(selene_t *s, sln_msg_alert_t *alert, sln_bucket_t **p_b)
-{
+selene_error_t *sln_alert_serialize(selene_t *s, sln_msg_alert_t *alert,
+                                    sln_bucket_t **p_b) {
   sln_bucket_t *b = NULL;
   size_t len = 2;
 
@@ -34,11 +33,8 @@ sln_alert_serialize(selene_t *s, sln_msg_alert_t *alert, sln_bucket_t **p_b)
   return SELENE_SUCCESS;
 }
 
-static int
-is_valid_alert_level(int level)
-{
-  if (level == SLN_ALERT_LEVEL_WARNING ||
-      level == SLN_ALERT_LEVEL_FATAL) {
+static int is_valid_alert_level(int level) {
+  if (level == SLN_ALERT_LEVEL_WARNING || level == SLN_ALERT_LEVEL_FATAL) {
 
     return 1;
   }
@@ -46,9 +42,7 @@ is_valid_alert_level(int level)
   return 0;
 }
 
-static int
-is_valid_alert_description(int desc)
-{
+static int is_valid_alert_description(int desc) {
   if (desc == SLN_ALERT_DESC_CLOSE_NOTIFY ||
       desc == SLN_ALERT_DESC_UNEXPECTED_MESSAGE ||
       desc == SLN_ALERT_DESC_BAD_RECORD_MAC ||
@@ -81,11 +75,9 @@ is_valid_alert_description(int desc)
   return 0;
 }
 
-selene_error_t*
-sln_alert_parse(sln_tok_value_t *v, void *baton_)
-{
-  selene_error_t* err = SELENE_SUCCESS;
-  sln_alert_baton_t *ab = (sln_alert_baton_t*)baton_;
+selene_error_t *sln_alert_parse(sln_tok_value_t *v, void *baton_) {
+  selene_error_t *err = SELENE_SUCCESS;
+  sln_alert_baton_t *ab = (sln_alert_baton_t *)baton_;
 
   switch (ab->state) {
     case SLN_ALERT_STATE__INIT:
@@ -96,9 +88,9 @@ sln_alert_parse(sln_tok_value_t *v, void *baton_)
     case SLN_ALERT_STATE_LEVEL:
       ab->alert->level = v->v.bytes[0];
       if (!is_valid_alert_level(ab->alert->level)) {
-        err = selene_error_createf(SELENE_EINVAL, "Invalid alert level: %u", ab->alert->level);
-      }
-      else {
+        err = selene_error_createf(SELENE_EINVAL, "Invalid alert level: %u",
+                                   ab->alert->level);
+      } else {
         ab->state = SLN_ALERT_STATE_DESCRIPTION;
         v->next = TOK_COPY_BYTES;
         v->wantlen = 1;
@@ -123,4 +115,3 @@ sln_alert_parse(sln_tok_value_t *v, void *baton_)
   }
   return err;
 }
-

@@ -19,15 +19,14 @@
 #include <sys/stat.h>
 #include <string.h>
 
-char executable_path[PATHMAX] = { '\0' };
-char testdir_path[PATHMAX] = { '\0' };
+char executable_path[PATHMAX] = {'\0'};
+char testdir_path[PATHMAX] = {'\0'};
 
 #ifdef __APPLE__
 #include <mach-o/dyld.h> /* _NSGetExecutablePath */
 #endif
 
-static void get_executable_path()
-{
+static void get_executable_path() {
 #if defined(__APPLE__)
   uint32_t bufsize = sizeof(executable_path);
   _NSGetExecutablePath(executable_path, &bufsize);
@@ -55,8 +54,7 @@ void sln_tests_setup() {
   memcpy(testdir_path, executable_path, p - executable_path);
 }
 
-const char* sln_tests_load_cert(const char *fname)
-{
+const char *sln_tests_load_cert(const char *fname) {
   char p[PATHMAX];
   FILE *fp;
   struct stat s;
@@ -70,7 +68,7 @@ const char* sln_tests_load_cert(const char *fname)
 
   stat(p, &s);
 
-  buf = malloc(s.st_size+1);
+  buf = malloc(s.st_size + 1);
 
   fread(buf, s.st_size, 1, fp);
 

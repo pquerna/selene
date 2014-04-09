@@ -36,7 +36,7 @@
 
 /**
  * @defgroup sln_ring Ring Macro Implementations
- * @ingroup Selene 
+ * @ingroup Selene
  * A ring is a kind of doubly-linked list that can be manipulated
  * without knowing where its head is.
  * @{
@@ -64,10 +64,10 @@
  * object with enough earlier fields to accommodate the offsetof() used
  * to compute the ring sentinel below. You can usually ignore this caveat.
  */
-#define SLN_RING_ENTRY(elem) \
-  struct { \
-    struct elem * volatile next; \
-    struct elem * volatile prev; \
+#define SLN_RING_ENTRY(elem)    \
+  struct {                      \
+    struct elem *volatile next; \
+    struct elem *volatile prev; \
   }
 
 /**
@@ -86,9 +86,9 @@
  * element is just before the head.
  */
 #define SLN_RING_HEAD(head, elem) \
-  struct head { \
-    struct elem *next; \
-    struct elem *prev; \
+  struct head {                   \
+    struct elem *next;            \
+    struct elem *prev;            \
   }
 
 /**
@@ -154,7 +154,7 @@
  * @param link The name of the SLN_RING_ENTRY in the element struct
  */
 #define SLN_RING_SENTINEL(hp, elem, link) \
-    (struct elem *)((char *)(&(hp)->next) - offsetof(struct elem, link))
+  (struct elem *)((char *)(&(hp)->next) - offsetof(struct elem, link))
 
 /**
  * The first element of the ring
@@ -179,17 +179,16 @@
  */
 #define SLN_RING_PREV(ep, link) (ep)->link.prev
 
-
 /**
  * Initialize a ring
  * @param hp   The head of the ring
  * @param elem The name of the element struct
  * @param link The name of the SLN_RING_ENTRY in the element struct
  */
-#define SLN_RING_INIT(hp, elem, link) \
-  do { \
+#define SLN_RING_INIT(hp, elem, link)                           \
+  do {                                                          \
     SLN_RING_FIRST((hp)) = SLN_RING_SENTINEL((hp), elem, link); \
-    SLN_RING_LAST((hp)) = SLN_RING_SENTINEL((hp), elem, link); \
+    SLN_RING_LAST((hp)) = SLN_RING_SENTINEL((hp), elem, link);  \
   } while (0)
 
 /**
@@ -200,19 +199,18 @@
  * @return true or false
  */
 #define SLN_RING_EMPTY(hp, elem, link) \
-    (SLN_RING_FIRST((hp)) == SLN_RING_SENTINEL((hp), elem, link))
+  (SLN_RING_FIRST((hp)) == SLN_RING_SENTINEL((hp), elem, link))
 
 /**
  * Initialize a singleton element
  * @param ep   The element
  * @param link The name of the SLN_RING_ENTRY in the element struct
  */
-#define SLN_RING_ELEM_INIT(ep, link) \
-  do { \
+#define SLN_RING_ELEM_INIT(ep, link)  \
+  do {                                \
     SLN_RING_NEXT((ep), link) = (ep); \
     SLN_RING_PREV((ep), link) = (ep); \
   } while (0)
-
 
 /**
  * Splice the sequence ep1..epN into the ring before element lep
@@ -224,12 +222,12 @@
  * @param epN  Last element in the sequence to splice in
  * @param link The name of the SLN_RING_ENTRY in the element struct
  */
-#define SLN_RING_SPLICE_BEFORE(lep, ep1, epN, link) \
-  do { \
-    SLN_RING_NEXT((epN), link) = (lep); \
+#define SLN_RING_SPLICE_BEFORE(lep, ep1, epN, link)          \
+  do {                                                       \
+    SLN_RING_NEXT((epN), link) = (lep);                      \
     SLN_RING_PREV((ep1), link) = SLN_RING_PREV((lep), link); \
     SLN_RING_NEXT(SLN_RING_PREV((lep), link), link) = (ep1); \
-    SLN_RING_PREV((lep), link) = (epN); \
+    SLN_RING_PREV((lep), link) = (epN);                      \
   } while (0)
 
 /**
@@ -242,12 +240,12 @@
  * @param epN  Last element in the sequence to splice in
  * @param link The name of the SLN_RING_ENTRY in the element struct
  */
-#define SLN_RING_SPLICE_AFTER(lep, ep1, epN, link) \
-  do { \
-    SLN_RING_PREV((ep1), link) = (lep); \
+#define SLN_RING_SPLICE_AFTER(lep, ep1, epN, link)           \
+  do {                                                       \
+    SLN_RING_PREV((ep1), link) = (lep);                      \
     SLN_RING_NEXT((epN), link) = SLN_RING_NEXT((lep), link); \
     SLN_RING_PREV(SLN_RING_NEXT((lep), link), link) = (epN); \
-    SLN_RING_NEXT((lep), link) = (ep1); \
+    SLN_RING_NEXT((lep), link) = (ep1);                      \
   } while (0)
 
 /**
@@ -274,7 +272,6 @@
 #define SLN_RING_INSERT_AFTER(lep, nep, link) \
   SLN_RING_SPLICE_AFTER((lep), (nep), (nep), link)
 
-
 /**
  * Splice the sequence ep1..epN into the ring before the first element
  *   (..hp.. becomes ..hp..ep1..epN..)
@@ -285,8 +282,7 @@
  * @param link The name of the SLN_RING_ENTRY in the element struct
  */
 #define SLN_RING_SPLICE_HEAD(hp, ep1, epN, elem, link) \
-  SLN_RING_SPLICE_AFTER(SLN_RING_SENTINEL((hp), elem, link), \
-    (ep1), (epN), link)
+  SLN_RING_SPLICE_AFTER(SLN_RING_SENTINEL((hp), elem, link), (ep1), (epN), link)
 
 /**
  * Splice the sequence ep1..epN into the ring after the last element
@@ -297,9 +293,9 @@
  * @param elem The name of the element struct
  * @param link The name of the SLN_RING_ENTRY in the element struct
  */
-#define SLN_RING_SPLICE_TAIL(hp, ep1, epN, elem, link) \
-  SLN_RING_SPLICE_BEFORE(SLN_RING_SENTINEL((hp), elem, link), \
-    (ep1), (epN), link)
+#define SLN_RING_SPLICE_TAIL(hp, ep1, epN, elem, link)                      \
+  SLN_RING_SPLICE_BEFORE(SLN_RING_SENTINEL((hp), elem, link), (ep1), (epN), \
+                         link)
 
 /**
  * Insert the element nep into the ring before the first element
@@ -330,14 +326,13 @@
  * @param elem The name of the element struct
  * @param link The name of the SLN_RING_ENTRY in the element struct
  */
-#define SLN_RING_CONCAT(h1, h2, elem, link) \
-  do { \
-    if (!SLN_RING_EMPTY((h2), elem, link)) { \
-      SLN_RING_SPLICE_BEFORE(SLN_RING_SENTINEL((h1), elem, link), \
-        SLN_RING_FIRST((h2)), \
-        SLN_RING_LAST((h2)), link); \
-      SLN_RING_INIT((h2), elem, link); \
-    }\
+#define SLN_RING_CONCAT(h1, h2, elem, link)                                    \
+  do {                                                                         \
+    if (!SLN_RING_EMPTY((h2), elem, link)) {                                   \
+      SLN_RING_SPLICE_BEFORE(SLN_RING_SENTINEL((h1), elem, link),              \
+                             SLN_RING_FIRST((h2)), SLN_RING_LAST((h2)), link); \
+      SLN_RING_INIT((h2), elem, link);                                         \
+    }                                                                          \
   } while (0)
 
 /**
@@ -347,14 +342,13 @@
  * @param elem The name of the element struct
  * @param link The name of the SLN_RING_ENTRY in the element struct
  */
-#define SLN_RING_PREPEND(h1, h2, elem, link) \
-  do { \
-    if (!SLN_RING_EMPTY((h2), elem, link)) { \
-      SLN_RING_SPLICE_AFTER(SLN_RING_SENTINEL((h1), elem, link), \
-      SLN_RING_FIRST((h2)), \
-      SLN_RING_LAST((h2)), link); \
-      SLN_RING_INIT((h2), elem, link); \
-    } \
+#define SLN_RING_PREPEND(h1, h2, elem, link)                                  \
+  do {                                                                        \
+    if (!SLN_RING_EMPTY((h2), elem, link)) {                                  \
+      SLN_RING_SPLICE_AFTER(SLN_RING_SENTINEL((h1), elem, link),              \
+                            SLN_RING_FIRST((h2)), SLN_RING_LAST((h2)), link); \
+      SLN_RING_INIT((h2), elem, link);                                        \
+    }                                                                         \
   } while (0)
 
 /**
@@ -364,12 +358,12 @@
  * @param epN  Last element in the sequence to unsplice
  * @param link The name of the SLN_RING_ENTRY in the element struct
  */
-#define SLN_RING_UNSPLICE(ep1, epN, link) \
-  do { \
+#define SLN_RING_UNSPLICE(ep1, epN, link)             \
+  do {                                                \
     SLN_RING_NEXT(SLN_RING_PREV((ep1), link), link) = \
-      SLN_RING_NEXT((epN), link); \
+        SLN_RING_NEXT((epN), link);                   \
     SLN_RING_PREV(SLN_RING_NEXT((epN), link), link) = \
-      SLN_RING_PREV((ep1), link); \
+        SLN_RING_PREV((ep1), link);                   \
   } while (0)
 
 /**
@@ -378,8 +372,7 @@
  * @param ep   Element to remove
  * @param link The name of the SLN_RING_ENTRY in the element struct
  */
-#define SLN_RING_REMOVE(ep, link) \
-    SLN_RING_UNSPLICE((ep), (ep), link)
+#define SLN_RING_REMOVE(ep, link) SLN_RING_UNSPLICE((ep), (ep), link)
 
 /**
  * Iterate over a ring
@@ -388,10 +381,9 @@
  * @param elem The name of the element struct
  * @param link The name of the SLN_RING_ENTRY in the element struct
  */
-#define SLN_RING_FOREACH(ep, head, elem, link)                          \
-    for (ep = SLN_RING_FIRST(head);                                     \
-         ep != SLN_RING_SENTINEL(head, elem, link);                     \
-         ep = SLN_RING_NEXT(ep, link))
+#define SLN_RING_FOREACH(ep, head, elem, link)                               \
+  for (ep = SLN_RING_FIRST(head); ep != SLN_RING_SENTINEL(head, elem, link); \
+       ep = SLN_RING_NEXT(ep, link))
 
 /**
  * Iterate over a ring safe against removal of the current element
@@ -401,10 +393,10 @@
  * @param elem The name of the element struct
  * @param link The name of the SLN_RING_ENTRY in the element struct
  */
-#define SLN_RING_FOREACH_SAFE(ep1, ep2, head, elem, link)               \
-    for (ep1 = SLN_RING_FIRST(head), ep2 = SLN_RING_NEXT(ep1, link);    \
-         ep1 != SLN_RING_SENTINEL(head, elem, link);                    \
-         ep1 = ep2, ep2 = SLN_RING_NEXT(ep1, link))
+#define SLN_RING_FOREACH_SAFE(ep1, ep2, head, elem, link)          \
+  for (ep1 = SLN_RING_FIRST(head), ep2 = SLN_RING_NEXT(ep1, link); \
+       ep1 != SLN_RING_SENTINEL(head, elem, link);                 \
+       ep1 = ep2, ep2 = SLN_RING_NEXT(ep1, link))
 
 /* Debugging tools: */
 
@@ -412,52 +404,50 @@
 #include <stdio.h>
 #include <assert.h>
 
-#define SLN_RING_CHECK_ONE(msg, ptr) \
-  fprintf(stderr, "*** %s %p\n", msg, ptr)
+#define SLN_RING_CHECK_ONE(msg, ptr) fprintf(stderr, "*** %s %p\n", msg, ptr)
 
-#define SLN_RING_CHECK(hp, elem, link, msg)        \
+#define SLN_RING_CHECK(hp, elem, link, msg) \
   SLN_RING_CHECK_ELEM(SLN_RING_SENTINEL(hp, elem, link), elem, link, msg)
 
-#define SLN_RING_CHECK_ELEM(ep, elem, link, msg) do {      \
-  struct elem *start = (ep);          \
-  struct elem *here = start;          \
-  fprintf(stderr, "*** ring check start -- %s\n", msg);    \
-  do {                \
-      fprintf(stderr, "\telem %p\n", here);      \
-      fprintf(stderr, "\telem->next %p\n",      \
-        SLN_RING_NEXT(here, link));        \
-      fprintf(stderr, "\telem->prev %p\n",      \
-        SLN_RING_PREV(here, link));        \
-      fprintf(stderr, "\telem->next->prev %p\n",      \
-        SLN_RING_PREV(SLN_RING_NEXT(here, link), link));  \
-      fprintf(stderr, "\telem->prev->next %p\n",      \
-        SLN_RING_NEXT(SLN_RING_PREV(here, link), link));  \
-      if (SLN_RING_PREV(SLN_RING_NEXT(here, link), link) != here) { \
-    fprintf(stderr, "\t*** elem->next->prev != elem\n");  \
-    break;              \
-      }                \
-      if (SLN_RING_NEXT(SLN_RING_PREV(here, link), link) != here) { \
-    fprintf(stderr, "\t*** elem->prev->next != elem\n");  \
-    break;              \
-      }                \
-      here = SLN_RING_NEXT(here, link);        \
-  } while (here != start);          \
-  fprintf(stderr, "*** ring check end\n");      \
-    } while (0)
+#define SLN_RING_CHECK_ELEM(ep, elem, link, msg)                       \
+  do {                                                                 \
+    struct elem *start = (ep);                                         \
+    struct elem *here = start;                                         \
+    fprintf(stderr, "*** ring check start -- %s\n", msg);              \
+    do {                                                               \
+      fprintf(stderr, "\telem %p\n", here);                            \
+      fprintf(stderr, "\telem->next %p\n", SLN_RING_NEXT(here, link)); \
+      fprintf(stderr, "\telem->prev %p\n", SLN_RING_PREV(here, link)); \
+      fprintf(stderr, "\telem->next->prev %p\n",                       \
+              SLN_RING_PREV(SLN_RING_NEXT(here, link), link));         \
+      fprintf(stderr, "\telem->prev->next %p\n",                       \
+              SLN_RING_NEXT(SLN_RING_PREV(here, link), link));         \
+      if (SLN_RING_PREV(SLN_RING_NEXT(here, link), link) != here) {    \
+        fprintf(stderr, "\t*** elem->next->prev != elem\n");           \
+        break;                                                         \
+      }                                                                \
+      if (SLN_RING_NEXT(SLN_RING_PREV(here, link), link) != here) {    \
+        fprintf(stderr, "\t*** elem->prev->next != elem\n");           \
+        break;                                                         \
+      }                                                                \
+      here = SLN_RING_NEXT(here, link);                                \
+    } while (here != start);                                           \
+    fprintf(stderr, "*** ring check end\n");                           \
+  } while (0)
 
-#define SLN_RING_CHECK_CONSISTENCY(hp, elem, link)      \
-  SLN_RING_CHECK_ELEM_CONSISTENCY(SLN_RING_SENTINEL(hp, elem, link),\
-          elem, link)
+#define SLN_RING_CHECK_CONSISTENCY(hp, elem, link) \
+  SLN_RING_CHECK_ELEM_CONSISTENCY(SLN_RING_SENTINEL(hp, elem, link), elem, link)
 
-#define SLN_RING_CHECK_ELEM_CONSISTENCY(ep, elem, link) do {    \
-  struct elem *start = (ep);          \
-  struct elem *here = start;          \
-  do {                \
+#define SLN_RING_CHECK_ELEM_CONSISTENCY(ep, elem, link)               \
+  do {                                                                \
+    struct elem *start = (ep);                                        \
+    struct elem *here = start;                                        \
+    do {                                                              \
       assert(SLN_RING_PREV(SLN_RING_NEXT(here, link), link) == here); \
       assert(SLN_RING_NEXT(SLN_RING_PREV(here, link), link) == here); \
-      here = SLN_RING_NEXT(here, link);        \
-  } while (here != start);          \
-    } while (0)
+      here = SLN_RING_NEXT(here, link);                               \
+    } while (here != start);                                          \
+  } while (0)
 
 #else
 /**
@@ -512,6 +502,6 @@
 #define SLN_RING_CHECK_ELEM_CONSISTENCY(ep, elem, link)
 #endif
 
-/** @} */ 
+/** @} */
 
 #endif /* !SLN_RING_H */

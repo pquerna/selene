@@ -19,9 +19,8 @@
 #include "../handshake_messages.h"
 #include <string.h>
 
-selene_error_t*
-sln_handshake_serialize_server_hello_done(selene_t *s, sln_msg_server_hello_done_t *sh, sln_bucket_t **p_b)
-{
+selene_error_t *sln_handshake_serialize_server_hello_done(
+    selene_t *s, sln_msg_server_hello_done_t *sh, sln_bucket_t **p_b) {
   sln_bucket_t *b = NULL;
   size_t len = 0;
   size_t off = 0;
@@ -38,8 +37,8 @@ sln_handshake_serialize_server_hello_done(selene_t *s, sln_msg_server_hello_done
   off += 1;
 
   b->data[off] = 0;
-  b->data[off+1] = 0;
-  b->data[off+2] = 0;
+  b->data[off + 1] = 0;
+  b->data[off + 2] = 0;
   off += 3;
 
   SLN_ASSERT(off == len);
@@ -49,22 +48,20 @@ sln_handshake_serialize_server_hello_done(selene_t *s, sln_msg_server_hello_done
   return SELENE_SUCCESS;
 }
 
-
 typedef struct shd_baton_t {
   sln_handshake_server_hello_done_state_e state;
   sln_msg_server_hello_done_t shd;
 } shd_baton_t;
 
-static selene_error_t*
-parse_server_hello_done_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
-{
-  shd_baton_t *shb = (shd_baton_t*)baton;
+static selene_error_t *parse_server_hello_done_step(sln_hs_baton_t *hs,
+                                                    sln_tok_value_t *v,
+                                                    void *baton) {
+  shd_baton_t *shb = (shd_baton_t *)baton;
 
   slnDbg(hs->s, "parse_server_hello_done_step");
 
   switch (shb->state) {
-    case SLN_HS_SERVER_HELLO_DONE_LENGTH:
-    {
+    case SLN_HS_SERVER_HELLO_DONE_LENGTH: {
       /* TODO: validite zero bytes in length? */
       v->next = TOK_DONE;
       v->wantlen = 0;
@@ -75,19 +72,17 @@ parse_server_hello_done_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton
   return SELENE_SUCCESS;
 }
 
-static void
-parse_server_hello_done_destroy(sln_hs_baton_t *hs, void *baton)
-{
-  shd_baton_t *shd = (shd_baton_t*)baton;
+static void parse_server_hello_done_destroy(sln_hs_baton_t *hs, void *baton) {
+  shd_baton_t *shd = (shd_baton_t *)baton;
 
   slnDbg(hs->s, "parse_server_hello_done_destroy");
 
   sln_free(hs->s, shd);
 }
 
-selene_error_t*
-sln_handshake_parse_server_hello_done_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, void **baton)
-{
+selene_error_t *sln_handshake_parse_server_hello_done_setup(sln_hs_baton_t *hs,
+                                                            sln_tok_value_t *v,
+                                                            void **baton) {
   shd_baton_t *shd = sln_calloc(hs->s, sizeof(shd_baton_t));
   shd->state = SLN_HS_SERVER_HELLO_DONE_LENGTH;
   slnDbg(hs->s, "sln_handshake_parse_server_hello_done_setup");
@@ -98,7 +93,7 @@ sln_handshake_parse_server_hello_done_setup(sln_hs_baton_t *hs, sln_tok_value_t 
 
   v->next = TOK_DONE;
   v->wantlen = 0;
-  *baton = (void*)shd;
+  *baton = (void *)shd;
 
   /* SHD has no fields, so on setup we just emit the event. */
   return selene_publish(hs->s, SELENE__EVENT_HS_GOT_SERVER_HELLO_DONE);

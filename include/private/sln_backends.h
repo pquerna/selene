@@ -22,29 +22,20 @@
 #include "sln_types.h"
 #include "sln_buckets.h"
 
-selene_error_t*
-sln_backend_create(selene_t *s, sln_backend_e be);
+selene_error_t* sln_backend_create(selene_t* s, sln_backend_e be);
 
-selene_error_t* 
-sln_backend_initialize(void);
+selene_error_t* sln_backend_initialize(void);
 
-void
-sln_backend_terminate(void);
+void sln_backend_terminate(void);
 
-selene_error_t*
-sln_parser_initilize();
+selene_error_t* sln_parser_initilize();
 
-void
-sln_parser_terminate();
+void sln_parser_terminate();
 
-selene_error_t*
-sln_parser_create(selene_t *s);
+selene_error_t* sln_parser_create(selene_t* s);
 
-selene_error_t*
-sln_parser_start(selene_t *s);
+selene_error_t* sln_parser_start(selene_t* s);
 
-selene_error_t*
-sln_parser_destroy(selene_t *s);
+selene_error_t* sln_parser_destroy(selene_t* s);
 
 #endif
-

@@ -75,7 +75,9 @@ typedef enum sln_connstate_e {
 #define SLN_PARAMS_MAC_SECRET_MAX_LENGTH (20)
 #define SLN_PARAMS_KEY_MAX_LENGTH (32)
 #define SLN_PARAMS_IV_MAX_LENGTH (16)
-#define SLN_PARAMS_KR_MAX_LENGTH ((SLN_PARAMS_MAC_SECRET_MAX_LENGTH * 2) + (SLN_PARAMS_KEY_MAX_LENGTH * 2) + (SLN_PARAMS_IV_MAX_LENGTH * 2))
+#define SLN_PARAMS_KR_MAX_LENGTH                                              \
+  ((SLN_PARAMS_MAC_SECRET_MAX_LENGTH * 2) + (SLN_PARAMS_KEY_MAX_LENGTH * 2) + \
+   (SLN_PARAMS_IV_MAX_LENGTH * 2))
 
 typedef struct sln_params_t {
   int init;
@@ -114,10 +116,10 @@ struct sln_parser_baton_t {
   char server_random_bytes[28];
 
   int params_init;
-  sln_params_t  pending_send_parameters;
-  sln_params_t  pending_recv_parameters;
-  sln_params_t  active_send_parameters;
-  sln_params_t  active_recv_parameters;
+  sln_params_t pending_send_parameters;
+  sln_params_t pending_recv_parameters;
+  sln_params_t active_send_parameters;
+  sln_params_t active_recv_parameters;
 
   /* TODO: TLS 1.2, plugable handshake digests */
   sln_digest_t *md5_handshake_digest;
@@ -132,31 +134,29 @@ struct sln_parser_baton_t {
   } msg;
 };
 
-
-selene_error_t*
-sln_state_machine(selene_t *s, sln_parser_baton_t *baton);
+selene_error_t *sln_state_machine(selene_t *s, sln_parser_baton_t *baton);
 
 /**
  * TLS Protocol methods
  */
-selene_error_t* sln_io_tls_read(selene_t *s, sln_parser_baton_t *baton);
+selene_error_t *sln_io_tls_read(selene_t *s, sln_parser_baton_t *baton);
 
-selene_error_t* sln_io_alert_read(selene_t *s, sln_parser_baton_t *baton);
+selene_error_t *sln_io_alert_read(selene_t *s, sln_parser_baton_t *baton);
 
-selene_error_t* sln_tls_params_update_mac(selene_t *s, sln_bucket_t *b);
+selene_error_t *sln_tls_params_update_mac(selene_t *s, sln_bucket_t *b);
 
-selene_error_t* sln_tls_params_encrypt(selene_t *s, sln_bucket_t *b, sln_bucket_t **out);
+selene_error_t *sln_tls_params_encrypt(selene_t *s, sln_bucket_t *b,
+                                       sln_bucket_t **out);
 
 /**
  * Client Writing Methods
  */
-selene_error_t*
-sln_io_handshake_client_hello(selene_t *s, sln_parser_baton_t *baton);
+selene_error_t *sln_io_handshake_client_hello(selene_t *s,
+                                              sln_parser_baton_t *baton);
 
 /**
  * Client Reading Methods
  */
-
 
 /**
  * Server Writing Methods
@@ -165,9 +165,7 @@ sln_io_handshake_client_hello(selene_t *s, sln_parser_baton_t *baton);
 /**
  * Server Reading Methods
  */
-selene_error_t*
-sln_io_handshake_read(selene_t *s, sln_parser_baton_t *baton);
-
+selene_error_t *sln_io_handshake_read(selene_t *s, sln_parser_baton_t *baton);
 
 typedef enum {
   SLN_CONTENT_TYPE__UNUSED0 = 0,
@@ -185,15 +183,18 @@ typedef struct sln_msg_tls_t {
   int length;
 } sln_msg_tls_t;
 
-selene_error_t*
-sln_tls_serialize_header(selene_t *s, sln_msg_tls_t *tls, sln_bucket_t **b);
+selene_error_t *sln_tls_serialize_header(selene_t *s, sln_msg_tls_t *tls,
+                                         sln_bucket_t **b);
 
 /**
- * shortcut method that sends a whole message of the specified type, including dealing with
- * encryption of the message and hashes as needed. -- this method takes ownership of the bout
+ * shortcut method that sends a whole message of the specified type, including
+ * dealing with
+ * encryption of the message and hashes as needed. -- this method takes
+ * ownership of the bout
  * bucket, and may of destroyed or consumed it before returning.
  */
-selene_error_t*
-sln_tls_toss_bucket(selene_t *s, sln_content_type_e content_type, sln_bucket_t *bout);
+selene_error_t *sln_tls_toss_bucket(selene_t *s,
+                                    sln_content_type_e content_type,
+                                    sln_bucket_t *bout);
 
 #endif

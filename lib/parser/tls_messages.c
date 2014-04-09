@@ -19,11 +19,10 @@
 #include "common.h"
 #include "sln_digest.h"
 
-selene_error_t*
-sln_tls_serialize_header(selene_t *s, sln_msg_tls_t *tls, sln_bucket_t **p_b)
-{
+selene_error_t *sln_tls_serialize_header(selene_t *s, sln_msg_tls_t *tls,
+                                         sln_bucket_t **p_b) {
   sln_bucket_t *b = NULL;
-  
+
   size_t len = 5;
 
   sln_bucket_create_empty(s->alloc, &b, len);
@@ -42,8 +41,7 @@ sln_tls_serialize_header(selene_t *s, sln_msg_tls_t *tls, sln_bucket_t **p_b)
       b->data[0] = 0x17;
       break;
     default:
-      return selene_error_createf(SELENE_EINVAL,
-                                  "Unknown content type: %d",
+      return selene_error_createf(SELENE_EINVAL, "Unknown content type: %d",
                                   tls->content_type);
   }
 
@@ -57,10 +55,9 @@ sln_tls_serialize_header(selene_t *s, sln_msg_tls_t *tls, sln_bucket_t **p_b)
   return SELENE_SUCCESS;
 }
 
-
-selene_error_t*
-sln_tls_toss_bucket(selene_t *s, sln_content_type_e content_type, sln_bucket_t *bout)
-{
+selene_error_t *sln_tls_toss_bucket(selene_t *s,
+                                    sln_content_type_e content_type,
+                                    sln_bucket_t *bout) {
   sln_msg_tls_t tls;
   sln_parser_baton_t *baton = s->backend_baton;
   sln_bucket_t *btls = NULL;
@@ -79,8 +76,7 @@ sln_tls_toss_bucket(selene_t *s, sln_content_type_e content_type, sln_bucket_t *
   sln_parser_tls_set_current_version(s, &tls.version_major, &tls.version_minor);
   if (benc != NULL) {
     tls.length = benc->size;
-  }
-  else {
+  } else {
     tls.length = bout->size;
   }
 
@@ -89,8 +85,7 @@ sln_tls_toss_bucket(selene_t *s, sln_content_type_e content_type, sln_bucket_t *
   SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, btls);
   if (benc != NULL) {
     SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, benc);
-  }
-  else {
+  } else {
     SLN_BRIGADE_INSERT_TAIL(s->bb.out_enc, bout);
   }
 

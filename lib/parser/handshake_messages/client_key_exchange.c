@@ -19,9 +19,8 @@
 #include "../handshake_messages.h"
 #include <string.h>
 
-selene_error_t*
-sln_handshake_serialize_client_key_exchange(selene_t *s, sln_msg_client_key_exchange_t *cke, sln_bucket_t **p_b)
-{
+selene_error_t *sln_handshake_serialize_client_key_exchange(
+    selene_t *s, sln_msg_client_key_exchange_t *cke, sln_bucket_t **p_b) {
   sln_bucket_t *b = NULL;
   size_t len = 0;
   size_t dlen = 0;
@@ -48,7 +47,7 @@ sln_handshake_serialize_client_key_exchange(selene_t *s, sln_msg_client_key_exch
   off = 4;
 
   b->data[off] = cke->pre_master_secret_length >> 8;
-  b->data[off+1] = cke->pre_master_secret_length;
+  b->data[off + 1] = cke->pre_master_secret_length;
   off += 2;
 
   memcpy(b->data + off, cke->pre_master_secret, cke->pre_master_secret_length);
@@ -66,22 +65,20 @@ typedef struct cke_baton_t {
   sln_msg_client_key_exchange_t cke;
 } cke_baton_t;
 
-static selene_error_t*
-parse_client_key_exchange_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
-{
-  cke_baton_t *ckb = (cke_baton_t*)baton;
+static selene_error_t *parse_client_key_exchange_step(sln_hs_baton_t *hs,
+                                                      sln_tok_value_t *v,
+                                                      void *baton) {
+  cke_baton_t *ckb = (cke_baton_t *)baton;
 
   switch (ckb->state) {
-    case SLN_HS_CLIENT_KEY_EXCHANGE_LENGTH:
-    {
+    case SLN_HS_CLIENT_KEY_EXCHANGE_LENGTH: {
       ckb->cke.pre_master_secret_length = v->v.uint24;
       ckb->state = SLN_HS_CLIENT_KEY_EXCHANGE_DATA;
       v->next = TOK_COPY_BRIGADE;
       v->wantlen = ckb->cke.pre_master_secret_length;
       break;
     }
-    case SLN_HS_CLIENT_KEY_EXCHANGE_DATA:
-    {
+    case SLN_HS_CLIENT_KEY_EXCHANGE_DATA: {
       size_t len = ckb->cke.pre_master_secret_length;
       ckb->cke.pre_master_secret = sln_alloc(hs->s, sln_brigade_size(v->v.bb));
       sln_brigade_flatten(v->v.bb, ckb->cke.pre_master_secret, &len);
@@ -95,23 +92,19 @@ parse_client_key_exchange_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *bat
   return SELENE_SUCCESS;
 }
 
-static selene_error_t*
-parse_client_key_exchange_finish(sln_hs_baton_t *hs, void *baton)
-{
+static selene_error_t *parse_client_key_exchange_finish(sln_hs_baton_t *hs,
+                                                        void *baton) {
   return selene_publish(hs->s, SELENE__EVENT_HS_GOT_CLIENT_KEY_EXCHANGE);
 }
 
-static void
-parse_client_key_exchange_destroy(sln_hs_baton_t *hs, void *baton)
-{
-  cke_baton_t *ckb = (cke_baton_t*)baton;
+static void parse_client_key_exchange_destroy(sln_hs_baton_t *hs, void *baton) {
+  cke_baton_t *ckb = (cke_baton_t *)baton;
 
   sln_free(hs->s, ckb);
 }
 
-selene_error_t*
-sln_handshake_parse_client_key_exchange_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, void **baton)
-{
+selene_error_t *sln_handshake_parse_client_key_exchange_setup(
+    sln_hs_baton_t *hs, sln_tok_value_t *v, void **baton) {
   cke_baton_t *ckb = sln_calloc(hs->s, sizeof(cke_baton_t));
   ckb->state = SLN_HS_CLIENT_KEY_EXCHANGE_LENGTH;
   hs->baton->msg.client_key_exchange = &ckb->cke;
@@ -120,6 +113,6 @@ sln_handshake_parse_client_key_exchange_setup(sln_hs_baton_t *hs, sln_tok_value_
   hs->current_msg_destroy = parse_client_key_exchange_destroy;
   v->next = TOK_UINT24;
   v->wantlen = 3;
-  *baton = (void*)ckb;
+  *baton = (void *)ckb;
   return SELENE_SUCCESS;
 }

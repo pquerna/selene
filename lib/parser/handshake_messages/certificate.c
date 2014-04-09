@@ -20,9 +20,9 @@
 #include "sln_certs.h"
 #include <string.h>
 
-selene_error_t*
-sln_handshake_serialize_certificate(selene_t *s, sln_msg_certificate_t *cert, sln_bucket_t **p_b)
-{
+selene_error_t *sln_handshake_serialize_certificate(selene_t *s,
+                                                    sln_msg_certificate_t *cert,
+                                                    sln_bucket_t **p_b) {
   sln_bucket_t *b = NULL;
   size_t len = 0;
   size_t off;
@@ -86,7 +86,6 @@ sln_handshake_serialize_certificate(selene_t *s, sln_msg_certificate_t *cert, sl
   return SELENE_SUCCESS;
 }
 
-
 typedef struct cert_baton_t {
   sln_handshake_certificate_state_e state;
   int certleft;
@@ -94,11 +93,10 @@ typedef struct cert_baton_t {
   sln_msg_certificate_t cert;
 } cert_baton_t;
 
-static selene_error_t*
-parse_certificate_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
-{
+static selene_error_t *parse_certificate_step(sln_hs_baton_t *hs,
+                                              sln_tok_value_t *v, void *baton) {
   selene_error_t *err = SELENE_SUCCESS;
-  cert_baton_t *certb = (cert_baton_t*)baton;
+  cert_baton_t *certb = (cert_baton_t *)baton;
   sln_msg_certificate_t *cert = &certb->cert;
   selene_t *s = hs->s;
   size_t l;
@@ -120,8 +118,7 @@ parse_certificate_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
       certb->certleft -= v->v.uint24;
       slnDbg(s, "got total len left: %d", certb->certleft);
       break;
-    case SLN_HS_CERTIFICATE_ENTRY_DATA:
-    {
+    case SLN_HS_CERTIFICATE_ENTRY_DATA: {
       const unsigned char *buf;
       const unsigned char *p;
       X509 *x509;
@@ -131,10 +128,10 @@ parse_certificate_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
       l = sln_brigade_size(v->v.bb);
       buf = sln_alloc(s, l);
       p = buf;
-      err = sln_brigade_flatten(v->v.bb, (char*)buf, &l);
+      err = sln_brigade_flatten(v->v.bb, (char *)buf, &l);
 
       if (err) {
-        sln_free(s, (void*)buf);
+        sln_free(s, (void *)buf);
         break;
       }
 
@@ -151,7 +148,7 @@ parse_certificate_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
         }
         SLN_CERT_CHAIN_INSERT_TAIL(cert->chain, tmpc);
       }
-      sln_free(s, (void*)buf);
+      sln_free(s, (void *)buf);
 
       if (certb->certleft <= 0) {
         v->next = TOK_DONE;
@@ -171,25 +168,22 @@ parse_certificate_step(sln_hs_baton_t *hs, sln_tok_value_t *v, void *baton)
   return err;
 }
 
-static selene_error_t*
-parse_certificate_finish(sln_hs_baton_t *hs, void *baton)
-{
+static selene_error_t *parse_certificate_finish(sln_hs_baton_t *hs,
+                                                void *baton) {
   return selene_publish(hs->s, SELENE__EVENT_HS_GOT_CERTIFICATE);
 }
 
-static void
-parse_certificate_destroy(sln_hs_baton_t *hs, void *baton)
-{
-  cert_baton_t *certb = (cert_baton_t*)baton;
+static void parse_certificate_destroy(sln_hs_baton_t *hs, void *baton) {
+  cert_baton_t *certb = (cert_baton_t *)baton;
   if (certb->cert.chain != NULL) {
     sln_cert_chain_destroy(hs->s->conf, certb->cert.chain);
   }
   sln_free(hs->s, certb);
 }
 
-selene_error_t*
-sln_handshake_parse_certificate_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, void **baton)
-{
+selene_error_t *sln_handshake_parse_certificate_setup(sln_hs_baton_t *hs,
+                                                      sln_tok_value_t *v,
+                                                      void **baton) {
   cert_baton_t *certb = sln_calloc(hs->s, sizeof(cert_baton_t));
   slnDbg(hs->s, "sln_handshake_parse_certificate_setup");
   sln_cert_chain_create(hs->s->conf, &certb->cert.chain);
@@ -200,6 +194,6 @@ sln_handshake_parse_certificate_setup(sln_hs_baton_t *hs, sln_tok_value_t *v, vo
   hs->current_msg_destroy = parse_certificate_destroy;
   v->next = TOK_UINT24;
   v->wantlen = 3;
-  *baton = (void*)certb;
+  *baton = (void *)certb;
   return SELENE_SUCCESS;
 }

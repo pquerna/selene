@@ -20,17 +20,13 @@
 #include "sln_buckets.h"
 #include <string.h>
 
-static void
-bucket_empty(void **state)
-{
+static void bucket_empty(void **state) {
   sln_bucket_t *e;
   SLN_ERR(sln_bucket_create_empty(sln_test_alloc, &e, 4000));
   sln_bucket_destroy(e);
 }
 
-static void
-bucket_with_bytes(void **state)
-{
+static void bucket_with_bytes(void **state) {
   char *data = strdup("foobar");
   sln_bucket_t *e;
   SLN_ERR(sln_bucket_create_with_bytes(sln_test_alloc, &e, data, strlen(data)));
@@ -39,9 +35,7 @@ bucket_with_bytes(void **state)
   free(data);
 }
 
-static void
-bucket_copy_bytes(void **state)
-{
+static void bucket_copy_bytes(void **state) {
   const char *data = "foobar";
   sln_bucket_t *e;
   SLN_ERR(sln_bucket_create_copy_bytes(sln_test_alloc, &e, data, strlen(data)));
@@ -49,23 +43,19 @@ bucket_copy_bytes(void **state)
   sln_bucket_destroy(e);
 }
 
-static void
-bucket_from_bucket(void **state)
-{
+static void bucket_from_bucket(void **state) {
   const char *data = "foobar";
   sln_bucket_t *e;
   sln_bucket_t *b;
   SLN_ERR(sln_bucket_create_copy_bytes(sln_test_alloc, &e, data, strlen(data)));
   assert_memory_equal(data, e->data, 6);
   SLN_ERR(sln_bucket_create_from_bucket(sln_test_alloc, &b, e, 1, 2));
-  assert_memory_equal(data+1, b->data, 2);
+  assert_memory_equal(data + 1, b->data, 2);
   sln_bucket_destroy(e);
   sln_bucket_destroy(b);
 }
 
-static void
-bucket_from_bucket_deeper(void **state)
-{
+static void bucket_from_bucket_deeper(void **state) {
   const char *data = "foobar";
   sln_bucket_t *e;
   sln_bucket_t *b;
@@ -73,18 +63,18 @@ bucket_from_bucket_deeper(void **state)
   SLN_ERR(sln_bucket_create_copy_bytes(sln_test_alloc, &e, data, strlen(data)));
   assert_memory_equal(data, e->data, 6);
   SLN_ERR(sln_bucket_create_from_bucket(sln_test_alloc, &b, e, 1, 2));
-  assert_memory_equal(data+1, b->data, 2);
+  assert_memory_equal(data + 1, b->data, 2);
   SLN_ERR(sln_bucket_create_from_bucket(sln_test_alloc, &j, b, 1, 1));
-  assert_memory_equal(data+2, b->data, 1);
+  assert_memory_equal(data + 2, b->data, 1);
   sln_bucket_destroy(j);
   sln_bucket_destroy(e);
   sln_bucket_destroy(b);
 }
 
 SLN_TESTS_START(buckets)
-  SLN_TESTS_ENTRY(bucket_empty)
-  SLN_TESTS_ENTRY(bucket_with_bytes)
-  SLN_TESTS_ENTRY(bucket_copy_bytes)
-  SLN_TESTS_ENTRY(bucket_from_bucket)
-  SLN_TESTS_ENTRY(bucket_from_bucket_deeper)
+SLN_TESTS_ENTRY(bucket_empty)
+SLN_TESTS_ENTRY(bucket_with_bytes)
+SLN_TESTS_ENTRY(bucket_copy_bytes)
+SLN_TESTS_ENTRY(bucket_from_bucket)
+SLN_TESTS_ENTRY(bucket_from_bucket_deeper)
 SLN_TESTS_END()

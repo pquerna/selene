@@ -19,9 +19,9 @@
 #include "../handshake_messages.h"
 #include <string.h>
 
-selene_error_t*
-sln_handshake_serialize_finished(selene_t *s, sln_msg_finished_t *fin, sln_bucket_t **p_b)
-{
+selene_error_t *sln_handshake_serialize_finished(selene_t *s,
+                                                 sln_msg_finished_t *fin,
+                                                 sln_bucket_t **p_b) {
   sln_bucket_t *b = NULL;
   size_t len = 0;
   size_t off = 0;
@@ -41,8 +41,8 @@ sln_handshake_serialize_finished(selene_t *s, sln_msg_finished_t *fin, sln_bucke
   off += 1;
 
   b->data[off] = SLN_MSG_FINISHED_VERIFY_LENGTH >> 16;
-  b->data[off+1] = SLN_MSG_FINISHED_VERIFY_LENGTH >> 8;
-  b->data[off+2] = SLN_MSG_FINISHED_VERIFY_LENGTH;
+  b->data[off + 1] = SLN_MSG_FINISHED_VERIFY_LENGTH >> 8;
+  b->data[off + 2] = SLN_MSG_FINISHED_VERIFY_LENGTH;
   off += 3;
 
   memcpy(b->data + off, fin->vdata, SLN_MSG_FINISHED_VERIFY_LENGTH);
@@ -54,4 +54,3 @@ sln_handshake_serialize_finished(selene_t *s, sln_msg_finished_t *fin, sln_bucke
 
   return SELENE_SUCCESS;
 }
-

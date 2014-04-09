@@ -20,24 +20,15 @@
 #include "handshake_messages.h"
 #include "sln_digest.h"
 
-selene_error_t*
-sln_parser_initilize()
-{
-  return SELENE_SUCCESS;
-}
+selene_error_t *sln_parser_initilize() { return SELENE_SUCCESS; }
 
-void
-sln_parser_terminate()
-{
-}
+void sln_parser_terminate() {}
 
-selene_error_t*
-sln_parser_create(selene_t *s)
-{
+selene_error_t *sln_parser_create(selene_t *s) {
   sln_parser_baton_t *baton;
   SLN_ASSERT_CONTEXT(s);
 
-  baton = (sln_parser_baton_t*) sln_calloc(s, sizeof(*baton));
+  baton = (sln_parser_baton_t *)sln_calloc(s, sizeof(*baton));
   s->backend_baton = baton;
   sln_brigade_create(s->alloc, &baton->in_ccs);
   sln_brigade_create(s->alloc, &baton->in_alert);
@@ -52,9 +43,8 @@ sln_parser_create(selene_t *s)
   return SELENE_SUCCESS;
 }
 
-static selene_error_t*
-have_io(selene_t *s, selene_event_e event, void *baton_)
-{
+static selene_error_t *have_io(selene_t *s, selene_event_e event,
+                               void *baton_) {
   sln_parser_baton_t *baton;
   SLN_ASSERT_CONTEXT(s);
 
@@ -62,9 +52,7 @@ have_io(selene_t *s, selene_event_e event, void *baton_)
   return sln_state_machine(s, baton);
 }
 
-selene_error_t*
-sln_parser_start(selene_t *s)
-{
+selene_error_t *sln_parser_start(selene_t *s) {
   sln_parser_baton_t *baton;
   SLN_ASSERT_CONTEXT(s);
 
@@ -72,8 +60,7 @@ sln_parser_start(selene_t *s)
 
   if (s->mode == SLN_MODE_CLIENT) {
     baton->handshake = SLN_HANDSHAKE_CLIENT_SEND_HELLO;
-  }
-  else {
+  } else {
     baton->handshake = SLN_HANDSHAKE_SERVER_WAIT_CLIENT_HELLO;
   }
 
@@ -85,9 +72,7 @@ sln_parser_start(selene_t *s)
   return sln_state_machine(s, baton);
 }
 
-selene_error_t*
-sln_parser_destroy(selene_t *s)
-{
+selene_error_t *sln_parser_destroy(selene_t *s) {
   sln_parser_baton_t *baton;
   SLN_ASSERT_CONTEXT(s);
 

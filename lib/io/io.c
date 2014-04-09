@@ -19,9 +19,7 @@
 #include "sln_types.h"
 #include "sln_brigades.h"
 
-selene_error_t*
-sln_iobb_create(selene_alloc_t *alloc, sln_iobb_t *iobb)
-{
+selene_error_t *sln_iobb_create(selene_alloc_t *alloc, sln_iobb_t *iobb) {
   SELENE_ERR(sln_brigade_create(alloc, &iobb->in_enc));
   SELENE_ERR(sln_brigade_create(alloc, &iobb->out_enc));
   SELENE_ERR(sln_brigade_create(alloc, &iobb->in_cleartext));
@@ -29,21 +27,15 @@ sln_iobb_create(selene_alloc_t *alloc, sln_iobb_t *iobb)
   return SELENE_SUCCESS;
 }
 
-void
-sln_iobb_destroy(sln_iobb_t *iobb)
-{
+void sln_iobb_destroy(sln_iobb_t *iobb) {
   sln_brigade_destroy(iobb->in_enc);
   sln_brigade_destroy(iobb->out_enc);
   sln_brigade_destroy(iobb->in_cleartext);
   sln_brigade_destroy(iobb->out_cleartext);
 }
 
-
-SELENE_API(selene_error_t*)
-selene_io_in_clear_bytes(selene_t *s,
-                         const char* bytes,
-                         size_t length)
-{
+SELENE_API(selene_error_t *)
+selene_io_in_clear_bytes(selene_t *s, const char *bytes, size_t length) {
   sln_bucket_t *e = NULL;
 
   SELENE_ERR(sln_bucket_create_copy_bytes(s->alloc, &e, bytes, length));
@@ -55,16 +47,15 @@ selene_io_in_clear_bytes(selene_t *s,
   return SELENE_SUCCESS;
 }
 
-
-SELENE_API(selene_error_t*)
-selene_io_in_clear_iovec(selene_t *s, const struct iovec *vec, int iovcnt)
-{
+SELENE_API(selene_error_t *)
+selene_io_in_clear_iovec(selene_t *s, const struct iovec *vec, int iovcnt) {
   int i;
   sln_bucket_t *e = NULL;
 
   /* TODO: possible to optimize this? */
   for (i = 0; i < iovcnt; i++) {
-    SELENE_ERR(sln_bucket_create_copy_bytes(s->alloc, &e, vec[i].iov_base, vec[i].iov_len));
+    SELENE_ERR(sln_bucket_create_copy_bytes(s->alloc, &e, vec[i].iov_base,
+                                            vec[i].iov_len));
     SLN_BRIGADE_INSERT_TAIL(s->bb.in_enc, e);
   }
 
@@ -73,11 +64,8 @@ selene_io_in_clear_iovec(selene_t *s, const struct iovec *vec, int iovcnt)
   return SELENE_SUCCESS;
 }
 
-SELENE_API(selene_error_t*)
-selene_io_in_enc_bytes(selene_t *s,
-                       const char* bytes,
-                       size_t length)
-{
+SELENE_API(selene_error_t *)
+selene_io_in_enc_bytes(selene_t *s, const char *bytes, size_t length) {
   sln_bucket_t *e = NULL;
 
   SELENE_ERR(sln_bucket_create_copy_bytes(s->alloc, &e, bytes, length));
@@ -89,14 +77,9 @@ selene_io_in_enc_bytes(selene_t *s,
   return SELENE_SUCCESS;
 }
 
-static selene_error_t*
-bb_chomp_to_buffer(selene_t *s,
-                   sln_brigade_t *bb,
-                   char* buffer,
-                   size_t blen,
-                   size_t *length,
-                   size_t *remaining)
-{
+static selene_error_t *bb_chomp_to_buffer(selene_t *s, sln_brigade_t *bb,
+                                          char *buffer, size_t blen,
+                                          size_t *length, size_t *remaining) {
   *remaining = 0;
   *length = 0;
 
@@ -112,24 +95,15 @@ bb_chomp_to_buffer(selene_t *s,
   return SELENE_SUCCESS;
 }
 
-SELENE_API(selene_error_t*)
-selene_io_out_clear_bytes(selene_t *s,
-                          char* buffer,
-                          size_t blen,
-                          size_t *length,
-                          size_t *remaining)
-{
-  return bb_chomp_to_buffer(s, s->bb.out_cleartext, buffer, blen, length, remaining);
+SELENE_API(selene_error_t *)
+selene_io_out_clear_bytes(selene_t *s, char *buffer, size_t blen,
+                          size_t *length, size_t *remaining) {
+  return bb_chomp_to_buffer(s, s->bb.out_cleartext, buffer, blen, length,
+                            remaining);
 }
 
-
-SELENE_API(selene_error_t*)
-selene_io_out_enc_bytes(selene_t *s,
-                        char* buffer,
-                        size_t blen,
-                        size_t *length,
-                        size_t *remaining)
-{
+SELENE_API(selene_error_t *)
+selene_io_out_enc_bytes(selene_t *s, char *buffer, size_t blen, size_t *length,
+                        size_t *remaining) {
   return bb_chomp_to_buffer(s, s->bb.out_enc, buffer, blen, length, remaining);
 }
-

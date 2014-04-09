@@ -26,12 +26,8 @@
 
 #include "selene_error.h"
 
-selene_error_t*
-selene_error_create_impl(selene_status_t err,
-                         const char *msg,
-                         uint32_t line,
-                         const char *file)
-{
+selene_error_t *selene_error_create_impl(selene_status_t err, const char *msg,
+                                         uint32_t line, const char *file) {
   selene_error_t *e;
 
   e = malloc(sizeof(*e));
@@ -44,13 +40,9 @@ selene_error_create_impl(selene_status_t err,
   return e;
 }
 
-selene_error_t *
-selene_error_createf_impl(selene_status_t err,
-                          uint32_t line,
-                          const char *file,
-                          const char *fmt,
-                          ...)
-{
+selene_error_t *selene_error_createf_impl(selene_status_t err, uint32_t line,
+                                          const char *file, const char *fmt,
+                                          ...) {
   int rv;
   selene_error_t *e;
   va_list ap;
@@ -60,11 +52,13 @@ selene_error_createf_impl(selene_status_t err,
   e->err = err;
 
   va_start(ap, fmt);
-  rv = vasprintf((char **) &e->msg, fmt, ap);
+  rv = vasprintf((char **)&e->msg, fmt, ap);
   va_end(ap);
 
   if (rv == -1) {
-    e->msg = strdup("vasprintf inside selene_error_createf_impl returned -1, you likely have larger problems here");
+    e->msg = strdup(
+        "vasprintf inside selene_error_createf_impl returned -1, you likely "
+        "have larger problems here");
   }
 
   e->line = line;
@@ -73,9 +67,7 @@ selene_error_createf_impl(selene_status_t err,
   return e;
 }
 
-selene_error_t *
-selene_error_dup(selene_error_t *err)
-{
+selene_error_t *selene_error_dup(selene_error_t *err) {
   selene_error_t *e;
 
   e = malloc(sizeof(*e));
@@ -88,12 +80,10 @@ selene_error_dup(selene_error_t *err)
   return e;
 }
 
-void
-selene_error_clear(selene_error_t *err)
-{
-    if (err) {
-        free((void *) err->msg);
-        free((void *) err->file);
-        free(err);
-    }
+void selene_error_clear(selene_error_t *err) {
+  if (err) {
+    free((void *)err->msg);
+    free((void *)err->file);
+    free(err);
+  }
 }

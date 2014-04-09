@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 #ifndef _sln_buckets_h_
 #define _sln_buckets_h_
 
@@ -23,28 +22,34 @@
 #include "sln_types.h"
 
 /* Create an empty memory bucket, of a specififed size */
-selene_error_t*
-sln_bucket_create_empty(selene_alloc_t *alloc, sln_bucket_t **b, size_t size);
+selene_error_t *sln_bucket_create_empty(selene_alloc_t *alloc, sln_bucket_t **b,
+                                        size_t size);
 
 /* Create a memory buffer, copying the bytes */
-selene_error_t*
-sln_bucket_create_copy_bytes(selene_alloc_t *alloc, sln_bucket_t **b, const char* bytes, size_t size);
+selene_error_t *sln_bucket_create_copy_bytes(selene_alloc_t *alloc,
+                                             sln_bucket_t **b,
+                                             const char *bytes, size_t size);
 
-/* Create a memory buffer, taking ownership of the bytes (including calling free()) */
-selene_error_t*
-sln_bucket_create_with_bytes(selene_alloc_t *alloc, sln_bucket_t **b, char* bytes, size_t size);
+/* Create a memory buffer, taking ownership of the bytes (including calling
+ * free()) */
+selene_error_t *sln_bucket_create_with_bytes(selene_alloc_t *alloc,
+                                             sln_bucket_t **b, char *bytes,
+                                             size_t size);
 
-/* Create a new bucket, which references a slice from an existing bucket.  This increments
- * the reference count of the parent.  This method is not re-entrant safe across single parent buckets.
+/* Create a new bucket, which references a slice from an existing bucket.  This
+ * increments
+ * the reference count of the parent.  This method is not re-entrant safe across
+ * single parent buckets.
  */
-selene_error_t*
-sln_bucket_create_from_bucket(selene_alloc_t *alloc, sln_bucket_t **out_b,
-                              sln_bucket_t *parent, size_t offset, size_t length);
+selene_error_t *sln_bucket_create_from_bucket(selene_alloc_t *alloc,
+                                              sln_bucket_t **out_b,
+                                              sln_bucket_t *parent,
+                                              size_t offset, size_t length);
 
 /* Cleanup a memory buffer, bucket will be removed from its brigade
- * but may not be actually free'ed if other buckets reference some of it's memory. */
-void
-sln_bucket_destroy(sln_bucket_t *b);
+ * but may not be actually free'ed if other buckets reference some of it's
+ * memory. */
+void sln_bucket_destroy(sln_bucket_t *b);
 
 #define SLN_BUCKET_REMOVE(e) SLN_RING_REMOVE((e), link)
 

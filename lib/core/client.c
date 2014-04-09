@@ -18,28 +18,25 @@
 #include "selene.h"
 #include "sln_types.h"
 
-selene_error_t *
-selene_client_name_indication(selene_t *s, const char *hostname)
-{
+selene_error_t *selene_client_name_indication(selene_t *s,
+                                              const char *hostname) {
   /* TODO: this might not make sense as a selene_conf (?) */
 
   if (s->client_sni != NULL) {
-    sln_free(s, (void*)s->client_sni);
+    sln_free(s, (void *)s->client_sni);
   }
 
   if (hostname) {
     s->client_sni = sln_strdup(s, hostname);
-  }
-  else {
+  } else {
     s->client_sni = NULL;
   }
 
   return SELENE_SUCCESS;
 }
 
-selene_error_t *
-selene_client_next_protocol_add(selene_t *s, const char *protocol)
-{
+selene_error_t *selene_client_next_protocol_add(selene_t *s,
+                                                const char *protocol) {
   /* TODO: NPN */
   return SELENE_SUCCESS;
 }

@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 #include "selene.h"
 #include "sln_log.h"
 #include "sln_ring.h"
@@ -157,8 +156,8 @@ typedef struct {
   void *protocol_data;
 } sln_tls_record_t;
 
-typedef selene_error_t* (sln_standard_cb)(selene_t *ctxt);
-typedef selene_error_t* (sln_standard_baton_cb)(selene_t *ctxt, void *baton);
+typedef selene_error_t *(sln_standard_cb)(selene_t *ctxt);
+typedef selene_error_t *(sln_standard_baton_cb)(selene_t *ctxt, void *baton);
 
 typedef struct {
   const char *name;
@@ -191,7 +190,7 @@ struct selene_conf_t {
   int protocols;
   selene_cipher_suite_list_t ciphers;
   sln_array_header_t *certs;
-  X509_STORE* trusted_cert_store;
+  X509_STORE *trusted_cert_store;
 };
 
 struct selene_cert_t {
@@ -250,33 +249,35 @@ struct selene_t {
   selene_cert_chain_t *my_certs;
 };
 
-void* sln_alloc(selene_t *s, size_t len);
-void* sln_calloc(selene_t *s, size_t len);
+void *sln_alloc(selene_t *s, size_t len);
+void *sln_calloc(selene_t *s, size_t len);
 void sln_free(selene_t *s, void *ptr);
 char *sln_strdup(selene_t *s, const char *in);
 
-void* sln_conf_alloc(selene_conf_t *conf, size_t len);
-void* sln_conf_calloc(selene_conf_t *conf, size_t len);
+void *sln_conf_alloc(selene_conf_t *conf, size_t len);
+void *sln_conf_calloc(selene_conf_t *conf, size_t len);
 void sln_conf_free(selene_conf_t *conf, void *ptr);
 char *sln_conf_strdup(selene_conf_t *conf, const char *in);
 
-#define SLN_ERR_CLIENT_ONLY(s) do { \
-  if (s->conf.mode != SLN_MODE_CLIENT) { \
-    return selene_error_createf(SELENE_EINVAL, \
-    "%s is only available in client mode", __func__); \
-  } \
-} while(0);
+#define SLN_ERR_CLIENT_ONLY(s)                                             \
+  do {                                                                     \
+    if (s->conf.mode != SLN_MODE_CLIENT) {                                 \
+      return selene_error_createf(                                         \
+          SELENE_EINVAL, "%s is only available in client mode", __func__); \
+    }                                                                      \
+  } while (0);
 
-#define SLN_ERR_SERVER_ONLY(s) do { \
-  if (s->conf.mode != SLN_MODE_SERVER) { \
-    return selene_error_createf(SELENE_EINVAL, \
-    "%s is only available in client mode", __func__); \
-  } \
-} while(0);
+#define SLN_ERR_SERVER_ONLY(s)                                             \
+  do {                                                                     \
+    if (s->conf.mode != SLN_MODE_SERVER) {                                 \
+      return selene_error_createf(                                         \
+          SELENE_EINVAL, "%s is only available in client mode", __func__); \
+    }                                                                      \
+  } while (0);
 
 #ifdef __builtin_expect
-#define sln_likely(x) __builtin_expect((x),1)
-#define sln_unlikely(x) __builtin_expect((x),0)
+#define sln_likely(x) __builtin_expect((x), 1)
+#define sln_unlikely(x) __builtin_expect((x), 0)
 #else
 #define sln_likely(x) (x)
 #define sln_unlikely(x) (x)
