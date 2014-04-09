@@ -105,7 +105,7 @@ SELENE_API(int) selene_cert_alt_names_count(selene_cert_t *cert);
  * Read a single subject alt name. returns NULL if offset doesn't exist.
  */
 SELENE_API(const char *)
-    selene_cert_alt_names_entry(selene_cert_t *cert, int offset);
+selene_cert_alt_names_entry(selene_cert_t *cert, int offset);
 
 /**
  * Returns a {selene_cert_name_t} instance which contains describtions of the
@@ -129,7 +129,7 @@ SELENE_API(int) selene_cert_chain_count(selene_cert_chain_t *cert);
  * the offset is invalid.
  */
 SELENE_API(selene_cert_t *)
-    selene_cert_chain_entry(selene_cert_chain_t *cert, int offset);
+selene_cert_chain_entry(selene_cert_chain_t *cert, int offset);
 
 #ifdef __cplusplus
 }

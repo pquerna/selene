@@ -43,13 +43,13 @@ typedef struct selene_t selene_t;
  * Creates a Client SSL/TLS Context.
  */
 SELENE_API(selene_error_t *)
-    selene_client_create(selene_conf_t *conf, selene_t **ctxt);
+selene_client_create(selene_conf_t *conf, selene_t **ctxt);
 
 /**
  * Creates a Server SSL/TLS Context.
  */
 SELENE_API(selene_error_t *)
-    selene_server_create(selene_conf_t *conf, selene_t **ctxt);
+selene_server_create(selene_conf_t *conf, selene_t **ctxt);
 
 /**
  * Destroys a SSL/TLS Context of any type.  After this
@@ -119,31 +119,31 @@ typedef selene_error_t *(selene_event_cb)(selene_t *ctxt, selene_event_e event,
  * for details.
  */
 SELENE_API(selene_error_t *)
-    selene_handler_set(selene_t *ctxt, selene_event_e event, selene_event_cb cb,
-                       void *baton);
+selene_handler_set(selene_t *ctxt, selene_event_e event, selene_event_cb cb,
+                   void *baton);
 /**
  * Subscribe to an Event.
  */
 SELENE_API(selene_error_t *)
-    selene_subscribe(selene_t *ctxt, selene_event_e event, selene_event_cb cb,
-                     void *baton);
+selene_subscribe(selene_t *ctxt, selene_event_e event, selene_event_cb cb,
+                 void *baton);
 /**
  * Removes Subscribtion to an Event, searching for both a matching cb and baton.
  */
 SELENE_API(selene_error_t *)
-    selene_unsubscribe(selene_t *ctxt, selene_event_e event, selene_event_cb cb,
-                       void *baton);
+selene_unsubscribe(selene_t *ctxt, selene_event_e event, selene_event_cb cb,
+                   void *baton);
 /**
  * Publishes an event. Note that this is used by the internals of
  * the library to do its own processing, so don't blindly publish
  * events.
  */
 SELENE_API(selene_error_t *)
-    selene_publish(selene_t *ctxt, selene_event_e event);
+selene_publish(selene_t *ctxt, selene_event_e event);
 
 /* maybe not temp api*/
 SELENE_API(selene_error_t *)
-    selene_io_want(selene_t *ctxt, selene_iowant_e *want);
+selene_io_want(selene_t *ctxt, selene_iowant_e *want);
 
 /* Hand cleartext bytes to Selene */
 SELENE_API(selene_error_t *)

@@ -55,7 +55,7 @@ SELENE_API(selene_error_t *) selene_conf_create(selene_conf_t **conf);
  * Creates a configuration context, with a specified memory allocator
  */
 SELENE_API(selene_error_t *)
-    selene_conf_create_with_alloc(selene_conf_t **conf, selene_alloc_t *alloc);
+selene_conf_create_with_alloc(selene_conf_t **conf, selene_alloc_t *alloc);
 
 /**
  * Destroy a configuration context.
@@ -87,21 +87,21 @@ typedef struct selene_cipher_suite_list_t selene_cipher_suite_list_t;
  * Creates an ordered list of Cipher Suites.
  */
 SELENE_API(selene_error_t *)
-    selene_cipher_suite_list_create(selene_alloc_t *alloc,
-                                    selene_cipher_suite_list_t **ciphers);
+selene_cipher_suite_list_create(selene_alloc_t *alloc,
+                                selene_cipher_suite_list_t **ciphers);
 
 /**
  * Add a single cipher suite to the list.
  */
 SELENE_API(selene_error_t *)
-    selene_cipher_suite_list_add(selene_cipher_suite_list_t *ciphers,
-                                 selene_cipher_suite_e suite);
+selene_cipher_suite_list_add(selene_cipher_suite_list_t *ciphers,
+                             selene_cipher_suite_e suite);
 
 /**
  * Destroys the list of Cipher Suites
  */
 SELENE_API(void)
-    selene_cipher_suite_list_destroy(selene_cipher_suite_list_t *ciphers);
+selene_cipher_suite_list_destroy(selene_cipher_suite_list_t *ciphers);
 
 /**
  * Configures a configuration context with a set of cipher suites.  The
