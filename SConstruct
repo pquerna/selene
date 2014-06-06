@@ -117,7 +117,9 @@ if conf.env['WANT_OPENSSL']:
     print 'Unable to use OpenSSL development enviroment (missing libcrypto?): with_openssl=%s' %  conf.env.get('with_openssl')
     Exit(-1)
 
+old = conf.env['LIBS']
 conf.env['HAVE_LIB_GCOV'] = conf.CheckLib('gcov')
+conf.env['LIBS'] = old
 
 conf.env['HAVE_OSX_COMMONCRYPTO'] = conf.CheckLibWithHeader('libSystem', 'CommonCrypto/CommonDigest.h', 'C', 'CC_SHA1_CTX ctx; CC_SHA1_Init(&ctx);', True)
 if conf.env['HAVE_OSX_COMMONCRYPTO']:
