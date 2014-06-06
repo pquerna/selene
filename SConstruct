@@ -244,11 +244,19 @@ for vari in variants:
       coverage_test_targets.append(run)
 
   if ty == "GCOV" and variant == selected_variant:
-    cov = venv.Command(venv.File('%s/coverage.txt' % (vdir)), coverage_test_targets,
-              # TODO: in an ideal world, we could use --object-directory=$VDIR
-              ['$PYTHON ./tests/gcovr -r . --object-directory=. -e extern -e build -e test -o $VDIR/coverage.txt',
-               'cat $VDIR/coverage.txt'])
+    # TODO: in an ideal world, we could use --object-directory=$VDIR
+    covcmd = '$PYTHON ./tests/gcovr -r . --object-directory=. -e extern -e build -e test'
+    covhtml = venv.Command(venv.File('%s/coverage.html' % (vdir)),
+                coverage_test_targets,
+                [covcmd + ' --html --html-details -o $VDIR/coverage.html'])
+    venv.AlwaysBuild(covhtml)
+
+    cov = venv.Command(venv.File('%s/coverage.txt' % (vdir)),
+              coverage_test_targets,
+              [covcmd +' -o $VDIR/coverage.txt', 'cat $VDIR/coverage.txt'])
+
     venv.AlwaysBuild(cov)
+    cov_targets.append(covhtml)
     cov_targets.append(cov)
   tools = venv.SConscript('tools/SConscript', variant_dir=pjoin(vdir, 'tools'), duplicate=0, exports='venv')
   targets.append(tools)
