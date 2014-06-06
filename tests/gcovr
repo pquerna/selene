@@ -678,6 +678,9 @@ def process_datafile(filename, covdata, options):
             if wd == potential_wd[-1]:
                 break
 
+    # TODO: pquerna: debug and submit PR upstream.
+    potential_wd = [root_dir]
+
     cmd = [ options.gcov_cmd, abs_filename,
             "--branch-counts", "--branch-probabilities", "--preserve-paths", 
             '--object-directory', dirname ]
