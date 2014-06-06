@@ -250,12 +250,14 @@ for vari in variants:
                 coverage_test_targets,
                 [covcmd + ' --html --html-details -o $VDIR/coverage.html'])
     venv.AlwaysBuild(covhtml)
+    venv.SideEffect('.coverage-side-effect', covhtml)
 
     cov = venv.Command(venv.File('%s/coverage.txt' % (vdir)),
               coverage_test_targets,
               [covcmd +' -o $VDIR/coverage.txt', 'cat $VDIR/coverage.txt'])
 
     venv.AlwaysBuild(cov)
+    venv.SideEffect('.coverage-side-effect', cov)
     cov_targets.append(covhtml)
     cov_targets.append(cov)
   tools = venv.SConscript('tools/SConscript', variant_dir=pjoin(vdir, 'tools'), duplicate=0, exports='venv')
