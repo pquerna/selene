@@ -60,7 +60,7 @@ prefer_clang = True
 
 if 'coverage' in COMMAND_LINE_TARGETS:
   # TODO: modern clang has --coverage, build test for old clang.
-  # prefer_clang = False
+  prefer_clang = False
   env['profile'] = 'gcov'
   env['build_type'] = 'static'
 
@@ -117,6 +117,8 @@ if conf.env['WANT_OPENSSL']:
     print 'Unable to use OpenSSL development enviroment (missing libcrypto?): with_openssl=%s' %  conf.env.get('with_openssl')
     Exit(-1)
 
+conf.env['HAVE_LIB_GCOV'] = conf.CheckLib('gcov')
+
 conf.env['HAVE_OSX_COMMONCRYPTO'] = conf.CheckLibWithHeader('libSystem', 'CommonCrypto/CommonDigest.h', 'C', 'CC_SHA1_CTX ctx; CC_SHA1_Init(&ctx);', True)
 if conf.env['HAVE_OSX_COMMONCRYPTO']:
   conf.env.AppendUnique(CPPDEFINES=['SLN_HAVE_OSX_COMMONCRYPTO'])
@@ -155,7 +157,16 @@ options = {
       'CC': env.get('PROFILE_CC', env['CC']),
       'CCFLAGS': ['-Wall', '-O0', '-ggdb', '-fPIC', '-fprofile-arcs', '-ftest-coverage'],
       'CPPDEFINES': ['DEBUG'],
-      'LINKFLAGS': [],
+      # Does not appear that this is actually needed to generate compataible coverage files:
+      #
+      # http://llvm.org/bugs/show_bug.cgi?id=16568
+      #
+      # options['PROFILE']['GCOV']['LINKFLAGS'].extend([
+      #   '-Xclang', '-coverage-cfg-checksum',
+      #   '-Xclang', '-coverage-no-function-names-in-data',
+      #   '-Xclang', '-coverage-version=\'407*\''
+      # ])
+      'LINKFLAGS': ['-fprofile-arcs', '-ftest-coverage'],
       'LIBS': [],
     },
     'RELEASE': {
@@ -166,19 +177,7 @@ options = {
 }
 
 
-if conf.env['CC'] == conf.env['CLANG']:
-  options['PROFILE']['GCOV']['LINKFLAGS'].extend(['-fprofile-arcs', '-ftest-coverage'])
-
-  # Does not appear that this is actually needed to generate compataible coverage files:
-  #
-  # http://llvm.org/bugs/show_bug.cgi?id=16568
-  #
-  # options['PROFILE']['GCOV']['LINKFLAGS'].extend([
-  #   '-Xclang', '-coverage-cfg-checksum',
-  #   '-Xclang', '-coverage-no-function-names-in-data',
-  #   '-Xclang', '-coverage-version=\'407*\''
-  # ])
-else:
+if env['HAVE_LIB_GCOV']:
   options['PROFILE']['GCOV']['LIBS'].append('gcov')
 
 
