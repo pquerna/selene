@@ -59,7 +59,8 @@ env.SConscript('site_scons/ca_builder.py', exports="env")
 prefer_clang = True
 
 if 'coverage' in COMMAND_LINE_TARGETS:
-  prefer_clang = False
+  # TODO: modern clang has --coverage, build test for old clang.
+  # prefer_clang = False
   env['profile'] = 'gcov'
   env['build_type'] = 'static'
 
@@ -90,12 +91,12 @@ elif conf.env['CLANGXX'] and prefer_clang:
 conf.env['SELENE_PLATFORM'] = platform[:platform.find(' ')].upper()
 conf.env['SELENE_ARCH'] = platform[platform.find(' ')+1:].replace(" ", "_")
 
-if conf.env['SELENE_PLATFORM'] == "DARWIN" and conf.env.get('CLANG'):
-  # try to use a specific gcc version, because /usr/bin/gcc is a symlink to
-  # clang in 10.7, but clang doesn't yet support profiling :(
-  gcc_vers = [conf.env.WhereIs('gcc%s' % x) for x in ['-4.6', '-4.5', '-4.4', '-4.3', '-4.2', '-4.1', '']]
-  conf.env['PROFILE_CC'] = next(s for s in gcc_vers if s)
-  print 'Checking for compiler that supports profiling ... %s' % conf.env['PROFILE_CC']
+# if conf.env['SELENE_PLATFORM'] == "DARWIN" and conf.env.get('CLANG'):
+#  # try to use a specific gcc version, because /usr/bin/gcc is a symlink to
+#  # clang in 10.7, but clang doesn't yet support profiling :(
+#  gcc_vers = [conf.env.WhereIs('gcc%s' % x) for x in ['-4.6', '-4.5', '-4.4', '-4.3', '-4.2', '-4.1', '']]
+#  conf.env['PROFILE_CC'] = next(s for s in gcc_vers if s)
+#  print 'Checking for compiler that supports profiling ... %s' % conf.env['PROFILE_CC']
 
 conf.env['WANT_OPENSSL'] = True
 
@@ -154,7 +155,8 @@ options = {
       'CC': env.get('PROFILE_CC', env['CC']),
       'CCFLAGS': ['-Wall', '-O0', '-ggdb', '-fPIC', '-fprofile-arcs', '-ftest-coverage'],
       'CPPDEFINES': ['DEBUG'],
-      'LIBS': 'gcov'
+      'LINKFLAGS': [],
+      'LIBS': [],
     },
     'RELEASE': {
       'CCFLAGS': ['-Wall', '-O2'],
@@ -162,6 +164,23 @@ options = {
     },
   },
 }
+
+
+if conf.env['CC'] == conf.env['CLANG']:
+  options['PROFILE']['GCOV']['LINKFLAGS'].extend(['-fprofile-arcs', '-ftest-coverage'])
+
+  # Does not appear that this is actually needed to generate compataible coverage files:
+  #
+  # http://llvm.org/bugs/show_bug.cgi?id=16568
+  #
+  # options['PROFILE']['GCOV']['LINKFLAGS'].extend([
+  #   '-Xclang', '-coverage-cfg-checksum',
+  #   '-Xclang', '-coverage-no-function-names-in-data',
+  #   '-Xclang', '-coverage-version=\'407*\''
+  # ])
+else:
+  options['PROFILE']['GCOV']['LIBS'].append('gcov')
+
 
 selected_variant = '%s-%s' % (env['profile'].lower(), env['build_type'].lower())
 print "Selected %s variant build..." % (selected_variant)
@@ -173,7 +192,7 @@ for platform in [env['SELENE_PLATFORM']]:
     for build in available_build_types:
       variants.append({'PLATFORM': platform.upper(), 'PROFILE': profile.upper(), 'BUILD': build.upper()})
 
-append_types = ['CCFLAGS', 'CFLAGS', 'CPPDEFINES', 'LIBS']
+append_types = ['CCFLAGS', 'CFLAGS', 'CPPDEFINES', 'LIBS', 'LINKFLAGS']
 replace_types = ['CC']
 cov_targets = []
 
