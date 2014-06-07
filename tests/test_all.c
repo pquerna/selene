@@ -41,6 +41,7 @@ int main(int argc, char* argv[]) {
 
   sln_tests_setup();
 
+  RUNT(arrays);
   RUNT(logging);
   RUNT(crypto_digest);
   RUNT(crypto_prf);

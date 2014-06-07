@@ -87,6 +87,7 @@
 
 #define SLN_TEST_MODULE(name) int sln_tests_##name();
 
+SLN_TEST_MODULE(arrays)
 SLN_TEST_MODULE(logging)
 SLN_TEST_MODULE(crypto_digest)
 SLN_TEST_MODULE(crypto_prf)

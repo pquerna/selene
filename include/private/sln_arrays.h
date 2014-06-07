@@ -20,7 +20,7 @@
 #ifndef _sln_arrays_h_
 #define _sln_arrays_h_
 
-int aln_is_empty_array(const sln_array_header_t *a);
+int sln_is_empty_array(const sln_array_header_t *a);
 sln_array_header_t *sln_array_make(selene_alloc_t *alloc, int nelts,
                                    int elt_size);
 void sln_array_clear(sln_array_header_t *arr);
