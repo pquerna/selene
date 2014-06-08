@@ -41,6 +41,18 @@ static struct {
 
 static int num_md5_sums = sizeof(md5sums) / sizeof(md5sums[0]);
 
+static struct {
+  const char *string;
+  const char *digest;
+} sha1sums[] = {{"abc",
+                 "\xa9\x99\x3e\x36\x47\x06\x81\x6a\xba\x3e\x25\x71\x78\x50\xc2"
+                 "\x6c\x9c\xd0\xd8\x9d"},
+                {"",
+                 "\xda\x39\xa3\xee\x5e\x6b\x4b\x0d\x32\x55\xbf\xef\x95\x60\x18"
+                 "\x90\xaf\xd8\x07\x09"}};
+
+static int num_sha1_sums = sizeof(sha1sums) / sizeof(sha1sums[0]);
+
 static void digest_md5_iter(void **state, int count) {
   selene_conf_t *conf = NULL;
   selene_t *s = NULL;
@@ -85,6 +97,51 @@ static void digest_md5(void **state) {
   }
 }
 
+static void digest_sha1_iter(void **state, int count) {
+  selene_conf_t *conf = NULL;
+  selene_t *s = NULL;
+  unsigned char digest[SLN_SHA1_DIGEST_LENGTH];
+  const void *string = sha1sums[count].string;
+  const void *sum = sha1sums[count].digest;
+  unsigned int len = strlen(string);
+  sln_digest_t *d;
+
+  selene_conf_create(&conf);
+  SLN_ERR(selene_conf_use_reasonable_defaults(conf));
+  SLN_ERR(selene_server_create(conf, &s));
+  SLN_ASSERT_CONTEXT(s);
+
+#ifdef SLN_HAVE_OSX_COMMONCRYPTO
+  memset(digest, 0, SLN_SHA1_DIGEST_LENGTH);
+
+  SLN_ERR(sln_digest_osx_cc_create(s, SLN_DIGEST_SHA1, &d));
+  sln_digest_osx_cc_update(d, string, len);
+  sln_digest_osx_cc_final(d, digest);
+  sln_digest_osx_cc_destroy(d);
+  assert_memory_equal(digest, sum, SLN_SHA1_DIGEST_LENGTH);
+#endif
+
+  memset(digest, 0, SLN_SHA1_DIGEST_LENGTH);
+
+  SLN_ERR(sln_digest_openssl_create(s, SLN_DIGEST_SHA1, &d));
+  sln_digest_openssl_update(d, string, len);
+  sln_digest_openssl_final(d, digest);
+  sln_digest_openssl_destroy(d);
+  assert_memory_equal(digest, sum, SLN_SHA1_DIGEST_LENGTH);
+
+  selene_destroy(s);
+  selene_conf_destroy(conf);
+}
+
+static void digest_sha1(void **state) {
+  int i;
+
+  for (i = 0; i < num_sha1_sums; i++) {
+    digest_sha1_iter(state, i);
+  }
+}
+
 SLN_TESTS_START(crypto_digest)
 SLN_TESTS_ENTRY(digest_md5)
+SLN_TESTS_ENTRY(digest_sha1)
 SLN_TESTS_END()
