@@ -23,7 +23,7 @@
  */
 
 static void make_array_core(sln_array_header_t *res, selene_alloc_t *alloc,
-                            int nelts, int elt_size, int clear) {
+                            int nelts, int elt_size) {
   /*
    * Assure sanity if someone asks for
    * array of zero elts.
@@ -32,11 +32,7 @@ static void make_array_core(sln_array_header_t *res, selene_alloc_t *alloc,
     nelts = 1;
   }
 
-  if (clear) {
-    res->elts = alloc->calloc(alloc->baton, nelts * elt_size);
-  } else {
-    res->elts = alloc->malloc(alloc->baton, nelts * elt_size);
-  }
+  res->elts = alloc->calloc(alloc->baton, nelts * elt_size);
 
   res->alloc = alloc;
   res->elt_size = elt_size;
@@ -54,7 +50,7 @@ sln_array_header_t *sln_array_make(selene_alloc_t *alloc, int nelts,
 
   res = (sln_array_header_t *)alloc->malloc(alloc->baton,
                                             sizeof(sln_array_header_t));
-  make_array_core(res, alloc, nelts, elt_size, 1);
+  make_array_core(res, alloc, nelts, elt_size);
   return res;
 }
 
