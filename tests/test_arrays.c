@@ -84,8 +84,28 @@ static void arrays_pop(void **state) {
   sln_array_destroy(arr);
 }
 
+static void arrays_alloc(void **state) {
+  int i;
+  void *v;
+  sln_array_header_t *arr;
+
+  arr = sln_array_make(sln_test_alloc, 2, sizeof(void*));
+
+  for (i = 0; i < 10; i++) {
+    SLN_ARRAY_PUSH(arr, void*) = NULL;
+  }
+
+  sln_array_clear(arr);
+
+  v = sln_array_pop(arr);
+
+  assert_true(v == NULL);
+
+  sln_array_destroy(arr);
+}
 
 SLN_TESTS_START(arrays)
 SLN_TESTS_ENTRY(arrays_empty)
 SLN_TESTS_ENTRY(arrays_pop)
+SLN_TESTS_ENTRY(arrays_alloc)
 SLN_TESTS_END()
