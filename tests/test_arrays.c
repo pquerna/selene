@@ -89,10 +89,10 @@ static void arrays_alloc(void **state) {
   void *v;
   sln_array_header_t *arr;
 
-  arr = sln_array_make(sln_test_alloc, 2, sizeof(void*));
+  arr = sln_array_make(sln_test_alloc, 2, sizeof(void *));
 
   for (i = 0; i < 10; i++) {
-    SLN_ARRAY_PUSH(arr, void*) = NULL;
+    SLN_ARRAY_PUSH(arr, void *) = NULL;
   }
 
   sln_array_clear(arr);
