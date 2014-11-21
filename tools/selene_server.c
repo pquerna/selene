@@ -162,6 +162,23 @@ static int read_from_sock(server_t *srv) {
   return 0;
 }
 
+static char *addr2str(struct sockaddr *sa, char *s, size_t maxlen) {
+  switch (sa->sa_family) {
+    case AF_INET:
+      inet_ntop(AF_INET, &(((struct sockaddr_in *)sa)->sin_addr), s, maxlen);
+      break;
+
+    case AF_INET6:
+      inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)sa)->sin6_addr), s, maxlen);
+      break;
+
+    default:
+      strncpy(s, "Unknown AF", maxlen);
+      return NULL;
+  }
+
+  return s;
+}
 static int listen_to(selene_conf_t *conf, const char *host, int port,
                      FILE *fp) {
   fd_set readers;
@@ -172,13 +189,16 @@ static int listen_to(selene_conf_t *conf, const char *host, int port,
   char *p = NULL;
   struct addrinfo hints, *res, *res0;
   selene_error_t *err = NULL;
+  char ip_buf[INET6_ADDRSTRLEN];
+  char *ip_str = NULL;
 
   memset(&server, 0, sizeof(server));
 
   snprintf(port_str, sizeof(port_str), "%i", port);
   memset(&hints, 0, sizeof(hints));
-  hints.ai_family = PF_UNSPEC;
+  hints.ai_family = AF_INET;
   hints.ai_socktype = SOCK_STREAM;
+  hints.ai_flags = AI_PASSIVE | AI_NUMERICSERV;
   rv = getaddrinfo(host, port_str, &hints, &res0);
   if (rv != 0) {
     fprintf(stderr, "TCP getaddrinfo(%s:%d) failed: (%d) %s\n", host, port, rv,
@@ -188,11 +208,16 @@ static int listen_to(selene_conf_t *conf, const char *host, int port,
 
   server.sock = -1;
   for (res = res0; res; res = res->ai_next) {
+
     server.listen_sock =
         socket(res->ai_family, res->ai_socktype, res->ai_protocol);
     if (server.listen_sock < 0) {
       continue;
     }
+
+    ip_str = addr2str(res->ai_addr, &ip_buf[0], sizeof(ip_buf));
+
+    fprintf(stderr, "TCP bind(%s:%d)\n", ip_str, port);
 
     rv = bind(server.listen_sock, res->ai_addr, res->ai_addrlen);
     if (rv != 0) {
