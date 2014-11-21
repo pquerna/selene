@@ -183,6 +183,7 @@ static int listen_to(selene_conf_t *conf, const char *host, int port,
                      FILE *fp) {
   fd_set readers;
   int rv = 0;
+  int opt = 1;
   server_t server;
   char buf[8096];
   char port_str[16];
@@ -218,6 +219,13 @@ static int listen_to(selene_conf_t *conf, const char *host, int port,
     ip_str = addr2str(res->ai_addr, &ip_buf[0], sizeof(ip_buf));
 
     fprintf(stderr, "TCP bind(%s:%d)\n", ip_str, port);
+
+    rv = setsockopt(server.listen_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+    if (rv != 0) {
+      fprintf(stderr, "setsockopt failed: %s\n", strerror(errno));
+      server.listen_sock = -1;
+      continue;
+    }
 
     rv = bind(server.listen_sock, res->ai_addr, res->ai_addrlen);
     if (rv != 0) {
