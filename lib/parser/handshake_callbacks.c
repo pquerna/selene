@@ -162,7 +162,7 @@ static selene_error_t *handle_server_certificate(selene_t *s,
   return selene_publish(s, SELENE_EVENT_VALIDATE_CERTIFICATE);
 }
 
-static selene_error_t *send_client_key_exhcnage(selene_t *s) {
+static selene_error_t *send_client_key_exchange(selene_t *s) {
   sln_parser_baton_t *baton = s->backend_baton;
   sln_msg_client_key_exchange_t cke;
   sln_pubkey_t *pubkey;
@@ -224,7 +224,7 @@ static selene_error_t *send_finished(selene_t *s) {
 
 static selene_error_t *handle_server_done(selene_t *s, selene_event_e event,
                                           void *x) {
-  SELENE_ERR(send_client_key_exhcnage(s));
+  SELENE_ERR(send_client_key_exchange(s));
   /* TODO: cert verify */
   SELENE_ERR(send_change_cipher_spec(s));
   SELENE_ERR(send_finished(s));
